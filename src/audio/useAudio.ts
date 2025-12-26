@@ -14,6 +14,30 @@ export function useAudio() {
     setSettings(AudioManager.getSettings())
   }, [])
 
+  // Auto-initialize audio on first user interaction if enabled by default
+  useEffect(() => {
+    if (isInitialized || !settings.enabled) return
+
+    const initOnInteraction = async () => {
+      await AudioManager.init()
+      setIsInitialized(true)
+      // Remove listeners after initialization
+      document.removeEventListener('click', initOnInteraction)
+      document.removeEventListener('keydown', initOnInteraction)
+      document.removeEventListener('touchstart', initOnInteraction)
+    }
+
+    document.addEventListener('click', initOnInteraction, { once: true })
+    document.addEventListener('keydown', initOnInteraction, { once: true })
+    document.addEventListener('touchstart', initOnInteraction, { once: true })
+
+    return () => {
+      document.removeEventListener('click', initOnInteraction)
+      document.removeEventListener('keydown', initOnInteraction)
+      document.removeEventListener('touchstart', initOnInteraction)
+    }
+  }, [isInitialized, settings.enabled])
+
   /**
    * Initialize audio context (must be called from user interaction)
    */

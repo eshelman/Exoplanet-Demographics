@@ -17,7 +17,7 @@ export interface AudioSettings {
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
-  enabled: false, // Off by default
+  enabled: true, // On by default
   masterVolume: 0.7,
   categories: {
     ambient: true,
@@ -166,6 +166,9 @@ class AudioManagerClass {
 
       this.initialized = true
       console.log('[AudioManager] Initialized successfully')
+
+      // Apply current settings (starts ambient if enabled)
+      this.updateSettings({})
     } catch (error) {
       console.error('[AudioManager] Failed to initialize:', error)
     }
