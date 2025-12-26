@@ -105,12 +105,35 @@ export function useBrush(
     brushRef.current = brush
     brushGroup.call(brush)
 
-    // Style the brush
+    // Get the overlay element
+    const overlay = brushGroup.select('.overlay')
+
+    // Initially disable pointer events on overlay so clicks pass through to planets
+    overlay.style('pointer-events', 'none')
+
+    // Enable pointer events when shift is pressed, disable when released
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (modifierKey === 'shift' && e.shiftKey) {
+        overlay.style('pointer-events', 'all')
+      }
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (modifierKey === 'shift' && !e.shiftKey) {
+        overlay.style('pointer-events', 'none')
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('keyup', handleKeyUp)
+
+    // Style the brush selection
     brushGroup.selectAll('.selection').attr('fill', 'var(--color-accent)').attr('fill-opacity', 0.2)
 
     brushGroup.selectAll('.handle').attr('fill', 'var(--color-accent)').attr('fill-opacity', 0.5)
 
     return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('keyup', handleKeyUp)
       brushGroup.remove()
     }
   }, [containerRef, enabled, width, height, modifierKey, onBrush, onBrushEnd, pixelToData])
