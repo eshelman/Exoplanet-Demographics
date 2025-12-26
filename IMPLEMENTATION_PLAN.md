@@ -47,8 +47,8 @@
 ### D3 Integration Hooks
 - [x] `useD3.ts` - Base D3 bindings
 - [x] `useDimensions.ts` - Responsive sizing
-- [ ] `useZoom.ts` - Pan and zoom behavior
-- [ ] `useBrush.ts` - Brush selection
+- [x] `useZoom.ts` - Pan and zoom behavior
+- [x] `useBrush.ts` - Brush selection
 
 ---
 
