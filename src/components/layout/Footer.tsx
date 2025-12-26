@@ -41,7 +41,15 @@ export function Footer() {
         <div className="flex items-center gap-4 opacity-60">
           <span>
             Visualization by{' '}
-            <span style={{ color: 'var(--color-accent)', opacity: 1 }}>NVIDIA</span>
+            <a
+              href="https://github.com/eshelman"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--color-accent)', opacity: 1 }}
+              className="hover:underline"
+            >
+              Eliot Eshelman
+            </a>
           </span>
         </div>
 
