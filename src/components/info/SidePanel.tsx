@@ -11,6 +11,7 @@ import { METHOD_COLORS, PLANET_TYPE_COLORS } from '../../utils/scales'
 interface SidePanelProps {
   selectedPlanet: Planet | null
   planets: Planet[]
+  totalPlanets: number
   onClearSelection: () => void
 }
 
@@ -37,7 +38,7 @@ const DETECTION_METHODS: { id: DetectionMethodId; name: string }[] = [
   { id: 'other', name: 'Other Methods' },
 ]
 
-export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePanelProps) {
+export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelection }: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>(selectedPlanet ? 'details' : 'stats')
 
@@ -284,10 +285,13 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
                     <div className="px-4 py-3">
                       <div className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
                         {stats.total.toLocaleString()}
+                        {stats.total < totalPlanets && (
+                          <span className="text-lg font-normal opacity-60">
+                            {' '}of {totalPlanets.toLocaleString()}
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs opacity-60">
-                        Planets Visible ({stats.exoplanets.toLocaleString()} exoplanets)
-                      </div>
+                      <div className="text-xs opacity-60">Planets Visible</div>
                     </div>
 
                     {/* 2. Size Comparison */}

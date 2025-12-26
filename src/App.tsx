@@ -16,6 +16,9 @@ function App() {
   // Get state and actions from store
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
   const clearSelection = useVizStore((s) => s.clearSelection)
+  const enabledMethods = useVizStore((s) => s.enabledMethods)
+  const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
+  const showSolarSystem = useVizStore((s) => s.showSolarSystem)
 
   useEffect(() => {
     Promise.all([loadSolarSystem(), loadExoplanets()])
@@ -29,8 +32,11 @@ function App() {
   // Combine all planets - filtering happens in ScatterPlot via store
   const allPlanets = useMemo(() => [...solarSystem, ...exoplanets], [solarSystem, exoplanets])
 
-  // Get visible planets for stats panel
-  const visiblePlanets = useMemo(() => selectVisiblePlanets(allPlanets), [allPlanets])
+  // Get visible planets for stats panel (re-compute when filters change)
+  const visiblePlanets = useMemo(
+    () => selectVisiblePlanets(allPlanets),
+    [allPlanets, enabledMethods, enabledPlanetTypes, showSolarSystem]
+  )
   const visibleCount = visiblePlanets.length
 
   if (loading) {
@@ -62,6 +68,7 @@ function App() {
         <SidePanel
           selectedPlanet={selectedPlanet}
           planets={visiblePlanets}
+          totalPlanets={allPlanets.length}
           onClearSelection={clearSelection}
         />
       </div>
