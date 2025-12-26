@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { ScatterPlot } from './components/visualization'
 import { ControlPanel } from './components/controls'
 import { SidePanel } from './components/info'
+import { NarrativeOverlay } from './components/narrative'
 import { loadSolarSystem, generateSampleExoplanets } from './utils'
 import { useVizStore, selectVisiblePlanets } from './store'
 import type { Planet } from './types'
@@ -13,6 +14,7 @@ function App() {
   // Get state and actions from store
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
   const clearSelection = useVizStore((s) => s.clearSelection)
+  const startNarrative = useVizStore((s) => s.startNarrative)
 
   // Generate sample exoplanets (in production, this would load from API)
   const exoplanets = useMemo(() => generateSampleExoplanets(500), [])
@@ -60,18 +62,36 @@ function App() {
             </p>
           </div>
 
-          {/* Planet count badge */}
-          <div
-            className="px-3 py-1.5 rounded text-sm"
-            style={{
-              backgroundColor: 'var(--color-background)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              color: 'var(--color-text)',
-            }}
-          >
-            <span className="opacity-60">Showing </span>
-            <strong style={{ color: 'var(--color-accent)' }}>{visibleCount}</strong>
-            <span className="opacity-60"> planets</span>
+          <div className="flex items-center gap-4">
+            {/* Take the Tour button */}
+            <button
+              onClick={startNarrative}
+              className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all hover:opacity-90"
+              style={{
+                backgroundColor: 'var(--color-accent)',
+                color: 'var(--color-background)',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+              </svg>
+              Take the Tour
+            </button>
+
+            {/* Planet count badge */}
+            <div
+              className="px-3 py-1.5 rounded text-sm"
+              style={{
+                backgroundColor: 'var(--color-background)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: 'var(--color-text)',
+              }}
+            >
+              <span className="opacity-60">Showing </span>
+              <strong style={{ color: 'var(--color-accent)' }}>{visibleCount}</strong>
+              <span className="opacity-60"> planets</span>
+            </div>
           </div>
         </div>
       </header>
@@ -119,6 +139,9 @@ function App() {
           <span>Click a planet to view details</span>
         </div>
       </footer>
+
+      {/* Narrative Overlay (Guided Tour) */}
+      <NarrativeOverlay />
     </div>
   )
 }
