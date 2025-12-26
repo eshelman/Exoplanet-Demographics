@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  /* Detection Methods */
+  --color-rv: #E63946;
+  --color-transit-kepler: #457B9D;
+  --color-transit-other: #A8DADC;
+  --color-microlensing: #2A9D8F;
+  --color-direct: #E9C46A;
+  --color-other: #6C757D;
+
+  /* Planet Types */
+  --color-rocky: #8B4513;
+  --color-super-earth: #CD853F;
+  --color-sub-neptune: #4682B4;
+  --color-neptune: #1E90FF;
+  --color-gas-giant: #FF6347;
+  --color-brown-dwarf: #8B0000;
+
+  /* UI Colors */
+  --color-background: #0D1B2A;
+  --color-surface: #1B263B;
+  --color-text: #E0E1DD;
+  --color-accent: #00B4D8;
+  --color-solar-system: #FFD700;
+
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}

@@ -1,0 +1,68 @@
+{
+  "planets": [
+    {
+      "name": "Mercury",
+      "mass": 0.0553,
+      "radius": 0.383,
+      "period": 87.97,
+      "separation": 0.387,
+      "type": "rocky"
+    },
+    {
+      "name": "Venus",
+      "mass": 0.815,
+      "radius": 0.949,
+      "period": 224.7,
+      "separation": 0.723,
+      "type": "rocky"
+    },
+    {
+      "name": "Earth",
+      "mass": 1.0,
+      "radius": 1.0,
+      "period": 365.25,
+      "separation": 1.0,
+      "type": "rocky"
+    },
+    {
+      "name": "Mars",
+      "mass": 0.107,
+      "radius": 0.532,
+      "period": 687.0,
+      "separation": 1.524,
+      "type": "rocky"
+    },
+    {
+      "name": "Jupiter",
+      "mass": 317.8,
+      "radius": 11.21,
+      "period": 4332.6,
+      "separation": 5.203,
+      "type": "cold-jupiter"
+    },
+    {
+      "name": "Saturn",
+      "mass": 95.16,
+      "radius": 9.45,
+      "period": 10759.2,
+      "separation": 9.537,
+      "type": "cold-jupiter"
+    },
+    {
+      "name": "Uranus",
+      "mass": 14.54,
+      "radius": 4.01,
+      "period": 30688.5,
+      "separation": 19.19,
+      "type": "neptune-like"
+    },
+    {
+      "name": "Neptune",
+      "mass": 17.15,
+      "radius": 3.88,
+      "period": 60195.0,
+      "separation": 30.07,
+      "type": "neptune-like"
+    }
+  ]
+}

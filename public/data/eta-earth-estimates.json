@@ -1,0 +1,83 @@
+{
+  "description": "Historical estimates of η⊕ (eta-Earth) - the fraction of Sun-like stars with Earth-like planets in the habitable zone",
+  "definition": "Earth-like typically means 0.5-2.0 Earth radii, in the habitable zone (receiving 0.25-4× Earth's insolation)",
+  "estimates": [
+    {
+      "year": 2011,
+      "study": "Catanzarite & Shao",
+      "value": 0.019,
+      "uncertainty": { "low": 0.006, "high": 0.064 },
+      "method": "Kepler extrapolation",
+      "notes": "Early estimate with limited data"
+    },
+    {
+      "year": 2013,
+      "study": "Petigura et al.",
+      "value": 0.22,
+      "uncertainty": { "low": 0.08, "high": 0.40 },
+      "method": "Kepler Q1-Q16",
+      "notes": "Influential study, used injection-recovery"
+    },
+    {
+      "year": 2013,
+      "study": "Dressing & Charbonneau",
+      "value": 0.15,
+      "uncertainty": { "low": 0.06, "high": 0.50 },
+      "method": "Kepler M-dwarfs",
+      "notes": "For M-dwarf stars only"
+    },
+    {
+      "year": 2014,
+      "study": "Foreman-Mackey et al.",
+      "value": 0.12,
+      "uncertainty": { "low": 0.03, "high": 0.46 },
+      "method": "Approximate Bayesian Computation",
+      "notes": "Novel statistical approach"
+    },
+    {
+      "year": 2015,
+      "study": "Burke et al.",
+      "value": 0.10,
+      "uncertainty": { "low": 0.04, "high": 0.25 },
+      "method": "Kepler DR24",
+      "notes": "Official Kepler team analysis"
+    },
+    {
+      "year": 2018,
+      "study": "Zink & Hansen",
+      "value": 0.36,
+      "uncertainty": { "low": 0.14, "high": 0.60 },
+      "method": "Forward modeling",
+      "notes": "Higher estimate due to radius inflation correction"
+    },
+    {
+      "year": 2019,
+      "study": "Hsu et al.",
+      "value": 0.16,
+      "uncertainty": { "low": 0.08, "high": 0.32 },
+      "method": "Hierarchical Bayesian",
+      "notes": "Careful treatment of measurement uncertainties"
+    },
+    {
+      "year": 2020,
+      "study": "Kunimoto & Matthews",
+      "value": 0.18,
+      "uncertainty": { "low": 0.09, "high": 0.35 },
+      "method": "Kepler + Gaia",
+      "notes": "Used improved stellar parameters from Gaia"
+    },
+    {
+      "year": 2020,
+      "study": "Bryson et al.",
+      "value": 0.37,
+      "uncertainty": { "low": 0.15, "high": 0.60 },
+      "method": "Poisson likelihood",
+      "notes": "Optimistic upper bounds for conservative HZ"
+    }
+  ],
+  "summary": {
+    "range": { "low": 0.05, "high": 0.50 },
+    "bestEstimate": 0.15,
+    "interpretation": "Roughly 5-50% of Sun-like stars may host an Earth-sized planet in the habitable zone. Even the conservative estimate implies billions of such worlds in our galaxy."
+  }
+}

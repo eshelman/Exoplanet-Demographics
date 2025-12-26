@@ -1,0 +1,80 @@
+{
+  "description": "Occurrence rates from various studies, organized by mass/radius and period bins",
+  "units": {
+    "mass": "Earth masses",
+    "radius": "Earth radii",
+    "period": "days",
+    "rate": "planets per star"
+  },
+  "grids": {
+    "massVsPeriod": {
+      "source": "Cumming et al. 2008, Howard et al. 2012, Suzuki et al. 2016",
+      "massBins": [
+        { "min": 0.5, "max": 2, "label": "<2 M⊕" },
+        { "min": 2, "max": 10, "label": "2-10 M⊕" },
+        { "min": 10, "max": 100, "label": "10-100 M⊕" },
+        { "min": 100, "max": 1000, "label": "100-1000 M⊕" },
+        { "min": 1000, "max": 10000, "label": ">1000 M⊕" }
+      ],
+      "periodBins": [
+        { "min": 1, "max": 10, "label": "<10d" },
+        { "min": 10, "max": 100, "label": "10-100d" },
+        { "min": 100, "max": 1000, "label": "100-1000d" },
+        { "min": 1000, "max": 10000, "label": ">1000d" }
+      ],
+      "rates": [
+        { "mass": "<2 M⊕", "period": "<10d", "rate": 0.05, "uncertainty": [0.02, 0.10], "quality": "uncertain" },
+        { "mass": "<2 M⊕", "period": "10-100d", "rate": 0.15, "uncertainty": [0.08, 0.25], "quality": "uncertain" },
+        { "mass": "<2 M⊕", "period": "100-1000d", "rate": null, "uncertainty": null, "quality": "unknown" },
+        { "mass": "<2 M⊕", "period": ">1000d", "rate": null, "uncertainty": null, "quality": "unknown" },
+        { "mass": "2-10 M⊕", "period": "<10d", "rate": 0.10, "uncertainty": [0.06, 0.15], "quality": "good" },
+        { "mass": "2-10 M⊕", "period": "10-100d", "rate": 0.25, "uncertainty": [0.18, 0.35], "quality": "good" },
+        { "mass": "2-10 M⊕", "period": "100-1000d", "rate": 0.20, "uncertainty": [0.10, 0.35], "quality": "uncertain" },
+        { "mass": "2-10 M⊕", "period": ">1000d", "rate": null, "uncertainty": null, "quality": "unknown" },
+        { "mass": "10-100 M⊕", "period": "<10d", "rate": 0.02, "uncertainty": [0.01, 0.04], "quality": "good" },
+        { "mass": "10-100 M⊕", "period": "10-100d", "rate": 0.05, "uncertainty": [0.03, 0.08], "quality": "good" },
+        { "mass": "10-100 M⊕", "period": "100-1000d", "rate": 0.08, "uncertainty": [0.04, 0.12], "quality": "moderate" },
+        { "mass": "10-100 M⊕", "period": ">1000d", "rate": 0.10, "uncertainty": [0.05, 0.18], "quality": "uncertain" },
+        { "mass": "100-1000 M⊕", "period": "<10d", "rate": 0.01, "uncertainty": [0.005, 0.015], "quality": "good" },
+        { "mass": "100-1000 M⊕", "period": "10-100d", "rate": 0.02, "uncertainty": [0.01, 0.035], "quality": "good" },
+        { "mass": "100-1000 M⊕", "period": "100-1000d", "rate": 0.05, "uncertainty": [0.03, 0.08], "quality": "moderate" },
+        { "mass": "100-1000 M⊕", "period": ">1000d", "rate": 0.08, "uncertainty": [0.04, 0.12], "quality": "moderate" },
+        { "mass": ">1000 M⊕", "period": "<10d", "rate": 0.001, "uncertainty": [0.0005, 0.002], "quality": "good" },
+        { "mass": ">1000 M⊕", "period": "10-100d", "rate": 0.002, "uncertainty": [0.001, 0.004], "quality": "good" },
+        { "mass": ">1000 M⊕", "period": "100-1000d", "rate": 0.01, "uncertainty": [0.005, 0.02], "quality": "moderate" },
+        { "mass": ">1000 M⊕", "period": ">1000d", "rate": 0.03, "uncertainty": [0.015, 0.05], "quality": "uncertain" }
+      ]
+    }
+  },
+  "notableRegions": [
+    {
+      "id": "hot-neptune-desert",
+      "name": "Hot Neptune Desert",
+      "description": "A notable gap in the population: few Neptune-mass planets with periods <3 days",
+      "bounds": {
+        "mass": { "min": 10, "max": 100 },
+        "period": { "min": 0.5, "max": 3 }
+      },
+      "explanation": "Photoevaporation strips atmospheres from intermediate-mass planets at close distances"
+    },
+    {
+      "id": "radius-valley",
+      "name": "Radius Valley",
+      "description": "A gap in the radius distribution between 1.5-2.0 Earth radii",
+      "bounds": {
+        "radius": { "min": 1.5, "max": 2.0 }
+      },
+      "explanation": "Separates rocky super-Earths from sub-Neptunes with H/He envelopes"
+    },
+    {
+      "id": "brown-dwarf-desert",
+      "name": "Brown Dwarf Desert",
+      "description": "Very few companions between 10-80 Jupiter masses at close separations",
+      "bounds": {
+        "mass": { "min": 3000, "max": 25000 },
+        "period": { "min": 1, "max": 1000 }
+      },
+      "explanation": "Different formation mechanisms for planets vs brown dwarfs create this gap"
+    }
+  ]
+}

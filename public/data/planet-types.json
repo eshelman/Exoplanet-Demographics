@@ -1,0 +1,164 @@
+{
+  "planetTypes": [
+    {
+      "id": "rocky",
+      "name": "Rocky/Terrestrial",
+      "massRange": { "min": 0.1, "max": 2, "unit": "earth" },
+      "radiusRange": { "min": 0.5, "max": 1.5, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.15,
+        "uncertainty": { "low": 0.05, "high": 0.50 },
+        "context": "per FGK star in habitable zone (η⊕)"
+      },
+      "characteristics": [
+        "Solid surface",
+        "Iron/silicate composition",
+        "Thin or no atmosphere",
+        "Potential for liquid water"
+      ],
+      "formationNotes": "Form from rocky planetesimals inside the snow line",
+      "color": "#8B4513",
+      "examples": ["Earth", "Venus", "Mars", "Kepler-452b"]
+    },
+    {
+      "id": "super-earth",
+      "name": "Super-Earth",
+      "massRange": { "min": 2, "max": 10, "unit": "earth" },
+      "radiusRange": { "min": 1.25, "max": 2.0, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.30,
+        "uncertainty": { "low": 0.20, "high": 0.45 },
+        "context": "per star with P < 100 days"
+      },
+      "characteristics": [
+        "No Solar System analog",
+        "May be rocky or have thick atmosphere",
+        "Very common around other stars",
+        "Often found in compact multi-planet systems"
+      ],
+      "formationNotes": "Most common planet type; may form in-situ or migrate inward",
+      "color": "#CD853F",
+      "examples": ["Kepler-10b", "55 Cancri e", "LHS 1140b"]
+    },
+    {
+      "id": "sub-neptune",
+      "name": "Sub-Neptune",
+      "massRange": { "min": 2, "max": 20, "unit": "earth" },
+      "radiusRange": { "min": 2.0, "max": 4.0, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.35,
+        "uncertainty": { "low": 0.25, "high": 0.50 },
+        "context": "per star with P < 100 days"
+      },
+      "characteristics": [
+        "Thick hydrogen/helium envelope",
+        "No solid surface",
+        "Most common size in the galaxy",
+        "Missing from our Solar System"
+      ],
+      "formationNotes": "Likely formed beyond snow line and migrated, or accreted gas in place",
+      "color": "#4682B4",
+      "examples": ["Kepler-11f", "GJ 1214b", "K2-18b"]
+    },
+    {
+      "id": "neptune-like",
+      "name": "Neptune-like",
+      "massRange": { "min": 10, "max": 50, "unit": "earth" },
+      "radiusRange": { "min": 3.5, "max": 6.0, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.06,
+        "uncertainty": { "low": 0.03, "high": 0.10 },
+        "context": "per star at 1-10 AU"
+      },
+      "characteristics": [
+        "Ice giant composition",
+        "Deep atmosphere of H/He",
+        "May have water-rich interior",
+        "Relatively rare close to stars"
+      ],
+      "formationNotes": "Form in the outer disk where ices are abundant",
+      "color": "#1E90FF",
+      "examples": ["Neptune", "Uranus", "HAT-P-11b"]
+    },
+    {
+      "id": "hot-jupiter",
+      "name": "Hot Jupiter",
+      "massRange": { "min": 100, "max": 4000, "unit": "earth" },
+      "radiusRange": { "min": 9, "max": 20, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.01,
+        "uncertainty": { "low": 0.005, "high": 0.015 },
+        "context": "per FGK star with P < 10 days"
+      },
+      "characteristics": [
+        "Gas giant very close to star",
+        "Tidally locked",
+        "Inflated radii common",
+        "High equilibrium temperatures (>1000 K)"
+      ],
+      "formationNotes": "Formed far from star, then migrated inward",
+      "color": "#FF6347",
+      "examples": ["51 Pegasi b", "HD 209458b", "WASP-12b"]
+    },
+    {
+      "id": "cold-jupiter",
+      "name": "Cold Jupiter",
+      "massRange": { "min": 100, "max": 4000, "unit": "earth" },
+      "radiusRange": { "min": 9, "max": 12, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.10,
+        "uncertainty": { "low": 0.06, "high": 0.15 },
+        "context": "per star at 1-10 AU"
+      },
+      "characteristics": [
+        "Jupiter analogs",
+        "Orbital periods of years",
+        "May stabilize inner planetary systems",
+        "Harder to detect than hot Jupiters"
+      ],
+      "formationNotes": "Core accretion beyond the snow line",
+      "color": "#CD5C5C",
+      "examples": ["Jupiter", "47 Ursae Majoris b", "HR 8799 planets"]
+    },
+    {
+      "id": "brown-dwarf",
+      "name": "Brown Dwarf (companion)",
+      "massRange": { "min": 4000, "max": 25000, "unit": "earth" },
+      "radiusRange": { "min": 10, "max": 15, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.006,
+        "uncertainty": { "low": 0.003, "high": 0.01 },
+        "context": "per star within 5 AU"
+      },
+      "characteristics": [
+        "Not quite a star",
+        "Deuterium burning possible",
+        "Very rare as close companions",
+        "Brown dwarf desert"
+      ],
+      "formationNotes": "Formation mechanism debated; may form like stars or planets",
+      "color": "#8B0000",
+      "examples": ["Gliese 229B", "2M1207b"]
+    },
+    {
+      "id": "ultra-short-period",
+      "name": "Ultra-Short Period",
+      "massRange": { "min": 0.5, "max": 10, "unit": "earth" },
+      "radiusRange": { "min": 0.5, "max": 2.0, "unit": "earth" },
+      "occurrenceRate": {
+        "value": 0.005,
+        "uncertainty": { "low": 0.003, "high": 0.008 },
+        "context": "per star with P < 1 day"
+      },
+      "characteristics": [
+        "Orbital period less than 1 day",
+        "Likely rocky remnant cores",
+        "Extreme irradiation",
+        "May be evaporating"
+      ],
+      "formationNotes": "Remnants of larger planets that lost their atmospheres",
+      "color": "#FF4500",
+      "examples": ["Kepler-78b", "55 Cancri e", "CoRoT-7b"]
+    }
+  ]
+}

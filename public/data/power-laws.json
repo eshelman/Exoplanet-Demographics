@@ -1,0 +1,81 @@
+{
+  "description": "Power law distributions for generating synthetic exoplanet populations",
+  "sources": [
+    "Cumming et al. 2008",
+    "Howard et al. 2012",
+    "Suzuki et al. 2016",
+    "Fressin et al. 2013"
+  ],
+  "distributions": {
+    "radialVelocity": {
+      "source": "Cumming et al. 2008",
+      "formula": "dN/d(ln m)d(ln P) ∝ m^α × P^β",
+      "massExponent": -0.31,
+      "periodExponent": 0.26,
+      "normalization": {
+        "value": 0.10,
+        "context": "10% of FGK stars have ≥1 planet with m > 0.3 M_Jup and P < 2000 days"
+      },
+      "validRange": {
+        "mass": { "min": 30, "max": 10000, "unit": "earth" },
+        "period": { "min": 2, "max": 2000, "unit": "days" }
+      }
+    },
+    "keplerSmall": {
+      "source": "Howard et al. 2012",
+      "formula": "dN/d(ln R)d(ln P) ∝ R^α × P^β",
+      "radiusExponent": -1.92,
+      "periodExponent": 0.11,
+      "normalization": {
+        "value": 0.13,
+        "context": "Per bin for 2-4 R_Earth at 10-50 days"
+      },
+      "validRange": {
+        "radius": { "min": 1, "max": 4, "unit": "earth" },
+        "period": { "min": 0.5, "max": 50, "unit": "days" }
+      }
+    },
+    "microlensing": {
+      "source": "Suzuki et al. 2016",
+      "formula": "dN/d(log q) - broken power law at q = q_break",
+      "breakpoint": {
+        "massRatio": 0.00017,
+        "description": "Neptune/Sun mass ratio"
+      },
+      "slopeAbove": -0.93,
+      "slopeBelow": 0.6,
+      "normalization": {
+        "value": 0.55,
+        "context": "Planets per dex of mass ratio at the break"
+      },
+      "validRange": {
+        "massRatio": { "min": 0.00001, "max": 0.01 },
+        "separation": { "min": 0.5, "max": 10, "unit": "au" }
+      },
+      "notes": "Uniquely probes cold planets; indicates abundance of Neptune-mass planets beyond snow line"
+    },
+    "transitKepler": {
+      "source": "Fressin et al. 2013",
+      "description": "Occurrence rates by radius bin",
+      "bins": [
+        { "radius": [0.8, 1.25], "period": [0.8, 85], "rate": 0.165, "uncertainty": 0.04 },
+        { "radius": [1.25, 2.0], "period": [0.8, 85], "rate": 0.303, "uncertainty": 0.06 },
+        { "radius": [2.0, 4.0], "period": [0.8, 85], "rate": 0.232, "uncertainty": 0.04 },
+        { "radius": [4.0, 6.0], "period": [0.8, 85], "rate": 0.030, "uncertainty": 0.007 },
+        { "radius": [6.0, 22.0], "period": [0.8, 85], "rate": 0.053, "uncertainty": 0.01 }
+      ]
+    }
+  },
+  "generatorNotes": {
+    "procedure": [
+      "1. Draw from power law in log-space for mass/radius and period",
+      "2. Apply detection probability based on method",
+      "3. Filter by method's sensitivity bounds",
+      "4. Add observational uncertainties"
+    ],
+    "conversionFactors": {
+      "massToRadius": "Use Chen & Kipping 2017 probabilistic M-R relation",
+      "periodToSeparation": "Kepler's third law: a³ = P² (in AU and years for solar-mass star)"
+    }
+  }
+}

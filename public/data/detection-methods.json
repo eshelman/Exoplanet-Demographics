@@ -1,0 +1,148 @@
+{
+  "methods": [
+    {
+      "id": "radial-velocity",
+      "name": "Radial Velocity",
+      "abbreviation": "RV",
+      "description": "Measures stellar wobble caused by orbiting planet's gravity. The star moves toward and away from us, shifting its light via the Doppler effect.",
+      "sensitivity": {
+        "massRange": { "min": 3, "max": 10000, "unit": "earth" },
+        "periodRange": { "min": 1, "max": 10000, "unit": "days" },
+        "notes": "Sensitivity degrades with period; requires quiet stars"
+      },
+      "biases": [
+        "Favors massive planets (larger signal)",
+        "Favors short periods (more observations per orbit)",
+        "Requires bright, quiet host stars",
+        "Cannot measure true mass (only m×sin(i))",
+        "Activity from star spots can mimic signals"
+      ],
+      "totalDetections": 1042,
+      "color": "#E63946",
+      "milestones": [
+        { "year": 1995, "event": "51 Pegasi b - first planet around main-sequence star" },
+        { "year": 2017, "event": "HARPS achieves <1 m/s precision" }
+      ]
+    },
+    {
+      "id": "transit-kepler",
+      "name": "Transit (Kepler/K2)",
+      "abbreviation": "Kepler",
+      "description": "Detects planets crossing in front of their star, causing a small dip in brightness. Kepler mission revolutionized the field with continuous monitoring.",
+      "sensitivity": {
+        "massRange": { "min": 0.5, "max": 5000, "unit": "earth" },
+        "periodRange": { "min": 0.5, "max": 500, "unit": "days" },
+        "notes": "Requires edge-on orbital alignment; measures radius, not mass"
+      },
+      "biases": [
+        "Requires geometric alignment (rare for long periods)",
+        "Favors short periods (more transits observed)",
+        "Measures radius directly, mass requires follow-up",
+        "False positives from eclipsing binaries",
+        "Small planets around large stars very hard to detect"
+      ],
+      "totalDetections": 2709,
+      "color": "#457B9D",
+      "milestones": [
+        { "year": 2009, "event": "Kepler launch" },
+        { "year": 2014, "event": "K2 mission begins" },
+        { "year": 2018, "event": "Kepler mission ends with 2600+ planets" }
+      ]
+    },
+    {
+      "id": "transit-other",
+      "name": "Transit (Ground/TESS)",
+      "abbreviation": "Transit",
+      "description": "Ground-based surveys and TESS continue finding transiting planets, especially around bright nearby stars.",
+      "sensitivity": {
+        "massRange": { "min": 1, "max": 5000, "unit": "earth" },
+        "periodRange": { "min": 0.5, "max": 30, "unit": "days" },
+        "notes": "Ground-based limited by atmosphere; TESS optimized for bright stars"
+      },
+      "biases": [
+        "Ground-based: weather and day/night gaps",
+        "TESS: short observation baseline limits long periods",
+        "Favors planets around bright, nearby stars"
+      ],
+      "totalDetections": 876,
+      "color": "#A8DADC",
+      "milestones": [
+        { "year": 2018, "event": "TESS launch" },
+        { "year": 2020, "event": "TESS extended mission begins" }
+      ]
+    },
+    {
+      "id": "microlensing",
+      "name": "Gravitational Microlensing",
+      "abbreviation": "μlens",
+      "description": "Uses gravity of a foreground star+planet system to magnify light from a background star. Planet causes a brief, detectable blip.",
+      "sensitivity": {
+        "massRange": { "min": 0.1, "max": 10000, "unit": "earth" },
+        "periodRange": { "min": 365, "max": 36500, "unit": "days" },
+        "separationRange": { "min": 0.5, "max": 10, "unit": "au" },
+        "notes": "Uniquely sensitive to cold planets at 1-10 AU including free-floating planets"
+      },
+      "biases": [
+        "One-time events - no follow-up possible",
+        "Cannot determine exact orbital parameters",
+        "Planets around distant stars (kiloparsecs away)",
+        "Best sensitivity at snow line (~3 AU)",
+        "Low detection rate requires monitoring millions of stars"
+      ],
+      "totalDetections": 214,
+      "color": "#2A9D8F",
+      "milestones": [
+        { "year": 2004, "event": "OGLE-2003-BLG-235Lb - first robust microlensing planet" },
+        { "year": 2016, "event": "Suzuki et al. mass-ratio function from MOA survey" }
+      ]
+    },
+    {
+      "id": "direct-imaging",
+      "name": "Direct Imaging",
+      "abbreviation": "Imaging",
+      "description": "Photographs planets directly by blocking starlight with coronagraphs or special optics. Currently limited to young, massive, widely-separated planets.",
+      "sensitivity": {
+        "massRange": { "min": 500, "max": 25000, "unit": "earth" },
+        "periodRange": { "min": 3650, "max": 365000, "unit": "days" },
+        "separationRange": { "min": 10, "max": 1000, "unit": "au" },
+        "notes": "Requires young systems where planets are still glowing from formation heat"
+      },
+      "biases": [
+        "Only young planets (<100 Myr) are bright enough",
+        "Requires wide separation from star",
+        "Favors massive planets",
+        "Limited to nearby stars",
+        "Atmospheric characterization possible"
+      ],
+      "totalDetections": 68,
+      "color": "#E9C46A",
+      "milestones": [
+        { "year": 2008, "event": "HR 8799 system - first multi-planet direct image" },
+        { "year": 2019, "event": "First spectrum of directly imaged exoplanet" }
+      ]
+    },
+    {
+      "id": "astrometry",
+      "name": "Astrometry",
+      "abbreviation": "Astrom",
+      "description": "Measures the tiny wobble of a star's position on the sky caused by orbiting planets. Gaia is revolutionizing this technique.",
+      "sensitivity": {
+        "massRange": { "min": 50, "max": 10000, "unit": "earth" },
+        "periodRange": { "min": 365, "max": 7300, "unit": "days" },
+        "notes": "Requires exquisite positional precision; Gaia expected to find thousands"
+      },
+      "biases": [
+        "Requires very precise positional measurements",
+        "Favors massive planets on wide orbits",
+        "Complementary to radial velocity",
+        "Can determine true masses and 3D orbits"
+      ],
+      "totalDetections": 7,
+      "color": "#9B59B6",
+      "milestones": [
+        { "year": 2013, "event": "Gaia launch" },
+        { "year": 2022, "event": "Gaia DR3 reveals first astrometric exoplanets" }
+      ]
+    }
+  ]
+}
