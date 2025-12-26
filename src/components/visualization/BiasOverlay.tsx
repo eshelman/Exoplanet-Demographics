@@ -288,7 +288,6 @@ export function BiasOverlay({
               stroke={region.color}
               strokeOpacity={0.6}
               strokeWidth={2}
-              strokeDasharray="8,4"
             />
             {/* Label for notable region */}
             {region.width > 60 && region.height > 30 && (

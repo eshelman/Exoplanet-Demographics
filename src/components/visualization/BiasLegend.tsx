@@ -67,7 +67,6 @@ export function BiasLegend({ enabledMethods }: BiasLegendProps) {
               style={{
                 backgroundColor: `${region.color}30`,
                 borderColor: region.color,
-                borderStyle: 'dashed',
               }}
             />
             <span style={{ color: region.color }}>{region.name}</span>
