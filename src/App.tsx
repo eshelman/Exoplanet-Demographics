@@ -4,24 +4,25 @@ import { ControlPanel } from './components/controls'
 import { SidePanel } from './components/info'
 import { NarrativeOverlay } from './components/narrative'
 import { Header, Footer } from './components/layout'
-import { loadSolarSystem, generateSampleExoplanets } from './utils'
+import { loadSolarSystem, loadExoplanets } from './utils'
 import { useVizStore, selectVisiblePlanets } from './store'
 import type { Planet } from './types'
 
 function App() {
   const [solarSystem, setSolarSystem] = useState<Planet[]>([])
+  const [exoplanets, setExoplanets] = useState<Planet[]>([])
   const [loading, setLoading] = useState(true)
 
   // Get state and actions from store
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
   const clearSelection = useVizStore((s) => s.clearSelection)
 
-  // Generate sample exoplanets (in production, this would load from API)
-  const exoplanets = useMemo(() => generateSampleExoplanets(500), [])
-
   useEffect(() => {
-    loadSolarSystem()
-      .then(setSolarSystem)
+    Promise.all([loadSolarSystem(), loadExoplanets()])
+      .then(([ss, exo]) => {
+        setSolarSystem(ss)
+        setExoplanets(exo)
+      })
       .finally(() => setLoading(false))
   }, [])
 

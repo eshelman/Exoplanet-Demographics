@@ -1,0 +1,208 @@
+{
+  "_meta": {
+    "type": "NARRATIVE_CONTENT",
+    "description": "Editorial descriptions for notable/famous exoplanets",
+    "lastUpdated": "2025-12-26",
+    "notes": "All descriptions based on published peer-reviewed literature"
+  },
+  "planets": {
+    "Proxima Cen b": {
+      "isNotable": true,
+      "notableReason": "Closest known exoplanet to Earth",
+      "description": "A rocky world orbiting our nearest stellar neighbor, just 4.2 light-years away. Located in the habitable zone of Proxima Centauri, though the red dwarf's intense flares may challenge habitability.",
+      "sources": ["Anglada-Escudé et al. 2016, Nature"]
+    },
+    "TRAPPIST-1 b": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - 7 Earth-sized planets",
+      "description": "The innermost planet of the remarkable TRAPPIST-1 system, where seven Earth-sized worlds orbit a cool red dwarf. Too hot for liquid water, but part of the most compact planetary system known.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "TRAPPIST-1 c": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - 7 Earth-sized planets",
+      "description": "Second planet in the TRAPPIST-1 system. Recent JWST observations suggest it has little to no atmosphere, providing key data about rocky planet evolution around red dwarfs.",
+      "sources": ["Gillon et al. 2017, Nature", "Zieba et al. 2023, Nature"]
+    },
+    "TRAPPIST-1 d": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - potentially habitable",
+      "description": "The smallest planet in the TRAPPIST-1 system, located at the inner edge of the habitable zone. A prime target for atmospheric characterization with JWST.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "TRAPPIST-1 e": {
+      "isNotable": true,
+      "notableReason": "Most Earth-like of TRAPPIST-1 planets",
+      "description": "Often considered the most habitable candidate in the TRAPPIST-1 system. Similar size and temperature to Earth, receiving comparable stellar flux. A top priority for biosignature searches.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "TRAPPIST-1 f": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - potentially habitable",
+      "description": "A cool, potentially icy world in the outer habitable zone of TRAPPIST-1. May have retained significant water if it migrated from farther out in the disk.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "TRAPPIST-1 g": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - 7 Earth-sized planets",
+      "description": "The largest planet in the TRAPPIST-1 system, slightly bigger than Earth. Located in the outer habitable zone, potentially a cold world with subsurface oceans.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "TRAPPIST-1 h": {
+      "isNotable": true,
+      "notableReason": "TRAPPIST-1 system - outermost planet",
+      "description": "The outermost known planet in the TRAPPIST-1 system. Too cold for surface liquid water, but tidal heating from its resonant orbit may provide internal warmth.",
+      "sources": ["Gillon et al. 2017, Nature"]
+    },
+    "51 Peg b": {
+      "isNotable": true,
+      "notableReason": "First exoplanet discovered around a Sun-like star",
+      "description": "The planet that launched a revolution. Discovered in 1995 using radial velocity, this 'hot Jupiter' challenged all models of planet formation by orbiting impossibly close to its star. Nobel Prize in Physics 2019.",
+      "sources": ["Mayor & Queloz 1995, Nature"]
+    },
+    "Kepler-22 b": {
+      "isNotable": true,
+      "notableReason": "First Kepler planet in habitable zone",
+      "description": "The first planet discovered by Kepler in the habitable zone of a Sun-like star. About 2.4 times Earth's size, its composition remains uncertain—possibly a mini-Neptune or ocean world.",
+      "sources": ["Borucki et al. 2012, ApJ"]
+    },
+    "Kepler-442 b": {
+      "isNotable": true,
+      "notableReason": "One of the most Earth-like planets known",
+      "description": "A super-Earth in the habitable zone with one of the highest Earth Similarity Index scores. At 1.3 Earth radii and receiving similar stellar flux to Earth, it's a compelling analog to our world.",
+      "sources": ["Torres et al. 2015, ApJ"]
+    },
+    "Kepler-452 b": {
+      "isNotable": true,
+      "notableReason": "Earth's 'older cousin' around Sun-like star",
+      "description": "Often called 'Earth 2.0,' this planet orbits a G-type star similar to our Sun at nearly the same distance Earth orbits. At 1.6 billion years older, it offers a glimpse at Earth's possible future.",
+      "sources": ["Jenkins et al. 2015, AJ"]
+    },
+    "Kepler-186 f": {
+      "isNotable": true,
+      "notableReason": "First Earth-sized planet in habitable zone",
+      "description": "A milestone discovery: the first truly Earth-sized planet found in the habitable zone. Orbiting a red dwarf, it demonstrated that Earth-sized worlds exist at the right distances for liquid water.",
+      "sources": ["Quintana et al. 2014, Science"]
+    },
+    "HD 209458 b": {
+      "isNotable": true,
+      "notableReason": "First transiting exoplanet, first atmosphere detected",
+      "description": "A record-breaking world: first exoplanet seen transiting its star, first with a detected atmosphere, first with measured atmospheric escape. This hot Jupiter enabled the birth of exoplanet atmospheric science.",
+      "sources": ["Charbonneau et al. 2000, ApJ", "Vidal-Madjar et al. 2003, Nature"]
+    },
+    "GJ 1214 b": {
+      "isNotable": true,
+      "notableReason": "Prototype 'water world' or mini-Neptune",
+      "description": "A super-Earth with a thick atmosphere that may be rich in water vapor. Its low density suggests it could be a 'water world' with a steam atmosphere, or a mini-Neptune with a hydrogen envelope.",
+      "sources": ["Charbonneau et al. 2009, Nature"]
+    },
+    "55 Cnc e": {
+      "isNotable": true,
+      "notableReason": "Ultra-short period super-Earth",
+      "description": "A scorching super-Earth that orbits its star in just 18 hours. Surface temperatures exceed 2000K—hot enough to melt rock. JWST has detected possible volcanic activity.",
+      "sources": ["McArthur et al. 2004, ApJ", "Hu et al. 2024, Nature"]
+    },
+    "HR 8799 b": {
+      "isNotable": true,
+      "notableReason": "First directly imaged multi-planet system",
+      "description": "One of four giant planets directly photographed orbiting HR 8799. This system provided the first images of multiple planets around another star, revolutionizing our understanding of outer planetary systems.",
+      "sources": ["Marois et al. 2008, Science"]
+    },
+    "HR 8799 c": {
+      "isNotable": true,
+      "notableReason": "First directly imaged multi-planet system",
+      "description": "A massive giant planet in the HR 8799 system. Direct imaging allows detailed spectroscopy, revealing clouds and atmospheric chemistry impossible to study in transiting hot Jupiters.",
+      "sources": ["Marois et al. 2008, Science"]
+    },
+    "HR 8799 d": {
+      "isNotable": true,
+      "notableReason": "First directly imaged multi-planet system",
+      "description": "The third planet discovered in the HR 8799 system. The four planets are locked in a resonant chain, with orbital periods in near-perfect integer ratios.",
+      "sources": ["Marois et al. 2008, Science"]
+    },
+    "HR 8799 e": {
+      "isNotable": true,
+      "notableReason": "First directly imaged multi-planet system",
+      "description": "The innermost and last-discovered planet in the HR 8799 system. Its atmosphere has been studied in detail, showing evidence of disequilibrium chemistry and clouds.",
+      "sources": ["Marois et al. 2010, Nature"]
+    },
+    "beta Pic b": {
+      "isNotable": true,
+      "notableReason": "Young giant planet in famous debris disk",
+      "description": "A young, hot giant planet embedded in the famous Beta Pictoris debris disk. At only ~20 million years old, it offers a snapshot of planetary system formation in action.",
+      "sources": ["Lagrange et al. 2010, Science"]
+    },
+    "LHS 1140 b": {
+      "isNotable": true,
+      "notableReason": "Rocky super-Earth in habitable zone",
+      "description": "A dense, rocky super-Earth in the habitable zone of a nearby red dwarf. Its high density suggests an iron-rich composition, and it transits its quiet host star—ideal for atmospheric studies.",
+      "sources": ["Dittmann et al. 2017, Nature"]
+    },
+    "K2-18 b": {
+      "isNotable": true,
+      "notableReason": "JWST detected possible biosignature gases",
+      "description": "A sub-Neptune in the habitable zone that made headlines when JWST detected carbon-bearing molecules in its atmosphere. The controversial detection of dimethyl sulfide sparked debate about potential biological origins.",
+      "sources": ["Madhusudhan et al. 2023, ApJ Letters"]
+    },
+    "TOI-700 d": {
+      "isNotable": true,
+      "notableReason": "First TESS Earth-sized habitable zone planet",
+      "description": "TESS's first Earth-sized planet in a habitable zone. This world orbits a cool M dwarf and demonstrated TESS's capability to find small, potentially habitable worlds.",
+      "sources": ["Gilbert et al. 2020, AJ"]
+    },
+    "Kepler-16 b": {
+      "isNotable": true,
+      "notableReason": "First confirmed circumbinary planet",
+      "description": "A real-life Tatooine: the first planet confirmed to orbit two stars. This Saturn-sized world experiences double sunsets, proving that circumbinary planets can form and survive.",
+      "sources": ["Doyle et al. 2011, Science"]
+    },
+    "PSR B1257+12 b": {
+      "isNotable": true,
+      "notableReason": "First exoplanets ever discovered",
+      "description": "One of the first exoplanets ever discovered, orbiting a millisecond pulsar. These planets may have formed from the debris of the supernova that created the pulsar—a truly alien origin.",
+      "sources": ["Wolszczan & Frail 1992, Nature"]
+    },
+    "PSR B1257+12 c": {
+      "isNotable": true,
+      "notableReason": "First exoplanets ever discovered",
+      "description": "Part of the first planetary system discovered beyond our Sun. Though inhospitable, these pulsar planets proved that planet formation is ubiquitous in the galaxy.",
+      "sources": ["Wolszczan & Frail 1992, Nature"]
+    },
+    "WASP-12 b": {
+      "isNotable": true,
+      "notableReason": "Planet being consumed by its star",
+      "description": "A doomed hot Jupiter so close to its star that it's being tidally shredded. The planet is losing mass and spiraling inward; in a few million years, it will be consumed entirely.",
+      "sources": ["Hebb et al. 2009, ApJ"]
+    },
+    "WASP-76 b": {
+      "isNotable": true,
+      "notableReason": "Iron rain in the atmosphere",
+      "description": "An ultra-hot Jupiter where it rains iron. The day side is hot enough to vaporize iron, which condenses into droplets on the cooler night side, falling as metallic rain.",
+      "sources": ["Ehrenreich et al. 2020, Nature"]
+    },
+    "OGLE-2005-BLG-390L b": {
+      "isNotable": true,
+      "notableReason": "Coldest known exoplanet via microlensing",
+      "description": "One of the coldest exoplanets known, discovered via gravitational microlensing. This frozen super-Earth, 21,500 light-years away, demonstrated microlensing's power to find distant, cold worlds.",
+      "sources": ["Beaulieu et al. 2006, Nature"]
+    },
+    "Kepler-90 h": {
+      "isNotable": true,
+      "notableReason": "8-planet system tied with Solar System",
+      "description": "The outermost planet in an 8-planet system that briefly tied our Solar System for most planets known. Discovered with machine learning, it showed AI's potential in exoplanet science.",
+      "sources": ["Shallue & Vanderburg 2018, AJ"]
+    },
+    "Kepler-11 b": {
+      "isNotable": true,
+      "notableReason": "Compact 6-planet system",
+      "description": "Part of a remarkably compact system where six planets orbit closer than Venus orbits the Sun. These 'peas in a pod' systems challenged theories of planetary spacing and migration.",
+      "sources": ["Lissauer et al. 2011, Nature"]
+    },
+    "Gliese 12 b": {
+      "isNotable": true,
+      "notableReason": "Nearby temperate Earth-sized world",
+      "description": "A nearby temperate world receiving similar energy to Venus. At just 40 light-years away, it's close enough for detailed atmospheric study and may hold clues about Earth-sized planet evolution.",
+      "sources": ["Dholakia et al. 2024, MNRAS"]
+    }
+  }
+}

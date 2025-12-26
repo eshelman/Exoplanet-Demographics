@@ -75,6 +75,7 @@ const ALL_METHODS: DetectionMethodId[] = [
   'microlensing',
   'direct-imaging',
   'astrometry',
+  'other',
 ]
 
 const initialState = {
