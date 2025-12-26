@@ -1,4 +1,5 @@
 import { useRef, useMemo, useCallback } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { useDimensions } from '../../hooks/useDimensions'
 import { useZoom } from '../../hooks/useZoom'
 import { useBrush } from '../../hooks/useBrush'
@@ -7,9 +8,11 @@ import { createXScale, createYScale } from '../../utils/scales'
 import { Axes } from './Axes'
 import { GridLines } from './GridLines'
 import { PlanetPoints } from './PlanetPoints'
+import { BiasOverlay } from './BiasOverlay'
+import { BiasLegend } from './BiasLegend'
 import { Tooltip } from './Tooltip'
 import { ZoomControls } from './ZoomControls'
-import type { Planet, BoundingBox } from '../../types'
+import type { Planet, BoundingBox, DetectionMethodId } from '../../types'
 
 interface ScatterPlotProps {
   planets: Planet[]
@@ -36,6 +39,8 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   const hoveredPlanet = useVizStore((s) => s.hoveredPlanet)
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
   const brushSelection = useVizStore((s) => s.brushSelection)
+  const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
+  const enabledMethods = useVizStore((s) => s.enabledMethods)
 
   // Get actions from store
   const setHoveredPlanet = useVizStore((s) => s.setHoveredPlanet)
@@ -125,6 +130,24 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
               </clipPath>
             </defs>
 
+            {/* Bias overlay (behind planets, clipped to plot area) */}
+            <AnimatePresence>
+              {showBiasOverlay && (
+                <g clipPath="url(#plot-area)">
+                  <BiasOverlay
+                    xScale={xScale}
+                    yScale={yScale}
+                    width={innerWidth}
+                    height={innerHeight}
+                    xAxisType={xAxis}
+                    yAxisType={yAxis}
+                    enabledMethods={enabledMethods as Set<DetectionMethodId>}
+                    showBlindSpots={true}
+                  />
+                </g>
+              )}
+            </AnimatePresence>
+
             {/* Planet points */}
             <g clipPath="url(#plot-area)">
               <PlanetPoints
@@ -157,6 +180,11 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
 
       {/* Zoom Controls */}
       <ZoomControls onZoomIn={zoomIn} onZoomOut={zoomOut} onReset={resetZoom} />
+
+      {/* Bias Legend */}
+      <AnimatePresence>
+        {showBiasOverlay && <BiasLegend enabledMethods={enabledMethods as Set<DetectionMethodId>} />}
+      </AnimatePresence>
 
       {/* Brush Selection Info */}
       {brushSelection && (
