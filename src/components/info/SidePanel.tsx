@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Planet } from '../../types'
+import type { Planet, DetectionMethodId } from '../../types'
 import { PlanetDetailCard } from './PlanetDetailCard'
 import { OccurrenceRateHeatmap, EtaEarthTimeline } from '../charts'
 import { PlanetIcon } from './PlanetIcon'
@@ -26,16 +26,16 @@ const PLANET_TYPES = [
   { id: 'cold-jupiter', name: 'Cold Jupiter', occurrence: '~10%' },
 ]
 
-// Detection method names
-const METHOD_NAMES: Record<string, string> = {
-  'radial-velocity': 'Radial Velocity',
-  'transit-kepler': 'Transit (Kepler)',
-  'transit-other': 'Transit (Other)',
-  microlensing: 'Microlensing',
-  'direct-imaging': 'Direct Imaging',
-  astrometry: 'Astrometry',
-  other: 'Other',
-}
+// Detection methods - terminology from "The Demographics of Exoplanets" paper
+const DETECTION_METHODS: { id: DetectionMethodId; name: string }[] = [
+  { id: 'radial-velocity', name: 'Radial Velocity' },
+  { id: 'transit-kepler', name: 'Transit (Kepler/K2)' },
+  { id: 'transit-other', name: 'Transit (TESS/Other)' },
+  { id: 'microlensing', name: 'Microlensing' },
+  { id: 'direct-imaging', name: 'Direct Imaging' },
+  { id: 'astrometry', name: 'Astrometry' },
+  { id: 'other', name: 'Other Methods' },
+]
 
 export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -46,6 +46,11 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
   // Planet type filtering from store
   const togglePlanetType = useVizStore((s) => s.togglePlanetType)
   const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
+
+  // Detection method filtering from store
+  const toggleMethod = useVizStore((s) => s.toggleMethod)
+  const enabledMethods = useVizStore((s) => s.enabledMethods)
+  const enableAllMethods = useVizStore((s) => s.enableAllMethods)
 
   // Auto-switch to details tab when a planet is selected
   if (selectedPlanet && activeTab !== 'details') {
@@ -60,6 +65,12 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
     } else {
       playToggleOn()
     }
+  }
+
+  const handleMethodClick = (methodId: DetectionMethodId) => {
+    const wasEnabled = enabledMethods.has(methodId)
+    toggleMethod(methodId)
+    wasEnabled ? playToggleOff() : playToggleOn()
   }
 
   // Compute stats
@@ -89,7 +100,6 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
     }
   }, [planets])
 
-  const sortedMethods = Object.entries(stats.byMethod).sort(([, a], [, b]) => b - a)
   const hasActiveFilter = enabledPlanetTypes.size > 0
 
   return (
@@ -352,35 +362,61 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
                       )}
                     </div>
 
-                    {/* 4. By Detection Method */}
+                    {/* 4. By Detection Method (clickable filter) */}
                     <div className="px-4 py-3">
                       <div className="text-xs uppercase tracking-wide opacity-50 mb-2">
-                        By Detection Method
+                        Detection Method <span className="normal-case opacity-60">(click to filter)</span>
                       </div>
-                      <div className="space-y-1.5">
-                        {sortedMethods.slice(0, 6).map(([method, count]) => (
-                          <div key={method} className="flex items-center gap-2">
-                            <div
-                              className="w-2 h-2 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: METHOD_COLORS[method] || '#666' }}
-                            />
-                            <span className="text-xs flex-1">{METHOD_NAMES[method] || method}</span>
-                            <span className="text-xs font-medium">{count}</span>
-                            <div
-                              className="w-12 h-1.5 rounded-full overflow-hidden"
-                              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                      <div className="space-y-1">
+                        {DETECTION_METHODS.map((method) => {
+                          const count = stats.byMethod[method.id] || 0
+                          const isEnabled = enabledMethods.has(method.id)
+                          const color = METHOD_COLORS[method.id] || '#666'
+
+                          return (
+                            <button
+                              key={method.id}
+                              onClick={() => handleMethodClick(method.id)}
+                              className="w-full flex items-center gap-2 px-2 py-1.5 rounded transition-all hover:bg-white/5"
+                              style={{
+                                opacity: isEnabled ? 1 : 0.3,
+                                backgroundColor: isEnabled ? `${color}15` : 'transparent',
+                                border: `1px solid ${isEnabled ? `${color}40` : 'transparent'}`,
+                              }}
                             >
                               <div
-                                className="h-full rounded-full"
-                                style={{
-                                  width: `${(count / stats.exoplanets) * 100}%`,
-                                  backgroundColor: METHOD_COLORS[method] || '#666',
-                                }}
+                                className="w-2 h-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: color }}
                               />
-                            </div>
-                          </div>
-                        ))}
+                              <span className="text-xs flex-1 text-left">{method.name}</span>
+                              <span className="text-xs font-medium">{count}</span>
+                              <div
+                                className="w-12 h-1.5 rounded-full overflow-hidden flex-shrink-0"
+                                style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                              >
+                                <div
+                                  className="h-full rounded-full"
+                                  style={{
+                                    width: `${(count / stats.exoplanets) * 100}%`,
+                                    backgroundColor: color,
+                                  }}
+                                />
+                              </div>
+                            </button>
+                          )
+                        })}
                       </div>
+                      {enabledMethods.size < DETECTION_METHODS.length && (
+                        <button
+                          onClick={() => {
+                            enableAllMethods()
+                            playToggleOn()
+                          }}
+                          className="mt-2 text-xs opacity-60 hover:opacity-100 underline"
+                        >
+                          Clear filter
+                        </button>
+                      )}
                     </div>
 
                     {/* 5. Parameter Ranges */}
