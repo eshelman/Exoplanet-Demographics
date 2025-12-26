@@ -1,6 +1,6 @@
 # Exoplanet Dataset Statistics
 
-Generated: 2025-12-26 12:19:32
+Generated: 2025-12-26 17:27:34
 
 ## Overview
 
@@ -29,12 +29,11 @@ Generated: 2025-12-26 12:19:32
 | Type | Count | Percentage |
 |------|-------|------------|
 | neptune-like | 1,705 | 29.9% |
-| super-earth | 1,243 | 21.8% |
+| super-earth | 1,306 | 22.9% |
 | cold-jupiter | 893 | 15.7% |
 | hot-jupiter | 671 | 11.8% |
-| sub-neptune | 594 | 10.4% |
-| rocky | 458 | 8.0% |
-| ultra-short-period | 126 | 2.2% |
+| sub-neptune | 595 | 10.4% |
+| rocky | 520 | 9.1% |
 | unknown | 8 | 0.1% |
 
 ## Top Discovery Facilities

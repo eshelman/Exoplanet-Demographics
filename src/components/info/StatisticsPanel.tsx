@@ -33,7 +33,6 @@ const TYPE_NAMES: Record<string, string> = {
   'neptune-like': 'Neptune-like',
   'hot-jupiter': 'Hot Jupiter',
   'cold-jupiter': 'Cold Jupiter',
-  'ultra-short-period': 'Ultra-Short',
 }
 
 export function StatisticsPanel({ planets, title = 'Statistics' }: StatisticsPanelProps) {

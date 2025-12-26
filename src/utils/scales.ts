@@ -49,8 +49,6 @@ export const PLANET_TYPE_COLORS: Record<string, string> = {
   'neptune-like': '#1E90FF',
   'hot-jupiter': '#FF6347',
   'cold-jupiter': '#CD5C5C',
-  'brown-dwarf': '#8B0000',
-  'ultra-short-period': '#FF4500',
 }
 
 export const SOLAR_SYSTEM_COLOR = '#FFD700'

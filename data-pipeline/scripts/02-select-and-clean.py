@@ -102,7 +102,7 @@ def map_detection_method(method, facility):
 
 
 def classify_planet(mass, radius, period):
-    """Classify planet type based on mass, radius, and period."""
+    """Classify planet type based on mass and radius (compositional types only)."""
     # If we have neither mass nor radius, can't classify
     if mass is None and radius is None:
         return 'unknown'
@@ -121,10 +121,6 @@ def classify_planet(mass, radius, period):
     if m is None:
         return 'unknown'
 
-    # Ultra-short period: P < 1 day and small
-    if period and period < 1 and m < 10:
-        return 'ultra-short-period'
-
     # Hot Jupiter: massive + short period
     if m > 100 and period and period < 10:
         return 'hot-jupiter'
@@ -141,7 +137,7 @@ def classify_planet(mass, radius, period):
     if r and r >= 2 and r < 4:
         return 'sub-neptune'
 
-    # Super-Earth: 2-10 Earth masses, smaller radius
+    # Super-Earth: 2-10 Earth masses
     if m >= 2 and m < 10:
         return 'super-earth'
 
