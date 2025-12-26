@@ -109,8 +109,16 @@ function App() {
       >
         <div className="flex justify-between">
           <span>
-            Data: NASA Exoplanet Archive | Based on "The Demographics of Exoplanets" (Gaudi,
-            Christiansen & Meyer 2020)
+            Data: NASA Exoplanet Archive | Based on{' '}
+            <a
+              href="https://arxiv.org/abs/2011.04703"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:opacity-80"
+            >
+              The Demographics of Exoplanets
+            </a>{' '}
+            (Gaudi, Christiansen & Meyer 2020)
           </span>
           <span>{allPlanets.length} planets displayed</span>
         </div>

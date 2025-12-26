@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Interactive web visualization for exploring exoplanet demographics, based on "The Demographics of Exoplanets" (Gaudi, Christiansen & Meyer 2020). Transforms academic findings into an explorable experience showing planet distributions, detection biases, and occurrence rates.
+Interactive web visualization for exploring exoplanet demographics, based on ["The Demographics of Exoplanets"](https://arxiv.org/abs/2011.04703) (Gaudi, Christiansen & Meyer 2020). Transforms academic findings into an explorable experience showing planet distributions, detection biases, and occurrence rates.
 
 ## Tech Stack
 

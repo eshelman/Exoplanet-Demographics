@@ -6,7 +6,7 @@
 ## 1. Project Overview
 
 ### 1.1 Vision Statement
-Create an interactive web visualization that transforms the academic findings from "The Demographics of Exoplanets" (Gaudi, Christiansen & Meyer 2020) into an engaging, explorable experience. Users should be able to:
+Create an interactive web visualization that transforms the academic findings from ["The Demographics of Exoplanets"](https://arxiv.org/abs/2011.04703) (Gaudi, Christiansen & Meyer 2020) into an engaging, explorable experience. Users should be able to:
 
 - **Discover** the diversity and distribution of known exoplanets
 - **Understand** detection biases that shape our observed catalog
