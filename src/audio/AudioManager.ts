@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { AmbientSoundscape } from './AmbientSoundscape'
 import { PlanetSonification } from './PlanetSonification'
+import { UISounds } from './UISounds'
 import type { DetectionMethodId, Planet } from '../types'
 
 export interface AudioSettings {
@@ -59,6 +60,9 @@ class AudioManagerClass {
 
   // Planet sonification
   private planetSonification: PlanetSonification | null = null
+
+  // UI sounds
+  private uiSounds: UISounds | null = null
 
   private constructor() {
     // Load settings from localStorage
@@ -155,6 +159,10 @@ class AudioManagerClass {
       this.planetSonification = new PlanetSonification(this.sonificationGain)
       await this.planetSonification.init()
       this.planetSonification.setComplexity(this.settings.sonificationComplexity)
+
+      // Create UI sounds
+      this.uiSounds = new UISounds(this.uiGain)
+      await this.uiSounds.init()
 
       this.initialized = true
       console.log('[AudioManager] Initialized successfully')
@@ -303,42 +311,122 @@ class AudioManagerClass {
     this.planetSonification?.setComplexity(complexity)
   }
 
-  // ============ Sound Playback Methods ============
+  // ============ UI Sound Playback Methods ============
 
   /**
-   * Play a UI click sound
+   * Play a UI click sound - gentle mechanical click
    */
   playClick(): void {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
-    this.uiSynth?.triggerAttackRelease('C5', '32n', undefined, 0.3)
+    this.uiSounds?.playClick()
   }
 
   /**
-   * Play a UI hover sound
+   * Play a UI hover sound - soft breath/air release
    */
   playHover(): void {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
-    this.uiSynth?.triggerAttackRelease('G5', '64n', undefined, 0.1)
+    this.uiSounds?.playHover()
   }
 
   /**
-   * Play a toggle on sound
+   * Play a toggle on sound - rising two-note chime
    */
   playToggleOn(): void {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
-    const now = Tone.now()
-    this.uiSynth?.triggerAttackRelease('C5', '32n', now, 0.2)
-    this.uiSynth?.triggerAttackRelease('E5', '32n', now + 0.05, 0.2)
+    this.uiSounds?.playToggleOn()
   }
 
   /**
-   * Play a toggle off sound
+   * Play a toggle off sound - falling two-note chime
    */
   playToggleOff(): void {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
-    const now = Tone.now()
-    this.uiSynth?.triggerAttackRelease('E5', '32n', now, 0.2)
-    this.uiSynth?.triggerAttackRelease('C5', '32n', now + 0.05, 0.2)
+    this.uiSounds?.playToggleOff()
+  }
+
+  // ============ Navigation Sounds ============
+
+  /**
+   * Start pan sound
+   */
+  startPan(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.startPan()
+  }
+
+  /**
+   * Update pan sound based on velocity
+   */
+  updatePan(velocity: number): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.updatePan(velocity)
+  }
+
+  /**
+   * End pan sound
+   */
+  endPan(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.endPan()
+  }
+
+  /**
+   * Play zoom in sound
+   */
+  playZoomIn(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playZoomIn()
+  }
+
+  /**
+   * Play zoom out sound
+   */
+  playZoomOut(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playZoomOut()
+  }
+
+  // ============ Transition Sounds ============
+
+  /**
+   * Play axis switch sound
+   */
+  playAxisSwitch(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playAxisSwitch()
+  }
+
+  /**
+   * Play view change sound
+   */
+  playViewChange(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playViewChange()
+  }
+
+  /**
+   * Play filter apply sound
+   */
+  playFilterApply(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playFilterApply()
+  }
+
+  /**
+   * Play sidebar open sound
+   */
+  playSidebarOpen(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playSidebarOpen()
+  }
+
+  /**
+   * Play sidebar close sound
+   */
+  playSidebarClose(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.uiSounds?.playSidebarClose()
   }
 
   /**
@@ -513,6 +601,9 @@ class AudioManagerClass {
 
     // Dispose planet sonification
     this.planetSonification?.dispose()
+
+    // Dispose UI sounds
+    this.uiSounds?.dispose()
 
     this.ambientNoise?.stop()
     this.ambientNoise?.dispose()

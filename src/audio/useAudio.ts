@@ -60,11 +60,27 @@ export function useAudio() {
     setSettings(AudioManager.getSettings())
   }, [])
 
-  // Sound playback functions
+  // Basic UI sound playback functions
   const playClick = useCallback(() => AudioManager.playClick(), [])
   const playHover = useCallback(() => AudioManager.playHover(), [])
   const playToggleOn = useCallback(() => AudioManager.playToggleOn(), [])
   const playToggleOff = useCallback(() => AudioManager.playToggleOff(), [])
+
+  // Navigation sounds
+  const startPan = useCallback(() => AudioManager.startPan(), [])
+  const updatePan = useCallback((velocity: number) => AudioManager.updatePan(velocity), [])
+  const endPan = useCallback(() => AudioManager.endPan(), [])
+  const playZoomIn = useCallback(() => AudioManager.playZoomIn(), [])
+  const playZoomOut = useCallback(() => AudioManager.playZoomOut(), [])
+
+  // Transition sounds
+  const playAxisSwitch = useCallback(() => AudioManager.playAxisSwitch(), [])
+  const playViewChange = useCallback(() => AudioManager.playViewChange(), [])
+  const playFilterApply = useCallback(() => AudioManager.playFilterApply(), [])
+  const playSidebarOpen = useCallback(() => AudioManager.playSidebarOpen(), [])
+  const playSidebarClose = useCallback(() => AudioManager.playSidebarClose(), [])
+
+  // Legacy planet sounds (simple)
   const playPlanetHover = useCallback(
     (period: number, radius: number) => AudioManager.playPlanetHover(period, radius),
     []
@@ -73,6 +89,8 @@ export function useAudio() {
     (period: number, radius: number) => AudioManager.playPlanetSelect(period, radius),
     []
   )
+
+  // Narrative sounds
   const playStepAdvance = useCallback(() => AudioManager.playStepAdvance(), [])
   const playStepBack = useCallback(() => AudioManager.playStepBack(), [])
 
@@ -110,13 +128,31 @@ export function useAudio() {
     toggleCategory,
     setComplexity,
 
-    // Sound playback
+    // Basic UI sounds
     playClick,
     playHover,
     playToggleOn,
     playToggleOff,
+
+    // Navigation sounds
+    startPan,
+    updatePan,
+    endPan,
+    playZoomIn,
+    playZoomOut,
+
+    // Transition sounds
+    playAxisSwitch,
+    playViewChange,
+    playFilterApply,
+    playSidebarOpen,
+    playSidebarClose,
+
+    // Legacy planet sounds
     playPlanetHover,
     playPlanetSelect,
+
+    // Narrative sounds
     playStepAdvance,
     playStepBack,
 
