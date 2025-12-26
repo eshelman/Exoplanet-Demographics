@@ -1,7 +1,7 @@
-import { useEffect, useRef, useCallback, type RefObject } from 'react'
+import { useEffect, useRef, useCallback, useState, type RefObject } from 'react'
 import * as d3 from 'd3'
 
-export interface ZoomState {
+export interface ZoomTransform {
   k: number // scale
   x: number // translate x
   y: number // translate y
@@ -9,7 +9,6 @@ export interface ZoomState {
 
 export interface UseZoomOptions {
   scaleExtent?: [number, number]
-  onZoom?: (state: ZoomState) => void
   onZoomStart?: () => void
   onZoomEnd?: () => void
   enabled?: boolean
@@ -22,30 +21,22 @@ const defaultOptions: UseZoomOptions = {
 
 export function useZoom(
   svgRef: RefObject<SVGSVGElement | null>,
-  contentRef: RefObject<SVGGElement | null>,
   options: UseZoomOptions = {}
 ): {
-  zoomState: ZoomState
+  transform: d3.ZoomTransform
   resetZoom: () => void
   zoomIn: () => void
   zoomOut: () => void
 } {
-  const { scaleExtent, onZoom, onZoomStart, onZoomEnd, enabled } = { ...defaultOptions, ...options }
+  const { scaleExtent, onZoomStart, onZoomEnd, enabled } = { ...defaultOptions, ...options }
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
-  const zoomStateRef = useRef<ZoomState>({ k: 1, x: 0, y: 0 })
+  const [transform, setTransform] = useState<d3.ZoomTransform>(d3.zoomIdentity)
 
   const handleZoom = useCallback(
     (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
-      if (!contentRef.current) return
-
-      const { k, x, y } = event.transform
-      zoomStateRef.current = { k, x, y }
-
-      d3.select(contentRef.current).attr('transform', event.transform.toString())
-
-      onZoom?.({ k, x, y })
+      setTransform(event.transform)
     },
-    [contentRef, onZoom]
+    []
   )
 
   useEffect(() => {
@@ -93,7 +84,7 @@ export function useZoom(
   }, [svgRef])
 
   return {
-    zoomState: zoomStateRef.current,
+    transform,
     resetZoom,
     zoomIn,
     zoomOut,

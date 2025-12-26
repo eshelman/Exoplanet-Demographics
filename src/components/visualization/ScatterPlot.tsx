@@ -29,7 +29,6 @@ const MARGIN = {
 export function ScatterPlot({ planets }: ScatterPlotProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
-  const contentRef = useRef<SVGGElement>(null)
   const brushContainerRef = useRef<SVGGElement>(null)
 
   const { width, height, innerWidth, innerHeight } = useDimensions(containerRef, MARGIN)
@@ -63,15 +62,20 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   // Mouse position for tooltip (local state is fine for this)
   const mousePos = useRef<{ x: number; y: number } | null>(null)
 
-  const xScale = useMemo(() => createXScale(xAxis, innerWidth), [xAxis, innerWidth])
-  const yScale = useMemo(() => createYScale(yAxis, innerHeight), [yAxis, innerHeight])
+  // Base scales (unzoomed)
+  const baseXScale = useMemo(() => createXScale(xAxis, innerWidth), [xAxis, innerWidth])
+  const baseYScale = useMemo(() => createYScale(yAxis, innerHeight), [yAxis, innerHeight])
 
-  // Zoom behavior
-  const { resetZoom, zoomIn, zoomOut } = useZoom(svgRef, contentRef, {
+  // Zoom behavior - returns transform state
+  const { transform, resetZoom, zoomIn, zoomOut } = useZoom(svgRef, {
     scaleExtent: [0.5, 20],
     onZoomStart: startPan,
     onZoomEnd: endPan,
   })
+
+  // Apply zoom transform to scales (semantic zoom)
+  const xScale = useMemo(() => transform.rescaleX(baseXScale), [transform, baseXScale])
+  const yScale = useMemo(() => transform.rescaleY(baseYScale), [transform, baseYScale])
 
   // Brush behavior (hold Shift to brush)
   const handleBrushEnd = useCallback(
@@ -130,55 +134,52 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
         style={{ cursor: 'grab' }}
       >
         <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
-          {/* Zoomable/pannable content group */}
-          <g ref={contentRef}>
-            {/* Grid lines behind everything */}
-            <GridLines xScale={xScale} yScale={yScale} width={innerWidth} height={innerHeight} />
+          {/* Clip path for plot area */}
+          <defs>
+            <clipPath id="plot-area">
+              <rect width={innerWidth} height={innerHeight} />
+            </clipPath>
+          </defs>
 
-            {/* Clip path for planets */}
-            <defs>
-              <clipPath id="plot-area">
-                <rect width={innerWidth} height={innerHeight} />
-              </clipPath>
-            </defs>
+          {/* Grid lines behind everything */}
+          <GridLines xScale={xScale} yScale={yScale} width={innerWidth} height={innerHeight} />
 
-            {/* Bias overlay (behind planets, clipped to plot area) */}
-            <AnimatePresence>
-              {showBiasOverlay && (
-                <g clipPath="url(#plot-area)">
-                  <BiasOverlay
-                    xScale={xScale}
-                    yScale={yScale}
-                    width={innerWidth}
-                    height={innerHeight}
-                    xAxisType={xAxis}
-                    yAxisType={yAxis}
-                    enabledMethods={enabledMethods as Set<DetectionMethodId>}
-                    showBlindSpots={true}
-                  />
-                </g>
-              )}
-            </AnimatePresence>
+          {/* Bias overlay (behind planets, clipped to plot area) */}
+          <AnimatePresence>
+            {showBiasOverlay && (
+              <g clipPath="url(#plot-area)">
+                <BiasOverlay
+                  xScale={xScale}
+                  yScale={yScale}
+                  width={innerWidth}
+                  height={innerHeight}
+                  xAxisType={xAxis}
+                  yAxisType={yAxis}
+                  enabledMethods={enabledMethods as Set<DetectionMethodId>}
+                  showBlindSpots={true}
+                />
+              </g>
+            )}
+          </AnimatePresence>
 
-            {/* Planet points */}
-            <g clipPath="url(#plot-area)">
-              <PlanetPoints
-                planets={visiblePlanets}
-                xScale={xScale}
-                yScale={yScale}
-                xAxisType={xAxis}
-                yAxisType={yAxis}
-                onHover={setHoveredPlanet}
-                onSelect={selectPlanet}
-                selectedPlanet={selectedPlanet}
-              />
-            </g>
-
-            {/* Brush container (inside zoomable group) */}
-            <g ref={brushContainerRef} clipPath="url(#plot-area)" />
+          {/* Planet points (clipped to plot area) */}
+          <g clipPath="url(#plot-area)">
+            <PlanetPoints
+              planets={visiblePlanets}
+              xScale={xScale}
+              yScale={yScale}
+              xAxisType={xAxis}
+              yAxisType={yAxis}
+              onHover={setHoveredPlanet}
+              onSelect={selectPlanet}
+              selectedPlanet={selectedPlanet}
+            />
           </g>
 
-          {/* Axes outside zoom group so they stay fixed */}
+          {/* Brush container */}
+          <g ref={brushContainerRef} clipPath="url(#plot-area)" />
+
+          {/* Axes - now use zoomed scales */}
           <Axes
             xScale={xScale}
             yScale={yScale}
