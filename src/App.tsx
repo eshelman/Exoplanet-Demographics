@@ -1,17 +1,18 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ScatterPlot } from './components/visualization'
 import { ControlPanel } from './components/controls'
+import { SidePanel } from './components/info'
 import { loadSolarSystem, generateSampleExoplanets } from './utils'
-import { useVizStore } from './store'
+import { useVizStore, selectVisiblePlanets } from './store'
 import type { Planet } from './types'
 
 function App() {
   const [solarSystem, setSolarSystem] = useState<Planet[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Get selected planet from store for potential side panel display
+  // Get state and actions from store
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
-  const showSolarSystem = useVizStore((s) => s.showSolarSystem)
+  const clearSelection = useVizStore((s) => s.clearSelection)
 
   // Generate sample exoplanets (in production, this would load from API)
   const exoplanets = useMemo(() => generateSampleExoplanets(500), [])
@@ -25,14 +26,9 @@ function App() {
   // Combine all planets - filtering happens in ScatterPlot via store
   const allPlanets = useMemo(() => [...solarSystem, ...exoplanets], [solarSystem, exoplanets])
 
-  // Count visible planets
-  const visibleCount = useMemo(() => {
-    const enabledMethods = useVizStore.getState().enabledMethods
-    return allPlanets.filter((p) => {
-      if (p.isSolarSystem) return showSolarSystem
-      return enabledMethods.has(p.detectionMethod as any)
-    }).length
-  }, [allPlanets, showSolarSystem])
+  // Get visible planets for stats panel
+  const visiblePlanets = useMemo(() => selectVisiblePlanets(allPlanets), [allPlanets])
+  const visibleCount = visiblePlanets.length
 
   if (loading) {
     return (
@@ -64,30 +60,39 @@ function App() {
             </p>
           </div>
 
-          {/* Selected Planet Info */}
-          {selectedPlanet && (
-            <div
-              className="px-4 py-2 rounded"
-              style={{
-                backgroundColor: 'var(--color-background)',
-                border: '1px solid var(--color-accent)',
-              }}
-            >
-              <span className="text-sm" style={{ color: 'var(--color-accent)' }}>
-                Selected: <strong>{selectedPlanet.name}</strong>
-              </span>
-            </div>
-          )}
+          {/* Planet count badge */}
+          <div
+            className="px-3 py-1.5 rounded text-sm"
+            style={{
+              backgroundColor: 'var(--color-background)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: 'var(--color-text)',
+            }}
+          >
+            <span className="opacity-60">Showing </span>
+            <strong style={{ color: 'var(--color-accent)' }}>{visibleCount}</strong>
+            <span className="opacity-60"> planets</span>
+          </div>
         </div>
       </header>
 
       {/* Control Panel */}
       <ControlPanel />
 
-      {/* Main Visualization */}
-      <main className="flex-1 p-4">
-        <ScatterPlot planets={allPlanets} />
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Main Visualization */}
+        <main className="flex-1 p-4 overflow-hidden">
+          <ScatterPlot planets={allPlanets} />
+        </main>
+
+        {/* Side Panel */}
+        <SidePanel
+          selectedPlanet={selectedPlanet}
+          planets={visiblePlanets}
+          onClearSelection={clearSelection}
+        />
+      </div>
 
       {/* Footer */}
       <footer
@@ -111,7 +116,7 @@ function App() {
             </a>{' '}
             (Gaudi, Christiansen & Meyer 2020)
           </span>
-          <span>{visibleCount} planets displayed</span>
+          <span>Click a planet to view details</span>
         </div>
       </footer>
     </div>
