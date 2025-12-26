@@ -1,4 +1,6 @@
 import * as Tone from 'tone'
+import { AmbientSoundscape } from './AmbientSoundscape'
+import type { DetectionMethodId } from '../types'
 
 export interface AudioSettings {
   enabled: boolean
@@ -47,9 +49,12 @@ class AudioManagerClass {
   private planetSynth: Tone.PolySynth | null = null
   private ambientSynth: Tone.Synth | null = null
 
-  // Ambient noise
+  // Ambient noise (legacy - kept for simple ambient)
   private ambientNoise: Tone.Noise | null = null
   private ambientFilter: Tone.Filter | null = null
+
+  // Ambient soundscape
+  private ambientSoundscape: AmbientSoundscape | null = null
 
   private constructor() {
     // Load settings from localStorage
@@ -137,6 +142,10 @@ class AudioManagerClass {
         type: 'brown',
         volume: -30,
       }).connect(this.ambientFilter)
+
+      // Create ambient soundscape
+      this.ambientSoundscape = new AmbientSoundscape(this.ambientGain)
+      await this.ambientSoundscape.init()
 
       this.initialized = true
       console.log('[AudioManager] Initialized successfully')
@@ -243,10 +252,14 @@ class AudioManagerClass {
       if (this.ambientNoise?.state === 'stopped') {
         this.ambientNoise?.start()
       }
+      // Start ambient soundscape
+      this.ambientSoundscape?.start()
     } else {
       if (this.ambientNoise?.state === 'started') {
         this.ambientNoise?.stop()
       }
+      // Stop ambient soundscape
+      this.ambientSoundscape?.stop()
     }
   }
 
@@ -392,6 +405,25 @@ class AudioManagerClass {
     this.uiSynth?.triggerAttackRelease('G4', '16n', now + 0.08, 0.2)
   }
 
+  // ============ Ambient Soundscape Control ============
+
+  /**
+   * Update which detection methods are audible in the ambient soundscape
+   */
+  setEnabledMethods(methods: DetectionMethodId[]): void {
+    if (!this.ambientSoundscape) return
+    this.ambientSoundscape.setEnabledMethods(new Set(methods))
+  }
+
+  /**
+   * Update zoom level for ambient soundscape
+   * @param level 0 = zoomed out (dense ambient), 1 = zoomed in (sparse ambient)
+   */
+  setZoomLevel(level: number): void {
+    if (!this.ambientSoundscape) return
+    this.ambientSoundscape.setZoomLevel(level)
+  }
+
   /**
    * Clean up resources
    */
@@ -399,6 +431,9 @@ class AudioManagerClass {
     if (typeof document !== 'undefined') {
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
     }
+
+    // Dispose ambient soundscape
+    this.ambientSoundscape?.dispose()
 
     this.ambientNoise?.stop()
     this.ambientNoise?.dispose()

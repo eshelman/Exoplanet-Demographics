@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AudioManager, type AudioSettings, DEFAULT_AUDIO_SETTINGS } from './AudioManager'
+import type { DetectionMethodId } from '../types'
 
 /**
  * Hook for integrating audio functionality into React components
@@ -75,6 +76,13 @@ export function useAudio() {
   const playStepAdvance = useCallback(() => AudioManager.playStepAdvance(), [])
   const playStepBack = useCallback(() => AudioManager.playStepBack(), [])
 
+  // Ambient soundscape controls
+  const setEnabledMethods = useCallback(
+    (methods: DetectionMethodId[]) => AudioManager.setEnabledMethods(methods),
+    []
+  )
+  const setZoomLevel = useCallback((level: number) => AudioManager.setZoomLevel(level), [])
+
   return {
     // State
     settings,
@@ -96,5 +104,9 @@ export function useAudio() {
     playPlanetSelect,
     playStepAdvance,
     playStepBack,
+
+    // Ambient soundscape
+    setEnabledMethods,
+    setZoomLevel,
   }
 }
