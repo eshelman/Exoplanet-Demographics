@@ -5,22 +5,25 @@ import { PlanetDetailCard } from './PlanetDetailCard'
 import { StatisticsPanel } from './StatisticsPanel'
 import { OccurrenceRateHeatmap, EtaEarthTimeline, PlanetTypeGallery } from '../charts'
 import { useAudio } from '../../audio'
+import { useVizStore } from '../../store'
 
 interface SidePanelProps {
   selectedPlanet: Planet | null
   planets: Planet[]
   onClearSelection: () => void
-  onFilterByType?: (typeId: string) => void
 }
 
 type TabId = 'details' | 'stats' | 'charts'
 
-export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterByType }: SidePanelProps) {
+export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>(selectedPlanet ? 'details' : 'stats')
-  const [selectedChartType, setSelectedChartType] = useState<string | null>(null)
 
-  const { playSidebarOpen, playSidebarClose, playClick } = useAudio()
+  const { playSidebarOpen, playSidebarClose, playClick, playToggleOn, playToggleOff } = useAudio()
+
+  // Planet type filtering from store
+  const togglePlanetType = useVizStore((s) => s.togglePlanetType)
+  const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
 
   // Auto-switch to details tab when a planet is selected
   if (selectedPlanet && activeTab !== 'details') {
@@ -28,9 +31,20 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
   }
 
   const handleTypeClick = (typeId: string) => {
-    setSelectedChartType(selectedChartType === typeId ? null : typeId)
-    onFilterByType?.(typeId)
+    const wasEnabled = enabledPlanetTypes.size === 0 || enabledPlanetTypes.has(typeId)
+    togglePlanetType(typeId)
+    if (wasEnabled && enabledPlanetTypes.size > 0) {
+      playToggleOff()
+    } else {
+      playToggleOn()
+    }
   }
+
+  // Determine which type is "selected" for visual feedback
+  // If only one type is enabled, that one is selected
+  const selectedChartType = enabledPlanetTypes.size === 1
+    ? Array.from(enabledPlanetTypes)[0]
+    : null
 
   return (
     <motion.div
