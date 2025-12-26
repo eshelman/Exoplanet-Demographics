@@ -3,22 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Planet } from '../../types'
 import { PlanetDetailCard } from './PlanetDetailCard'
 import { StatisticsPanel } from './StatisticsPanel'
+import { OccurrenceRateHeatmap, EtaEarthTimeline, PlanetTypeGallery } from '../charts'
 
 interface SidePanelProps {
   selectedPlanet: Planet | null
   planets: Planet[]
   onClearSelection: () => void
+  onFilterByType?: (typeId: string) => void
 }
 
-type TabId = 'details' | 'stats'
+type TabId = 'details' | 'stats' | 'charts'
 
-export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePanelProps) {
+export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterByType }: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>(selectedPlanet ? 'details' : 'stats')
+  const [selectedChartType, setSelectedChartType] = useState<string | null>(null)
 
   // Auto-switch to details tab when a planet is selected
   if (selectedPlanet && activeTab !== 'details') {
     setActiveTab('details')
+  }
+
+  const handleTypeClick = (typeId: string) => {
+    setSelectedChartType(selectedChartType === typeId ? null : typeId)
+    onFilterByType?.(typeId)
   }
 
   return (
@@ -105,13 +113,13 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
             >
               <button
                 onClick={() => setActiveTab('details')}
-                className="flex-1 px-4 py-3 text-xs font-medium transition-colors relative"
+                className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
                 style={{
                   color: activeTab === 'details' ? 'var(--color-accent)' : 'var(--color-text)',
                   opacity: activeTab === 'details' ? 1 : 0.6,
                 }}
               >
-                Planet Details
+                Details
                 {activeTab === 'details' && (
                   <motion.div
                     layoutId="tab-indicator"
@@ -122,14 +130,31 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
               </button>
               <button
                 onClick={() => setActiveTab('stats')}
-                className="flex-1 px-4 py-3 text-xs font-medium transition-colors relative"
+                className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
                 style={{
                   color: activeTab === 'stats' ? 'var(--color-accent)' : 'var(--color-text)',
                   opacity: activeTab === 'stats' ? 1 : 0.6,
                 }}
               >
-                Statistics
+                Stats
                 {activeTab === 'stats' && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-0.5"
+                    style={{ backgroundColor: 'var(--color-accent)' }}
+                  />
+                )}
+              </button>
+              <button
+                onClick={() => setActiveTab('charts')}
+                className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
+                style={{
+                  color: activeTab === 'charts' ? 'var(--color-accent)' : 'var(--color-text)',
+                  opacity: activeTab === 'charts' ? 1 : 0.6,
+                }}
+              >
+                Charts
+                {activeTab === 'charts' && (
                   <motion.div
                     layoutId="tab-indicator"
                     className="absolute bottom-0 left-0 right-0 h-0.5"
@@ -142,7 +167,7 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
             {/* Tab Content */}
             <div className="flex-1 overflow-y-auto p-4">
               <AnimatePresence mode="wait">
-                {activeTab === 'details' ? (
+                {activeTab === 'details' && (
                   <motion.div
                     key="details"
                     initial={{ opacity: 0, y: 10 }}
@@ -177,7 +202,8 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
                       </div>
                     )}
                   </motion.div>
-                ) : (
+                )}
+                {activeTab === 'stats' && (
                   <motion.div
                     key="stats"
                     initial={{ opacity: 0, y: 10 }}
@@ -186,6 +212,24 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
                     transition={{ duration: 0.2 }}
                   >
                     <StatisticsPanel planets={planets} title="Visible Planets" />
+                  </motion.div>
+                )}
+                {activeTab === 'charts' && (
+                  <motion.div
+                    key="charts"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-4"
+                  >
+                    <PlanetTypeGallery
+                      compact
+                      onTypeClick={handleTypeClick}
+                      selectedType={selectedChartType}
+                    />
+                    <OccurrenceRateHeatmap compact />
+                    <EtaEarthTimeline compact />
                   </motion.div>
                 )}
               </AnimatePresence>
