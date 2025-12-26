@@ -52,48 +52,48 @@
 
 ---
 
-## Phase 3: State Management & Interactivity
+## Phase 3: State Management & Interactivity ✅
 
 ### Zustand Store
-- [ ] View state (xAxis, yAxis, zoomLevel, panOffset)
-- [ ] Filter state (enabledMethods, enabledPlanetTypes, showSolarSystem, showBiasOverlay)
-- [ ] Selection state (selectedPlanet, brushSelection)
-- [ ] Narrative state (narrativeMode, narrativeStep)
-- [ ] Action creators for all state mutations
-- [ ] Selectors for derived data
+- [x] View state (xAxis, yAxis, zoomLevel, panOffset)
+- [x] Filter state (enabledMethods, enabledPlanetTypes, showSolarSystem, showBiasOverlay)
+- [x] Selection state (selectedPlanet, brushSelection)
+- [x] Narrative state (narrativeMode, narrativeStep)
+- [x] Action creators for all state mutations
+- [x] Selectors for derived data
 
 ### Interactions
-- [ ] Hover tooltip on planet points
-- [ ] Click to select planet
-- [ ] Pan via mouse drag
-- [ ] Zoom via scroll wheel / pinch
-- [ ] Brush selection (Shift+drag) for aggregate stats
-- [ ] Animated transitions on state changes
+- [x] Hover tooltip on planet points
+- [x] Click to select planet
+- [x] Pan via mouse drag
+- [x] Zoom via scroll wheel / pinch
+- [x] Brush selection (Shift+drag) for aggregate stats
+- [x] Animated transitions on state changes
 
 ### Axis Switching
-- [ ] Toggle X axis: Period ↔ Semi-major Axis (AU)
-- [ ] Toggle Y axis: Mass ↔ Radius
-- [ ] Smooth animated transitions between views
+- [x] Toggle X axis: Period ↔ Semi-major Axis (AU)
+- [x] Toggle Y axis: Mass ↔ Radius
+- [x] Smooth animated transitions between views
 
 ---
 
-## Phase 4: Controls & Filters
+## Phase 4: Controls & Filters ✅
 
 ### Control Panel Component
-- [ ] Container layout
-- [ ] Axis selector dropdowns
-- [ ] Detection method toggles (checkboxes with colors)
+- [x] Container layout
+- [x] Axis selector dropdowns
+- [x] Detection method toggles (checkboxes with colors)
 - [ ] Planet type filter toggles
-- [ ] Bias overlay toggle button
-- [ ] Solar System visibility toggle
+- [x] Bias overlay toggle button
+- [x] Solar System visibility toggle
 
 ### Detection Method Toggles
-- [ ] Radial Velocity toggle
-- [ ] Transit (Kepler) toggle
-- [ ] Transit (Other) toggle
-- [ ] Microlensing toggle
-- [ ] Direct Imaging toggle
-- [ ] Animate show/hide on toggle
+- [x] Radial Velocity toggle
+- [x] Transit (Kepler) toggle
+- [x] Transit (Other) toggle
+- [x] Microlensing toggle
+- [x] Direct Imaging toggle
+- [x] Animate show/hide on toggle
 
 ---
 

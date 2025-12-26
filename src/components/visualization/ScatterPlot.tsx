@@ -1,21 +1,18 @@
-import { useRef, useMemo, useState, useCallback } from 'react'
+import { useRef, useMemo, useCallback } from 'react'
 import { useDimensions } from '../../hooks/useDimensions'
 import { useZoom } from '../../hooks/useZoom'
 import { useBrush } from '../../hooks/useBrush'
+import { useVizStore, selectVisiblePlanets } from '../../store'
 import { createXScale, createYScale } from '../../utils/scales'
 import { Axes } from './Axes'
 import { GridLines } from './GridLines'
 import { PlanetPoints } from './PlanetPoints'
 import { Tooltip } from './Tooltip'
 import { ZoomControls } from './ZoomControls'
-import type { Planet, XAxisType, YAxisType, BoundingBox } from '../../types'
+import type { Planet, BoundingBox } from '../../types'
 
 interface ScatterPlotProps {
   planets: Planet[]
-  xAxisType?: XAxisType
-  yAxisType?: YAxisType
-  onPlanetSelect?: (planet: Planet) => void
-  onBrushSelection?: (selection: BoundingBox | null) => void
 }
 
 const MARGIN = {
@@ -25,13 +22,7 @@ const MARGIN = {
   left: 70,
 }
 
-export function ScatterPlot({
-  planets,
-  xAxisType = 'period',
-  yAxisType = 'mass',
-  onPlanetSelect,
-  onBrushSelection,
-}: ScatterPlotProps) {
+export function ScatterPlot({ planets }: ScatterPlotProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const contentRef = useRef<SVGGElement>(null)
@@ -39,13 +30,26 @@ export function ScatterPlot({
 
   const { width, height, innerWidth, innerHeight } = useDimensions(containerRef, MARGIN)
 
-  const [hoveredPlanet, setHoveredPlanet] = useState<Planet | null>(null)
-  const [selectedPlanet, setSelectedPlanet] = useState<Planet | null>(null)
-  const [mousePos, setMousePos] = useState<{ x: number; y: number } | null>(null)
-  const [brushSelection, setBrushSelection] = useState<BoundingBox | null>(null)
+  // Get state from store
+  const xAxis = useVizStore((s) => s.xAxis)
+  const yAxis = useVizStore((s) => s.yAxis)
+  const hoveredPlanet = useVizStore((s) => s.hoveredPlanet)
+  const selectedPlanet = useVizStore((s) => s.selectedPlanet)
+  const brushSelection = useVizStore((s) => s.brushSelection)
 
-  const xScale = useMemo(() => createXScale(xAxisType, innerWidth), [xAxisType, innerWidth])
-  const yScale = useMemo(() => createYScale(yAxisType, innerHeight), [yAxisType, innerHeight])
+  // Get actions from store
+  const setHoveredPlanet = useVizStore((s) => s.setHoveredPlanet)
+  const selectPlanet = useVizStore((s) => s.selectPlanet)
+  const setBrushSelection = useVizStore((s) => s.setBrushSelection)
+
+  // Filter planets based on store state
+  const visiblePlanets = useMemo(() => selectVisiblePlanets(planets), [planets])
+
+  // Mouse position for tooltip (local state is fine for this)
+  const mousePos = useRef<{ x: number; y: number } | null>(null)
+
+  const xScale = useMemo(() => createXScale(xAxis, innerWidth), [xAxis, innerWidth])
+  const yScale = useMemo(() => createYScale(yAxis, innerHeight), [yAxis, innerHeight])
 
   // Zoom behavior
   const { resetZoom, zoomIn, zoomOut } = useZoom(svgRef, contentRef, {
@@ -56,48 +60,34 @@ export function ScatterPlot({
   const handleBrushEnd = useCallback(
     (selection: BoundingBox | null) => {
       setBrushSelection(selection)
-      onBrushSelection?.(selection)
     },
-    [onBrushSelection]
+    [setBrushSelection]
   )
 
-  const { clearBrush } = useBrush(
-    brushContainerRef,
-    xScale,
-    yScale,
-    innerWidth,
-    innerHeight,
-    {
-      onBrushEnd: handleBrushEnd,
-      modifierKey: 'shift',
-    }
-  )
+  const { clearBrush } = useBrush(brushContainerRef, xScale, yScale, innerWidth, innerHeight, {
+    onBrushEnd: handleBrushEnd,
+    modifierKey: 'shift',
+  })
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
-    setMousePos({
+    mousePos.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
-    })
-  }
-
-  const handlePlanetSelect = (planet: Planet) => {
-    setSelectedPlanet(planet)
-    onPlanetSelect?.(planet)
+    }
   }
 
   const handleClearSelection = () => {
     clearBrush()
     setBrushSelection(null)
-    onBrushSelection?.(null)
   }
 
   // Count planets in brush selection
   const selectedCount = useMemo(() => {
     if (!brushSelection) return 0
-    return planets.filter((p) => {
-      const x = xAxisType === 'period' ? p.period : p.separation
-      const y = yAxisType === 'mass' ? p.mass : p.radius
+    return visiblePlanets.filter((p) => {
+      const x = xAxis === 'period' ? p.period : p.separation
+      const y = yAxis === 'mass' ? p.mass : p.radius
       if (x === undefined || y === undefined) return false
       return (
         x >= brushSelection.x.min &&
@@ -106,7 +96,7 @@ export function ScatterPlot({
         y <= brushSelection.y.max
       )
     }).length
-  }, [brushSelection, planets, xAxisType, yAxisType])
+  }, [brushSelection, visiblePlanets, xAxis, yAxis])
 
   return (
     <div
@@ -119,7 +109,7 @@ export function ScatterPlot({
         width={width}
         height={height}
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => setMousePos(null)}
+        onMouseLeave={() => setHoveredPlanet(null)}
         style={{ cursor: 'grab' }}
       >
         <g transform={`translate(${MARGIN.left}, ${MARGIN.top})`}>
@@ -138,13 +128,13 @@ export function ScatterPlot({
             {/* Planet points */}
             <g clipPath="url(#plot-area)">
               <PlanetPoints
-                planets={planets}
+                planets={visiblePlanets}
                 xScale={xScale}
                 yScale={yScale}
-                xAxisType={xAxisType}
-                yAxisType={yAxisType}
+                xAxisType={xAxis}
+                yAxisType={yAxis}
                 onHover={setHoveredPlanet}
-                onSelect={handlePlanetSelect}
+                onSelect={selectPlanet}
                 selectedPlanet={selectedPlanet}
               />
             </g>
@@ -159,8 +149,8 @@ export function ScatterPlot({
             yScale={yScale}
             width={innerWidth}
             height={innerHeight}
-            xAxisType={xAxisType}
-            yAxisType={yAxisType}
+            xAxisType={xAxis}
+            yAxisType={yAxis}
           />
         </g>
       </svg>
@@ -198,8 +188,8 @@ export function ScatterPlot({
       )}
 
       {/* Tooltip */}
-      {hoveredPlanet && mousePos && (
-        <Tooltip planet={hoveredPlanet} x={mousePos.x} y={mousePos.y} />
+      {hoveredPlanet && mousePos.current && (
+        <Tooltip planet={hoveredPlanet} x={mousePos.current.x} y={mousePos.current.y} />
       )}
 
       {/* Instructions hint */}

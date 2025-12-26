@@ -1,16 +1,20 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ScatterPlot } from './components/visualization'
+import { ControlPanel } from './components/controls'
 import { loadSolarSystem, generateSampleExoplanets } from './utils'
-import type { Planet, XAxisType, YAxisType } from './types'
+import { useVizStore } from './store'
+import type { Planet } from './types'
 
 function App() {
   const [solarSystem, setSolarSystem] = useState<Planet[]>([])
   const [loading, setLoading] = useState(true)
-  const [xAxis, setXAxis] = useState<XAxisType>('period')
-  const [yAxis, setYAxis] = useState<YAxisType>('mass')
+
+  // Get selected planet from store for potential side panel display
+  const selectedPlanet = useVizStore((s) => s.selectedPlanet)
+  const showSolarSystem = useVizStore((s) => s.showSolarSystem)
 
   // Generate sample exoplanets (in production, this would load from API)
-  const exoplanets = useMemo(() => generateSampleExoplanets(300), [])
+  const exoplanets = useMemo(() => generateSampleExoplanets(500), [])
 
   useEffect(() => {
     loadSolarSystem()
@@ -18,7 +22,17 @@ function App() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Combine all planets - filtering happens in ScatterPlot via store
   const allPlanets = useMemo(() => [...solarSystem, ...exoplanets], [solarSystem, exoplanets])
+
+  // Count visible planets
+  const visibleCount = useMemo(() => {
+    const enabledMethods = useVizStore.getState().enabledMethods
+    return allPlanets.filter((p) => {
+      if (p.isSolarSystem) return showSolarSystem
+      return enabledMethods.has(p.detectionMethod as any)
+    }).length
+  }, [allPlanets, showSolarSystem])
 
   if (loading) {
     return (
@@ -50,52 +64,29 @@ function App() {
             </p>
           </div>
 
-          {/* Axis Controls */}
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <label className="text-sm opacity-70" style={{ color: 'var(--color-text)' }}>
-                X Axis:
-              </label>
-              <select
-                value={xAxis}
-                onChange={(e) => setXAxis(e.target.value as XAxisType)}
-                className="px-3 py-1.5 rounded text-sm"
-                style={{
-                  backgroundColor: 'var(--color-background)',
-                  color: 'var(--color-text)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                }}
-              >
-                <option value="period">Orbital Period</option>
-                <option value="separation">Semi-major Axis</option>
-              </select>
+          {/* Selected Planet Info */}
+          {selectedPlanet && (
+            <div
+              className="px-4 py-2 rounded"
+              style={{
+                backgroundColor: 'var(--color-background)',
+                border: '1px solid var(--color-accent)',
+              }}
+            >
+              <span className="text-sm" style={{ color: 'var(--color-accent)' }}>
+                Selected: <strong>{selectedPlanet.name}</strong>
+              </span>
             </div>
-
-            <div className="flex items-center gap-2">
-              <label className="text-sm opacity-70" style={{ color: 'var(--color-text)' }}>
-                Y Axis:
-              </label>
-              <select
-                value={yAxis}
-                onChange={(e) => setYAxis(e.target.value as YAxisType)}
-                className="px-3 py-1.5 rounded text-sm"
-                style={{
-                  backgroundColor: 'var(--color-background)',
-                  color: 'var(--color-text)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                }}
-              >
-                <option value="mass">Planet Mass</option>
-                <option value="radius">Planet Radius</option>
-              </select>
-            </div>
-          </div>
+          )}
         </div>
       </header>
 
+      {/* Control Panel */}
+      <ControlPanel />
+
       {/* Main Visualization */}
       <main className="flex-1 p-4">
-        <ScatterPlot planets={allPlanets} xAxisType={xAxis} yAxisType={yAxis} />
+        <ScatterPlot planets={allPlanets} />
       </main>
 
       {/* Footer */}
@@ -120,7 +111,7 @@ function App() {
             </a>{' '}
             (Gaudi, Christiansen & Meyer 2020)
           </span>
-          <span>{allPlanets.length} planets displayed</span>
+          <span>{visibleCount} planets displayed</span>
         </div>
       </footer>
     </div>
