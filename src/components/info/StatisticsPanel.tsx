@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 import type { Planet } from '../../types'
 import { METHOD_COLORS, PLANET_TYPE_COLORS } from '../../utils/scales'
+import { useVizStore } from '../../store'
+import { useAudio } from '../../audio'
 
 interface StatisticsPanelProps {
   planets: Planet[]
@@ -35,6 +37,20 @@ const TYPE_NAMES: Record<string, string> = {
 }
 
 export function StatisticsPanel({ planets, title = 'Statistics' }: StatisticsPanelProps) {
+  const togglePlanetType = useVizStore((s) => s.togglePlanetType)
+  const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
+  const { playToggleOn, playToggleOff } = useAudio()
+
+  const handleTypeClick = (type: string) => {
+    const wasEnabled = enabledPlanetTypes.size === 0 || enabledPlanetTypes.has(type)
+    togglePlanetType(type)
+    if (wasEnabled && enabledPlanetTypes.size > 0) {
+      playToggleOff()
+    } else {
+      playToggleOn()
+    }
+  }
+
   const stats = useMemo(() => {
     // Filter out Solar System planets for exoplanet stats
     const exoplanets = planets.filter((p) => !p.isSolarSystem)
@@ -155,33 +171,55 @@ export function StatisticsPanel({ planets, title = 'Statistics' }: StatisticsPan
       {/* By Planet Type */}
       <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
         <div className="text-xs uppercase tracking-wide opacity-50 mb-2" style={{ color: 'var(--color-text)' }}>
-          By Planet Type
+          By Planet Type <span className="normal-case opacity-60">(click to filter)</span>
         </div>
-        <div className="space-y-2">
-          {sortedTypes.slice(0, 6).map(([type, count]) => (
-            <div key={type} className="flex items-center gap-2">
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: PLANET_TYPE_COLORS[type] || '#666' }}
-              />
-              <span className="text-xs flex-1" style={{ color: 'var(--color-text)' }}>
-                {TYPE_NAMES[type] || type}
-              </span>
-              <span className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                {count}
-              </span>
-              <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+        <div className="space-y-1">
+          {sortedTypes.slice(0, 7).map(([type, count]) => {
+            // When no types selected, all are "enabled". Otherwise check the set.
+            const isEnabled = enabledPlanetTypes.size === 0 || enabledPlanetTypes.has(type)
+            return (
+              <button
+                key={type}
+                onClick={() => handleTypeClick(type)}
+                className="w-full flex items-center gap-2 px-2 py-1 rounded transition-all hover:bg-white/5"
+                style={{ opacity: isEnabled ? 1 : 0.3 }}
+              >
                 <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${(count / stats.exoplanets) * 100}%`,
-                    backgroundColor: PLANET_TYPE_COLORS[type] || '#666',
-                  }}
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: PLANET_TYPE_COLORS[type] || '#666' }}
                 />
-              </div>
-            </div>
-          ))}
+                <span className="text-xs flex-1 text-left" style={{ color: 'var(--color-text)' }}>
+                  {TYPE_NAMES[type] || type}
+                </span>
+                <span className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
+                  {count}
+                </span>
+                <div className="w-16 h-1.5 rounded-full overflow-hidden flex-shrink-0" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(count / stats.exoplanets) * 100}%`,
+                      backgroundColor: PLANET_TYPE_COLORS[type] || '#666',
+                    }}
+                  />
+                </div>
+              </button>
+            )
+          })}
         </div>
+        {enabledPlanetTypes.size > 0 && (
+          <button
+            onClick={() => {
+              // Clear all filters by toggling each enabled type off
+              enabledPlanetTypes.forEach((type) => togglePlanetType(type))
+              playToggleOn()
+            }}
+            className="mt-2 text-xs opacity-60 hover:opacity-100 underline"
+            style={{ color: 'var(--color-text)' }}
+          >
+            Clear filter
+          </button>
+        )}
       </div>
 
       {/* Parameter Ranges */}
