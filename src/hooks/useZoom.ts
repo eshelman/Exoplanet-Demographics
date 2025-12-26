@@ -10,6 +10,8 @@ export interface ZoomState {
 export interface UseZoomOptions {
   scaleExtent?: [number, number]
   onZoom?: (state: ZoomState) => void
+  onZoomStart?: () => void
+  onZoomEnd?: () => void
   enabled?: boolean
 }
 
@@ -28,7 +30,7 @@ export function useZoom(
   zoomIn: () => void
   zoomOut: () => void
 } {
-  const { scaleExtent, onZoom, enabled } = { ...defaultOptions, ...options }
+  const { scaleExtent, onZoom, onZoomStart, onZoomEnd, enabled } = { ...defaultOptions, ...options }
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
   const zoomStateRef = useRef<ZoomState>({ k: 1, x: 0, y: 0 })
 
@@ -54,7 +56,9 @@ export function useZoom(
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent(scaleExtent!)
+      .on('start', () => onZoomStart?.())
       .on('zoom', handleZoom)
+      .on('end', () => onZoomEnd?.())
 
     zoomRef.current = zoom
     svg.call(zoom)
@@ -65,7 +69,7 @@ export function useZoom(
     return () => {
       svg.on('.zoom', null)
     }
-  }, [svgRef, enabled, scaleExtent, handleZoom])
+  }, [svgRef, enabled, scaleExtent, handleZoom, onZoomStart, onZoomEnd])
 
   const resetZoom = useCallback(() => {
     if (!svgRef.current || !zoomRef.current) return

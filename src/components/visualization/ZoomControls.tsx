@@ -1,3 +1,5 @@
+import { useAudio } from '../../audio'
+
 interface ZoomControlsProps {
   onZoomIn: () => void
   onZoomOut: () => void
@@ -5,6 +7,8 @@ interface ZoomControlsProps {
 }
 
 export function ZoomControls({ onZoomIn, onZoomOut, onReset }: ZoomControlsProps) {
+  const { playZoomIn, playZoomOut, playClick } = useAudio()
+
   const buttonStyle = {
     backgroundColor: 'var(--color-background)',
     color: 'var(--color-text)',
@@ -14,7 +18,10 @@ export function ZoomControls({ onZoomIn, onZoomOut, onReset }: ZoomControlsProps
   return (
     <div className="absolute top-4 right-4 flex flex-col gap-1">
       <button
-        onClick={onZoomIn}
+        onClick={() => {
+          onZoomIn()
+          playZoomIn()
+        }}
         className="w-8 h-8 rounded flex items-center justify-center text-lg hover:opacity-80 transition-opacity"
         style={buttonStyle}
         title="Zoom in"
@@ -22,7 +29,10 @@ export function ZoomControls({ onZoomIn, onZoomOut, onReset }: ZoomControlsProps
         +
       </button>
       <button
-        onClick={onZoomOut}
+        onClick={() => {
+          onZoomOut()
+          playZoomOut()
+        }}
         className="w-8 h-8 rounded flex items-center justify-center text-lg hover:opacity-80 transition-opacity"
         style={buttonStyle}
         title="Zoom out"
@@ -30,7 +40,10 @@ export function ZoomControls({ onZoomIn, onZoomOut, onReset }: ZoomControlsProps
         −
       </button>
       <button
-        onClick={onReset}
+        onClick={() => {
+          onReset()
+          playClick()
+        }}
         className="w-8 h-8 rounded flex items-center justify-center text-xs hover:opacity-80 transition-opacity mt-1"
         style={buttonStyle}
         title="Reset view"

@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { useVizStore } from '../../store'
+import { useAudio } from '../../audio'
 import { METHOD_COLORS, PLANET_TYPE_COLORS } from '../../utils/scales'
 import type { DetectionMethodId, XAxisType, YAxisType } from '../../types'
 
-const DETECTION_METHODS: { id: DetectionMethodId; name: string }[] = [
-  { id: 'radial-velocity', name: 'Radial Velocity' },
-  { id: 'transit-kepler', name: 'Transit (Kepler)' },
-  { id: 'transit-other', name: 'Transit (Other)' },
-  { id: 'microlensing', name: 'Microlensing' },
-  { id: 'direct-imaging', name: 'Direct Imaging' },
-  { id: 'astrometry', name: 'Astrometry' },
+const DETECTION_METHODS: { id: DetectionMethodId; name: string; shortName: string }[] = [
+  { id: 'radial-velocity', name: 'Radial Velocity', shortName: 'Radial' },
+  { id: 'transit-kepler', name: 'Transit (Kepler)', shortName: 'Kepler' },
+  { id: 'transit-other', name: 'Transit (TESS)', shortName: 'TESS' },
+  { id: 'microlensing', name: 'Microlensing', shortName: 'Microlensing' },
+  { id: 'direct-imaging', name: 'Direct Imaging', shortName: 'Direct' },
+  { id: 'astrometry', name: 'Astrometry', shortName: 'Astrometry' },
 ]
 
 const PLANET_TYPES: { id: string; name: string }[] = [
@@ -24,6 +25,9 @@ const PLANET_TYPES: { id: string; name: string }[] = [
 
 export function ControlPanel() {
   const [showTypeDropdown, setShowTypeDropdown] = useState(false)
+
+  // Audio
+  const { playClick, playToggleOn, playToggleOff, playAxisSwitch } = useAudio()
 
   const xAxis = useVizStore((s) => s.xAxis)
   const yAxis = useVizStore((s) => s.yAxis)
@@ -65,7 +69,10 @@ export function ControlPanel() {
           </label>
           <select
             value={xAxis}
-            onChange={(e) => setXAxis(e.target.value as XAxisType)}
+            onChange={(e) => {
+              setXAxis(e.target.value as XAxisType)
+              playAxisSwitch()
+            }}
             className="px-2 py-1 rounded text-sm"
             style={selectStyle}
           >
@@ -80,7 +87,10 @@ export function ControlPanel() {
           </label>
           <select
             value={yAxis}
-            onChange={(e) => setYAxis(e.target.value as YAxisType)}
+            onChange={(e) => {
+              setYAxis(e.target.value as YAxisType)
+              playAxisSwitch()
+            }}
             className="px-2 py-1 rounded text-sm"
             style={selectStyle}
           >
@@ -101,7 +111,11 @@ export function ControlPanel() {
         {DETECTION_METHODS.map((method) => (
           <button
             key={method.id}
-            onClick={() => toggleMethod(method.id)}
+            onClick={() => {
+              const wasEnabled = enabledMethods.has(method.id)
+              toggleMethod(method.id)
+              wasEnabled ? playToggleOff() : playToggleOn()
+            }}
             className="px-2 py-1 rounded text-xs transition-opacity"
             style={{
               backgroundColor: enabledMethods.has(method.id)
@@ -113,18 +127,24 @@ export function ControlPanel() {
             }}
             title={method.name}
           >
-            {method.name.split(' ')[0]}
+            {method.shortName}
           </button>
         ))}
         <button
-          onClick={enableAllMethods}
+          onClick={() => {
+            enableAllMethods()
+            playClick()
+          }}
           className="px-2 py-1 rounded text-xs opacity-60 hover:opacity-100"
           style={{ color: 'var(--color-text)' }}
         >
           All
         </button>
         <button
-          onClick={disableAllMethods}
+          onClick={() => {
+            disableAllMethods()
+            playClick()
+          }}
           className="px-2 py-1 rounded text-xs opacity-60 hover:opacity-100"
           style={{ color: 'var(--color-text)' }}
         >
@@ -138,7 +158,10 @@ export function ControlPanel() {
       {/* Planet Type Filter Dropdown */}
       <div className="relative">
         <button
-          onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+          onClick={() => {
+            setShowTypeDropdown(!showTypeDropdown)
+            playClick()
+          }}
           className="px-3 py-1 rounded text-sm flex items-center gap-2"
           style={{
             backgroundColor: typeFilterActive ? 'var(--color-accent)' : 'transparent',
@@ -172,7 +195,11 @@ export function ControlPanel() {
                 <input
                   type="checkbox"
                   checked={enabledPlanetTypes.has(type.id)}
-                  onChange={() => togglePlanetType(type.id)}
+                  onChange={() => {
+                    const wasEnabled = enabledPlanetTypes.has(type.id)
+                    togglePlanetType(type.id)
+                    wasEnabled ? playToggleOff() : playToggleOn()
+                  }}
                   className="rounded"
                 />
                 <span
@@ -214,7 +241,10 @@ export function ControlPanel() {
           <input
             type="checkbox"
             checked={showSolarSystem}
-            onChange={toggleSolarSystem}
+            onChange={() => {
+              toggleSolarSystem()
+              showSolarSystem ? playToggleOff() : playToggleOn()
+            }}
             className="rounded"
           />
           <span className="text-sm" style={{ color: 'var(--color-solar-system)' }}>
@@ -226,7 +256,10 @@ export function ControlPanel() {
           <input
             type="checkbox"
             checked={showBiasOverlay}
-            onChange={toggleBiasOverlay}
+            onChange={() => {
+              toggleBiasOverlay()
+              showBiasOverlay ? playToggleOff() : playToggleOn()
+            }}
             className="rounded"
           />
           <span className="text-sm" style={{ color: 'var(--color-text)' }}>

@@ -4,6 +4,7 @@ import type { Planet } from '../../types'
 import { PlanetDetailCard } from './PlanetDetailCard'
 import { StatisticsPanel } from './StatisticsPanel'
 import { OccurrenceRateHeatmap, EtaEarthTimeline, PlanetTypeGallery } from '../charts'
+import { useAudio } from '../../audio'
 
 interface SidePanelProps {
   selectedPlanet: Planet | null
@@ -18,6 +19,8 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>(selectedPlanet ? 'details' : 'stats')
   const [selectedChartType, setSelectedChartType] = useState<string | null>(null)
+
+  const { playSidebarOpen, playSidebarClose, playClick } = useAudio()
 
   // Auto-switch to details tab when a planet is selected
   if (selectedPlanet && activeTab !== 'details') {
@@ -42,7 +45,11 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
     >
       {/* Collapse Toggle */}
       <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => {
+          const wasCollapsed = isCollapsed
+          setIsCollapsed(!isCollapsed)
+          wasCollapsed ? playSidebarOpen() : playSidebarClose()
+        }}
         className="absolute -left-3 top-4 z-10 w-6 h-6 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
         style={{
           backgroundColor: 'var(--color-surface)',
@@ -112,7 +119,10 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
               style={{ borderColor: 'rgba(255,255,255,0.1)' }}
             >
               <button
-                onClick={() => setActiveTab('details')}
+                onClick={() => {
+                  setActiveTab('details')
+                  playClick()
+                }}
                 className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
                 style={{
                   color: activeTab === 'details' ? 'var(--color-accent)' : 'var(--color-text)',
@@ -129,7 +139,10 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
                 )}
               </button>
               <button
-                onClick={() => setActiveTab('stats')}
+                onClick={() => {
+                  setActiveTab('stats')
+                  playClick()
+                }}
                 className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
                 style={{
                   color: activeTab === 'stats' ? 'var(--color-accent)' : 'var(--color-text)',
@@ -146,7 +159,10 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection, onFilterB
                 )}
               </button>
               <button
-                onClick={() => setActiveTab('charts')}
+                onClick={() => {
+                  setActiveTab('charts')
+                  playClick()
+                }}
                 className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
                 style={{
                   color: activeTab === 'charts' ? 'var(--color-accent)' : 'var(--color-text)',

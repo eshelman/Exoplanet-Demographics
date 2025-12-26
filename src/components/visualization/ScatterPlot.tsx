@@ -4,6 +4,7 @@ import { useDimensions } from '../../hooks/useDimensions'
 import { useZoom } from '../../hooks/useZoom'
 import { useBrush } from '../../hooks/useBrush'
 import { useVizStore, selectVisiblePlanets } from '../../store'
+import { useAudio } from '../../audio'
 import { createXScale, createYScale } from '../../utils/scales'
 import { Axes } from './Axes'
 import { GridLines } from './GridLines'
@@ -41,14 +42,23 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   const brushSelection = useVizStore((s) => s.brushSelection)
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const enabledMethods = useVizStore((s) => s.enabledMethods)
+  const showSolarSystem = useVizStore((s) => s.showSolarSystem)
+  const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
 
   // Get actions from store
   const setHoveredPlanet = useVizStore((s) => s.setHoveredPlanet)
   const selectPlanet = useVizStore((s) => s.selectPlanet)
   const setBrushSelection = useVizStore((s) => s.setBrushSelection)
 
+  // Audio
+  const { startPan, endPan } = useAudio()
+
   // Filter planets based on store state
-  const visiblePlanets = useMemo(() => selectVisiblePlanets(planets), [planets])
+  // Include all filtering states in deps so planets update when filters change
+  const visiblePlanets = useMemo(
+    () => selectVisiblePlanets(planets),
+    [planets, enabledMethods, showSolarSystem, enabledPlanetTypes]
+  )
 
   // Mouse position for tooltip (local state is fine for this)
   const mousePos = useRef<{ x: number; y: number } | null>(null)
@@ -59,6 +69,8 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   // Zoom behavior
   const { resetZoom, zoomIn, zoomOut } = useZoom(svgRef, contentRef, {
     scaleExtent: [0.5, 20],
+    onZoomStart: startPan,
+    onZoomEnd: endPan,
   })
 
   // Brush behavior (hold Shift to brush)

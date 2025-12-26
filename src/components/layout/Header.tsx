@@ -26,6 +26,9 @@ export function Header({ visibleCount }: HeaderProps) {
     setVolume,
     toggleCategory,
     setComplexity,
+    playClick,
+    playToggleOn,
+    playToggleOff,
   } = useAudio()
 
   const tabs: { id: TabId; label: string }[] = [
@@ -59,7 +62,10 @@ export function Header({ visibleCount }: HeaderProps) {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  playClick()
+                }}
                 className="px-4 py-2 rounded text-sm font-medium transition-all"
                 style={{
                   backgroundColor: activeTab === tab.id ? 'rgba(255,255,255,0.1)' : 'transparent',
@@ -77,7 +83,10 @@ export function Header({ visibleCount }: HeaderProps) {
         <div className="flex items-center gap-4">
           {/* Take the Tour button */}
           <button
-            onClick={startNarrative}
+            onClick={() => {
+              startNarrative()
+              playClick()
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all hover:opacity-90"
             style={{
               backgroundColor: 'var(--color-accent)',
@@ -108,10 +117,19 @@ export function Header({ visibleCount }: HeaderProps) {
           {/* Audio Toggle & Settings */}
           <div className="relative">
             <button
-              onClick={toggleAudio}
+              onClick={() => {
+                const wasEnabled = audioSettings.enabled
+                toggleAudio()
+                // Play sound when enabling (not when disabling, since audio is off)
+                if (!wasEnabled) {
+                  // Small delay to let audio context start
+                  setTimeout(() => playToggleOn(), 100)
+                }
+              }}
               onContextMenu={(e) => {
                 e.preventDefault()
                 setAudioSettingsOpen(!audioSettingsOpen)
+                playClick()
               }}
               className="p-2 rounded transition-all hover:bg-white/10"
               style={{ color: audioSettings.enabled ? 'var(--color-accent)' : 'var(--color-text)' }}
@@ -190,7 +208,11 @@ export function Header({ visibleCount }: HeaderProps) {
                     {(['ambient', 'ui', 'sonification', 'narration'] as const).map((category) => (
                       <button
                         key={category}
-                        onClick={() => toggleCategory(category)}
+                        onClick={() => {
+                          const wasEnabled = audioSettings.categories[category]
+                          toggleCategory(category)
+                          wasEnabled ? playToggleOff() : playToggleOn()
+                        }}
                         className="w-full px-2 py-2 flex items-center justify-between hover:bg-white/5 rounded transition-colors"
                       >
                         <span className="text-sm capitalize" style={{ color: 'var(--color-text)' }}>
@@ -231,7 +253,10 @@ export function Header({ visibleCount }: HeaderProps) {
                       {(['simple', 'standard', 'rich'] as const).map((level) => (
                         <button
                           key={level}
-                          onClick={() => setComplexity(level)}
+                          onClick={() => {
+                            setComplexity(level)
+                            playClick()
+                          }}
                           className="flex-1 px-3 py-1.5 rounded text-xs font-medium transition-all capitalize"
                           style={{
                             backgroundColor:
@@ -257,7 +282,10 @@ export function Header({ visibleCount }: HeaderProps) {
           {/* Settings Menu */}
           <div className="relative">
             <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
+              onClick={() => {
+                setSettingsOpen(!settingsOpen)
+                playClick()
+              }}
               className="p-2 rounded transition-all hover:bg-white/10"
               style={{ color: 'var(--color-text)' }}
               title="Settings"
@@ -294,7 +322,10 @@ export function Header({ visibleCount }: HeaderProps) {
 
                   {/* Solar System Toggle */}
                   <button
-                    onClick={toggleSolarSystem}
+                    onClick={() => {
+                      toggleSolarSystem()
+                      showSolarSystem ? playToggleOff() : playToggleOn()
+                    }}
                     className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -338,7 +369,10 @@ export function Header({ visibleCount }: HeaderProps) {
 
                   {/* Bias Overlay Toggle */}
                   <button
-                    onClick={toggleBiasOverlay}
+                    onClick={() => {
+                      toggleBiasOverlay()
+                      showBiasOverlay ? playToggleOff() : playToggleOn()
+                    }}
                     className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-center gap-3">

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Planet } from '../../types'
 import { METHOD_COLORS, SOLAR_SYSTEM_COLOR, createRadiusScale } from '../../utils/scales'
 import type { XAxisType, YAxisType } from '../../types'
+import { useAudio } from '../../audio'
 
 interface PlanetPointsProps {
   planets: Planet[]
@@ -26,6 +27,12 @@ export function PlanetPoints({
   onSelect,
   selectedPlanet,
 }: PlanetPointsProps) {
+  const {
+    startPlanetHover,
+    stopPlanetHover,
+    selectPlanet: selectPlanetSound,
+  } = useAudio()
+
   const radiusScale = useMemo(() => createRadiusScale(3, 15), [])
 
   const getXValue = (planet: Planet): number | null => {
@@ -85,9 +92,18 @@ export function PlanetPoints({
                 strokeWidth={isSolarSystem ? 2 : isSelected ? 2 : 0}
                 opacity={isSolarSystem ? 1 : 0.7}
                 style={{ cursor: 'pointer' }}
-                onMouseEnter={() => onHover?.(planet)}
-                onMouseLeave={() => onHover?.(null)}
-                onClick={() => onSelect?.(planet)}
+                onMouseEnter={() => {
+                  onHover?.(planet)
+                  startPlanetHover(planet)
+                }}
+                onMouseLeave={() => {
+                  onHover?.(null)
+                  stopPlanetHover(planet)
+                }}
+                onClick={() => {
+                  onSelect?.(planet)
+                  selectPlanetSound(planet)
+                }}
               />
               {/* Label for Solar System planets */}
               {isSolarSystem && (
