@@ -30,6 +30,47 @@ export async function loadDetectionMethods(): Promise<DetectionMethod[]> {
   return data.methods
 }
 
+// Classify planet by mass and period into a type
+function classifyPlanet(mass: number, radius: number, period: number): string {
+  // Ultra-short period: P < 1 day and small
+  if (period < 1 && mass < 10) {
+    return 'ultra-short-period'
+  }
+
+  // Hot Jupiter: massive + short period
+  if (mass > 100 && period < 10) {
+    return 'hot-jupiter'
+  }
+
+  // Cold Jupiter: massive + long period
+  if (mass > 100) {
+    return 'cold-jupiter'
+  }
+
+  // Neptune-like: 10-50 Earth masses
+  if (mass >= 10 && mass < 50) {
+    return 'neptune-like'
+  }
+
+  // Sub-Neptune: 2-20 Earth masses, radius 2-4 Earth radii
+  if (radius >= 2 && radius < 4) {
+    return 'sub-neptune'
+  }
+
+  // Super-Earth: 2-10 Earth masses, radius 1.25-2 Earth radii
+  if (mass >= 2 && mass < 10 && radius < 2) {
+    return 'super-earth'
+  }
+
+  // Rocky: < 2 Earth masses
+  if (mass < 2) {
+    return 'rocky'
+  }
+
+  // Default to sub-neptune for anything else
+  return 'sub-neptune'
+}
+
 // Generate sample exoplanets for visualization
 // In a real app, this would load from NASA Exoplanet Archive
 export function generateSampleExoplanets(count: number = 200): Planet[] {
@@ -101,6 +142,9 @@ export function generateSampleExoplanets(count: number = 200): Planet[] {
     // Calculate separation from period (Kepler's 3rd law, assuming solar mass)
     const separation = Math.pow((period / 365.25) ** 2, 1 / 3)
 
+    // Classify planet type based on properties
+    const planetType = classifyPlanet(mass, radius, period)
+
     planets.push({
       id: `exo-${i}`,
       name: `Exoplanet ${i + 1}`,
@@ -110,6 +154,7 @@ export function generateSampleExoplanets(count: number = 200): Planet[] {
       separation,
       detectionMethod: method,
       discoveryYear: 2000 + Math.floor(Math.random() * 24),
+      planetType,
       isSolarSystem: false,
     })
   }

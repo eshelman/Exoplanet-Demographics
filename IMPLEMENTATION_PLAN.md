@@ -83,7 +83,7 @@
 - [x] Container layout
 - [x] Axis selector dropdowns
 - [x] Detection method toggles (checkboxes with colors)
-- [ ] Planet type filter toggles
+- [x] Planet type filter toggles
 - [x] Bias overlay toggle button
 - [x] Solar System visibility toggle
 
