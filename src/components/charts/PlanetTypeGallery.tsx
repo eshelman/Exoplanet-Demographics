@@ -97,10 +97,12 @@ export function PlanetTypeGallery({ onTypeClick, enabledTypes, compact = false }
       </div>
 
       {/* Gallery Grid */}
-      <div className={`p-3 grid gap-2 ${compact ? 'grid-cols-2' : 'grid-cols-2'}`}>
+      <div className="p-3 grid gap-2 grid-cols-1">
         {PLANET_TYPES.map((type, i) => {
+          // When no filter active, all are "selected" (highlighted)
+          // When filter active, only enabled types are selected
           const isEnabled = !hasActiveFilter || enabledTypes?.has(type.id)
-          const isSelected = hasActiveFilter && enabledTypes?.has(type.id)
+          const isSelected = !hasActiveFilter || enabledTypes?.has(type.id)
           const color = PLANET_TYPE_COLORS[type.id] || '#888'
 
           return (
@@ -108,12 +110,12 @@ export function PlanetTypeGallery({ onTypeClick, enabledTypes, compact = false }
               key={type.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: isEnabled ? 1 : 0.4, y: 0 }}
-              transition={{ delay: i * 0.05 }}
+              transition={{ delay: i * 0.03 }}
               onClick={() => onTypeClick?.(type.id)}
               className="p-3 rounded-lg text-left transition-all"
               style={{
-                backgroundColor: isSelected ? `${color}30` : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${isSelected ? color : 'rgba(255,255,255,0.1)'}`,
+                backgroundColor: isSelected ? `${color}20` : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${isSelected ? `${color}60` : 'rgba(255,255,255,0.1)'}`,
               }}
             >
               <div className="flex items-start gap-2">
