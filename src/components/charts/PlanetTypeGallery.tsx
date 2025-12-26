@@ -68,11 +68,13 @@ const PLANET_TYPES = [
 
 interface PlanetTypeGalleryProps {
   onTypeClick?: (typeId: string) => void
-  selectedType?: string | null
+  enabledTypes?: Set<string>
   compact?: boolean
 }
 
-export function PlanetTypeGallery({ onTypeClick, selectedType, compact = false }: PlanetTypeGalleryProps) {
+export function PlanetTypeGallery({ onTypeClick, enabledTypes, compact = false }: PlanetTypeGalleryProps) {
+  // When no types are explicitly enabled, all are shown (no filter active)
+  const hasActiveFilter = enabledTypes && enabledTypes.size > 0
   return (
     <div
       className="rounded-lg overflow-hidden"
@@ -97,14 +99,15 @@ export function PlanetTypeGallery({ onTypeClick, selectedType, compact = false }
       {/* Gallery Grid */}
       <div className={`p-3 grid gap-2 ${compact ? 'grid-cols-2' : 'grid-cols-2'}`}>
         {PLANET_TYPES.map((type, i) => {
-          const isSelected = selectedType === type.id
+          const isEnabled = !hasActiveFilter || enabledTypes?.has(type.id)
+          const isSelected = hasActiveFilter && enabledTypes?.has(type.id)
           const color = PLANET_TYPE_COLORS[type.id] || '#888'
 
           return (
             <motion.button
               key={type.id}
               initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={{ opacity: isEnabled ? 1 : 0.4, y: 0 }}
               transition={{ delay: i * 0.05 }}
               onClick={() => onTypeClick?.(type.id)}
               className="p-3 rounded-lg text-left transition-all"

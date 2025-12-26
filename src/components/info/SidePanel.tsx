@@ -40,11 +40,6 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
     }
   }
 
-  // Determine which type is "selected" for visual feedback
-  // If only one type is enabled, that one is selected
-  const selectedChartType = enabledPlanetTypes.size === 1
-    ? Array.from(enabledPlanetTypes)[0]
-    : null
 
   return (
     <motion.div
@@ -256,7 +251,7 @@ export function SidePanel({ selectedPlanet, planets, onClearSelection }: SidePan
                     <PlanetTypeGallery
                       compact
                       onTypeClick={handleTypeClick}
-                      selectedType={selectedChartType}
+                      enabledTypes={enabledPlanetTypes}
                     />
                     <OccurrenceRateHeatmap compact />
                     <EtaEarthTimeline compact />
