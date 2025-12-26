@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ScatterPlot } from './components/visualization'
-import { ControlPanel } from './components/controls'
 import { SidePanel } from './components/info'
 import { NarrativeOverlay } from './components/narrative'
 import { Header, Footer } from './components/layout'
@@ -53,9 +52,6 @@ function App() {
     <div className="flex flex-col h-screen">
       {/* Header */}
       <Header visibleCount={visibleCount} />
-
-      {/* Control Panel */}
-      <ControlPanel />
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden">

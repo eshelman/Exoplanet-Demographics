@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useVizStore } from '../../store'
 import { useAudio } from '../../audio'
+import type { XAxisType, YAxisType } from '../../types'
 
 interface HeaderProps {
   visibleCount: number
@@ -18,6 +19,10 @@ export function Header({ visibleCount }: HeaderProps) {
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const toggleSolarSystem = useVizStore((s) => s.toggleSolarSystem)
   const toggleBiasOverlay = useVizStore((s) => s.toggleBiasOverlay)
+  const xAxis = useVizStore((s) => s.xAxis)
+  const yAxis = useVizStore((s) => s.yAxis)
+  const setXAxis = useVizStore((s) => s.setXAxis)
+  const setYAxis = useVizStore((s) => s.setYAxis)
 
   // Audio
   const {
@@ -29,6 +34,7 @@ export function Header({ visibleCount }: HeaderProps) {
     playClick,
     playToggleOn,
     playToggleOff,
+    playAxisSwitch,
   } = useAudio()
 
   const tabs: { id: TabId; label: string }[] = [
@@ -320,6 +326,55 @@ export function Header({ visibleCount }: HeaderProps) {
                     Display Settings
                   </div>
 
+                  {/* Axis Selectors */}
+                  <div className="px-4 py-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                        X Axis
+                      </span>
+                      <select
+                        value={xAxis}
+                        onChange={(e) => {
+                          setXAxis(e.target.value as XAxisType)
+                          playAxisSwitch()
+                        }}
+                        className="px-2 py-1 rounded text-sm"
+                        style={{
+                          backgroundColor: 'var(--color-background)',
+                          color: 'var(--color-text)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                        }}
+                      >
+                        <option value="period">Orbital Period</option>
+                        <option value="separation">Semi-major Axis</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                        Y Axis
+                      </span>
+                      <select
+                        value={yAxis}
+                        onChange={(e) => {
+                          setYAxis(e.target.value as YAxisType)
+                          playAxisSwitch()
+                        }}
+                        className="px-2 py-1 rounded text-sm"
+                        style={{
+                          backgroundColor: 'var(--color-background)',
+                          color: 'var(--color-text)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                        }}
+                      >
+                        <option value="mass">Planet Mass</option>
+                        <option value="radius">Planet Radius</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }} />
+
                   {/* Solar System Toggle */}
                   <button
                     onClick={() => {
@@ -406,48 +461,6 @@ export function Header({ visibleCount }: HeaderProps) {
                       />
                     </div>
                   </button>
-
-                  {/* Divider */}
-                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }} />
-
-                  {/* Help Link */}
-                  <a
-                    href="https://exoplanetarchive.ipac.caltech.edu/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-white/5 transition-colors"
-                    onClick={() => setSettingsOpen(false)}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      style={{ color: 'var(--color-text)', opacity: 0.8 }}
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                    <span className="text-sm" style={{ color: 'var(--color-text)' }}>
-                      NASA Exoplanet Archive
-                    </span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="ml-auto opacity-40"
-                    >
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                  </a>
                 </div>
               </>
             )}
