@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useVizStore } from '../../store'
+import { useAudio } from '../../audio'
 
 interface HeaderProps {
   visibleCount: number
@@ -10,12 +11,22 @@ type TabId = 'explore' | 'compare' | 'about'
 export function Header({ visibleCount }: HeaderProps) {
   const [activeTab, setActiveTab] = useState<TabId>('explore')
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
 
   const startNarrative = useVizStore((s) => s.startNarrative)
   const showSolarSystem = useVizStore((s) => s.showSolarSystem)
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const toggleSolarSystem = useVizStore((s) => s.toggleSolarSystem)
   const toggleBiasOverlay = useVizStore((s) => s.toggleBiasOverlay)
+
+  // Audio
+  const {
+    settings: audioSettings,
+    toggleAudio,
+    setVolume,
+    toggleCategory,
+    setComplexity,
+  } = useAudio()
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'explore', label: 'Explore' },
@@ -92,6 +103,155 @@ export function Header({ visibleCount }: HeaderProps) {
             <span className="opacity-60">Showing </span>
             <strong style={{ color: 'var(--color-accent)' }}>{visibleCount}</strong>
             <span className="opacity-60"> planets</span>
+          </div>
+
+          {/* Audio Toggle & Settings */}
+          <div className="relative">
+            <button
+              onClick={toggleAudio}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                setAudioSettingsOpen(!audioSettingsOpen)
+              }}
+              className="p-2 rounded transition-all hover:bg-white/10"
+              style={{ color: audioSettings.enabled ? 'var(--color-accent)' : 'var(--color-text)' }}
+              title={audioSettings.enabled ? 'Sound On (right-click for settings)' : 'Sound Off (click to enable)'}
+            >
+              {audioSettings.enabled ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              )}
+            </button>
+
+            {/* Audio Settings Dropdown */}
+            {audioSettingsOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setAudioSettingsOpen(false)} />
+                <div
+                  className="absolute right-0 top-full mt-2 w-72 rounded-lg shadow-xl z-50 overflow-hidden"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <div
+                    className="px-4 py-3 text-xs font-medium uppercase tracking-wider border-b"
+                    style={{
+                      color: 'var(--color-text)',
+                      opacity: 0.6,
+                      borderColor: 'rgba(255,255,255,0.1)',
+                    }}
+                  >
+                    Audio Settings
+                  </div>
+
+                  {/* Master Volume */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                        Master Volume
+                      </span>
+                      <span className="text-xs opacity-60" style={{ color: 'var(--color-text)' }}>
+                        {Math.round(audioSettings.masterVolume * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={audioSettings.masterVolume * 100}
+                      onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                      className="w-full h-2 rounded-full appearance-none cursor-pointer"
+                      style={{
+                        background: `linear-gradient(to right, var(--color-accent) ${audioSettings.masterVolume * 100}%, rgba(255,255,255,0.2) ${audioSettings.masterVolume * 100}%)`,
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }} />
+
+                  {/* Category Toggles */}
+                  <div className="px-4 py-2">
+                    <div
+                      className="text-xs font-medium uppercase tracking-wider mb-2"
+                      style={{ color: 'var(--color-text)', opacity: 0.6 }}
+                    >
+                      Categories
+                    </div>
+                    {(['ambient', 'ui', 'sonification', 'narration'] as const).map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => toggleCategory(category)}
+                        className="w-full px-2 py-2 flex items-center justify-between hover:bg-white/5 rounded transition-colors"
+                      >
+                        <span className="text-sm capitalize" style={{ color: 'var(--color-text)' }}>
+                          {category}
+                        </span>
+                        <div
+                          className="w-8 h-5 rounded-full p-0.5 transition-colors"
+                          style={{
+                            backgroundColor: audioSettings.categories[category]
+                              ? 'var(--color-accent)'
+                              : 'rgba(255,255,255,0.2)',
+                          }}
+                        >
+                          <div
+                            className="w-4 h-4 rounded-full bg-white transition-transform"
+                            style={{
+                              transform: audioSettings.categories[category]
+                                ? 'translateX(12px)'
+                                : 'translateX(0)',
+                            }}
+                          />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }} />
+
+                  {/* Sonification Complexity */}
+                  <div className="px-4 py-3">
+                    <div
+                      className="text-xs font-medium uppercase tracking-wider mb-2"
+                      style={{ color: 'var(--color-text)', opacity: 0.6 }}
+                    >
+                      Sonification Detail
+                    </div>
+                    <div className="flex gap-2">
+                      {(['simple', 'standard', 'rich'] as const).map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => setComplexity(level)}
+                          className="flex-1 px-3 py-1.5 rounded text-xs font-medium transition-all capitalize"
+                          style={{
+                            backgroundColor:
+                              audioSettings.sonificationComplexity === level
+                                ? 'var(--color-accent)'
+                                : 'rgba(255,255,255,0.1)',
+                            color:
+                              audioSettings.sonificationComplexity === level
+                                ? 'var(--color-background)'
+                                : 'var(--color-text)',
+                          }}
+                        >
+                          {level}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Settings Menu */}

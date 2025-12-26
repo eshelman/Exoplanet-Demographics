@@ -263,28 +263,28 @@
 
 ---
 
-## Phase 12: Audio Foundation
+## Phase 12: Audio Foundation ✅
 
 ### Setup & Infrastructure
-- [ ] Install Tone.js dependency
-- [ ] Create `AudioManager` singleton class
-- [ ] Add audio state to Zustand store (enabled, volume, settings)
-- [ ] Create `useAudio` hook for component integration
-- [ ] Implement lazy loading for audio assets
-- [ ] Add audio context suspend/resume on tab visibility
+- [x] Install Tone.js dependency
+- [x] Create `AudioManager` singleton class
+- [x] Add audio state to Zustand store (enabled, volume, settings)
+- [x] Create `useAudio` hook for component integration
+- [x] Implement lazy loading for audio assets
+- [x] Add audio context suspend/resume on tab visibility
 
 ### Audio Settings UI
-- [ ] Audio toggle button in header (off by default)
-- [ ] Audio settings panel/modal
-- [ ] Master volume slider
-- [ ] Category toggles (ambient, UI, sonification, narration)
-- [ ] Sonification complexity selector (simple/standard/rich)
-- [ ] Persist settings to localStorage
+- [x] Audio toggle button in header (off by default)
+- [x] Audio settings panel/modal
+- [x] Master volume slider
+- [x] Category toggles (ambient, UI, sonification, narration)
+- [x] Sonification complexity selector (simple/standard/rich)
+- [x] Persist settings to localStorage
 
 ### Audio Asset Structure
-- [ ] Create `public/audio/` directory structure
-- [ ] Set up audio sprite system for UI sounds
-- [ ] Implement preloading strategy
+- [x] Create `public/audio/` directory structure
+- [x] Set up audio sprite system for UI sounds
+- [x] Implement preloading strategy
 
 ---
 
