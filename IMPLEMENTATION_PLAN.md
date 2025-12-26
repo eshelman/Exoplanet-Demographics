@@ -206,31 +206,10 @@
 
 ### Responsive Layout
 - [ ] Desktop (>1200px): Side-by-side viz + sidebar
-- [ ] Tablet (768-1200px): Full width viz, collapsible sidebar
-- [ ] Mobile (<768px): Stacked layout, bottom sheet for details
 
 ---
 
-## Phase 10: Mobile & Accessibility
-
-### Mobile Interactions
-- [ ] Tap for tooltips (instead of hover)
-- [ ] Swipe for panning
-- [ ] Pinch zoom
-- [ ] Bottom sheet for detailed info
-- [ ] Simplified control buttons
-
-### Accessibility
-- [ ] Keyboard navigation for all controls
-- [ ] ARIA labels on interactive elements
-- [ ] Screen reader announcements for state changes
-- [ ] High contrast mode option
-- [ ] Reduced motion option (prefers-reduced-motion)
-- [ ] Data table alternative view for screen readers
-
----
-
-## Phase 11: Performance Optimization
+## Phase 10: Performance Optimization
 
 ### Rendering Optimization
 - [ ] Canvas fallback for >5000 points
@@ -246,7 +225,7 @@
 
 ---
 
-## Phase 12: Polish & Launch
+## Phase 11: Polish & Launch
 
 ### Loading & Error States
 - [ ] Loading spinner/skeleton
@@ -284,7 +263,7 @@
 
 ---
 
-## Phase 13: Audio Foundation
+## Phase 12: Audio Foundation
 
 ### Setup & Infrastructure
 - [ ] Install Tone.js dependency
@@ -309,7 +288,7 @@
 
 ---
 
-## Phase 14: Ambient Soundscape
+## Phase 13: Ambient Soundscape
 
 ### Base Layer: "The Void"
 - [ ] Create 8-minute seamless ambient loop
@@ -333,7 +312,7 @@
 
 ---
 
-## Phase 15: Data Sonification
+## Phase 14: Data Sonification
 
 ### Planet Voice System
 - [ ] `periodToFrequency()` - Logarithmic mapping (1 day=2000Hz, 10 years=60Hz)
@@ -365,7 +344,7 @@
 
 ---
 
-## Phase 16: UI Audio Feedback
+## Phase 15: UI Audio Feedback
 
 ### Button & Toggle Sounds
 - [ ] Button hover: Soft breath/air release (80ms)
@@ -388,7 +367,7 @@
 
 ---
 
-## Phase 17: Narrative Audio
+## Phase 16: Narrative Audio
 
 ### Story Progression Sounds
 - [ ] Story begin: Subtle orchestral swell (2s)
@@ -410,7 +389,7 @@
 
 ---
 
-## Phase 18: Occurrence Rate Sonification
+## Phase 17: Occurrence Rate Sonification
 
 ### Heatmap Audio
 - [ ] Hover-to-play mode for heatmap cells
@@ -426,7 +405,7 @@
 
 ---
 
-## Phase 19: Audio Accessibility
+## Phase 18: Audio Accessibility
 
 ### Accessibility Features
 - [ ] Screen reader mode with audio announcements
