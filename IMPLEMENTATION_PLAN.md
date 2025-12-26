@@ -281,3 +281,163 @@
 - [ ] Unit converters (Earth masses ↔ Jupiter masses, days ↔ AU)
 - [ ] Formatters (scientific notation, significant figures)
 - [ ] Color interpolators for heatmaps
+
+---
+
+## Phase 13: Audio Foundation
+
+### Setup & Infrastructure
+- [ ] Install Tone.js dependency
+- [ ] Create `AudioManager` singleton class
+- [ ] Add audio state to Zustand store (enabled, volume, settings)
+- [ ] Create `useAudio` hook for component integration
+- [ ] Implement lazy loading for audio assets
+- [ ] Add audio context suspend/resume on tab visibility
+
+### Audio Settings UI
+- [ ] Audio toggle button in header (off by default)
+- [ ] Audio settings panel/modal
+- [ ] Master volume slider
+- [ ] Category toggles (ambient, UI, sonification, narration)
+- [ ] Sonification complexity selector (simple/standard/rich)
+- [ ] Persist settings to localStorage
+
+### Audio Asset Structure
+- [ ] Create `public/audio/` directory structure
+- [ ] Set up audio sprite system for UI sounds
+- [ ] Implement preloading strategy
+
+---
+
+## Phase 14: Ambient Soundscape
+
+### Base Layer: "The Void"
+- [ ] Create 8-minute seamless ambient loop
+- [ ] Sub-bass drone (25-40 Hz)
+- [ ] Filtered white noise texture
+- [ ] Occasional deep "whale song" tones
+- [ ] Implement crossfade looping
+
+### Detection Method Textures
+- [ ] Radial Velocity: Doppler-shifted pulse oscillation
+- [ ] Transit: Crystalline chimes at irregular intervals
+- [ ] Microlensing: Deep crescendo-decrescendo swells
+- [ ] Direct Imaging: Warm sustained pad tones
+- [ ] Layer mixing based on enabled methods
+
+### Zoom-Responsive Ambience
+- [ ] Dense/busy at full view
+- [ ] Clearer at mid zoom
+- [ ] Sparse/intimate at close zoom
+- [ ] Near silence at single planet focus
+
+---
+
+## Phase 15: Data Sonification
+
+### Planet Voice System
+- [ ] `periodToFrequency()` - Logarithmic mapping (1 day=2000Hz, 10 years=60Hz)
+- [ ] `radiusToVolume()` - Larger planets louder
+- [ ] `typeToTimbre()` - Rocky=sine, gas giant=rich harmonics
+- [ ] `separationToPan()` - Close=center, far=wide stereo
+- [ ] Create `PolySynth` for planet voices
+
+### Hover Sonification
+- [ ] Fade in planet voice on hover (500ms attack)
+- [ ] Sustain while hovering
+- [ ] Fade out on mouse leave (1s decay)
+- [ ] Limit polyphony to prevent audio chaos
+
+### Solar System Reference Tones
+- [ ] Mercury: Quick high ping
+- [ ] Venus: Thick hazy drone
+- [ ] Earth: Warm 136.1 Hz "home frequency"
+- [ ] Mars: Dusty thin whistle
+- [ ] Jupiter: Deep brass-like tone
+- [ ] Saturn: Shimmering chorus effect
+- [ ] Uranus: Cold, tilted, unsettling
+- [ ] Neptune: Deep blue, melancholic
+
+### Selection Sonification
+- [ ] Planet select: Resonant ping + voice swell
+- [ ] Brush selection: Drawing texture while dragging
+- [ ] Brush complete: Satisfying capture sound
+
+---
+
+## Phase 16: UI Audio Feedback
+
+### Button & Toggle Sounds
+- [ ] Button hover: Soft breath/air release (80ms)
+- [ ] Button click: Gentle mechanical click (120ms)
+- [ ] Toggle on: Rising two-note chime (minor 3rd up)
+- [ ] Toggle off: Falling two-note chime (minor 3rd down)
+
+### Navigation Sounds
+- [ ] Pan start: Subtle woosh onset
+- [ ] Pan continuous: Filtered noise tied to velocity
+- [ ] Pan end: Gentle deceleration woosh
+- [ ] Zoom in: Rising pitch sweep + focus click
+- [ ] Zoom out: Falling pitch sweep + expansion
+
+### Transition Sounds
+- [ ] Axis switch: Morphing pad crossfade (800ms)
+- [ ] View change: Dimensional shift sound
+- [ ] Filter apply: Soft sorting/shuffling sound
+- [ ] Sidebar open/close: Mechanical slide + airlock seal
+
+---
+
+## Phase 17: Narrative Audio
+
+### Story Progression Sounds
+- [ ] Story begin: Subtle orchestral swell (2s)
+- [ ] Step advance: Page turn + soft chime
+- [ ] Step back: Reverse page turn
+- [ ] Story end: Resolve to tonic, fade with reverb (3s)
+
+### Special Moment Sounds
+- [ ] Bias overlay reveal: Hollow, unsettling resonance
+- [ ] Hot Neptune Desert: Conspicuous silence/absence
+- [ ] η⊕ reveal: Hopeful rising sequence, unresolved
+- [ ] Solar System context: Home frequency (136.1 Hz) swell
+
+### Optional Voice-Over Support
+- [ ] Voice-over audio loading system
+- [ ] Sync mechanism with narrative steps
+- [ ] Caption display system
+- [ ] Voice-over toggle in settings
+
+---
+
+## Phase 18: Occurrence Rate Sonification
+
+### Heatmap Audio
+- [ ] Hover-to-play mode for heatmap cells
+- [ ] Occurrence rate → volume mapping
+- [ ] Mass axis → pitch mapping
+- [ ] Period axis → stereo position
+
+### "Play the Galaxy" Mode
+- [ ] Auto-sweep through parameter space
+- [ ] 30-60 second musical phrase
+- [ ] Play/pause controls
+- [ ] Visual cursor sync with audio position
+
+---
+
+## Phase 19: Audio Accessibility
+
+### Accessibility Features
+- [ ] Screen reader mode with audio announcements
+- [ ] Reduced sound mode (essential feedback only)
+- [ ] Respect `prefers-reduced-motion` for audio intensity
+- [ ] Full captions for any voice-over content
+- [ ] Volume memory persistence
+
+### Performance Optimization
+- [ ] Audio sprite loading for UI sounds
+- [ ] Web Audio voice pooling (limit polyphony to 8)
+- [ ] Suspend audio context when tab hidden
+- [ ] Reduce ambient complexity on mobile
+- [ ] Battery-conscious audio on mobile devices

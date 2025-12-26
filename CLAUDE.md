@@ -14,6 +14,7 @@ Interactive web visualization for exploring exoplanet demographics, based on ["T
 - **Visualization**: D3.js v7 (React for DOM, D3 for math)
 - **State**: Zustand
 - **Animation**: Framer Motion (UI) + D3 transitions (data)
+- **Audio**: Tone.js (Web Audio synthesis for data sonification)
 - **Deployment**: Static (Vercel/Netlify)
 
 ## Common Commands
@@ -59,6 +60,7 @@ src/
 └── types/               # TypeScript interfaces for planets, methods, viz state
 
 public/data/             # Static JSON data files
+public/audio/            # Audio assets (ambient, UI sounds, solar system tones)
 ```
 
 ### State Management (Zustand)
@@ -86,3 +88,26 @@ Central store manages:
 2. Bias transparency: always show detection blind spots, not just detections
 3. Solar System context always visible for reference
 4. Mobile-first responsive design
+
+## Audio/Soundscape
+
+The visualization includes an optional "cosmic ambient minimalism" soundscape. See `exoplanet-viz-soundscape.md` for full design document.
+
+### Audio Philosophy
+- Sound off by default; opt-in experience
+- Subtlety first: enhance, never overwhelm (default 30% volume)
+- Data as music: sonify actual planetary properties
+- All audio has visual equivalents (accessibility)
+
+### Planet Voice System
+Planets have unique sounds derived from properties:
+- **Pitch**: Orbital period (shorter = higher, 60Hz-2000Hz range)
+- **Timbre**: Planet type (rocky=sine, gas giant=rich harmonics)
+- **Volume**: Planet radius (larger = louder)
+- **Stereo**: Semi-major axis (close=center, far=wide)
+
+### Audio Layers
+1. **Ambient**: "The Void" - subtle cosmic drone, detection method textures
+2. **Data Sonification**: Planet voices on hover/select
+3. **UI Feedback**: Soft spacecraft-like clicks, chimes, transitions
+4. **Narrative**: Story progression sounds, special moment reveals
