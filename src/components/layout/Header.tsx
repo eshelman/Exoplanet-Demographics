@@ -7,10 +7,7 @@ interface HeaderProps {
   visibleCount: number
 }
 
-type TabId = 'explore' | 'compare' | 'about'
-
 export function Header({ visibleCount }: HeaderProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('explore')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
 
@@ -37,12 +34,6 @@ export function Header({ visibleCount }: HeaderProps) {
     playAxisSwitch,
   } = useAudio()
 
-  const tabs: { id: TabId; label: string }[] = [
-    { id: 'explore', label: 'Explore' },
-    { id: 'compare', label: 'Compare' },
-    { id: 'about', label: 'About' },
-  ]
-
   return (
     <header
       className="px-6 py-4 border-b"
@@ -52,37 +43,14 @@ export function Header({ visibleCount }: HeaderProps) {
       }}
     >
       <div className="flex items-center justify-between">
-        {/* Left: Title and Navigation */}
-        <div className="flex items-center gap-8">
-          <div>
-            <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
-              Exoplanet Demographics
-            </h1>
-            <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>
-              Interactive visualization of planetary occurrence rates
-            </p>
-          </div>
-
-          {/* Navigation Tabs */}
-          <nav className="flex items-center gap-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id)
-                  playClick()
-                }}
-                className="px-4 py-2 rounded text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: activeTab === tab.id ? 'rgba(255,255,255,0.1)' : 'transparent',
-                  color: activeTab === tab.id ? 'var(--color-accent)' : 'var(--color-text)',
-                  opacity: activeTab === tab.id ? 1 : 0.6,
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+        {/* Left: Title */}
+        <div>
+          <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
+            Exoplanet Demographics
+          </h1>
+          <p className="text-sm opacity-60" style={{ color: 'var(--color-text)' }}>
+            Interactive visualization of the planets we've discovered so far...
+          </p>
         </div>
 
         {/* Right: Actions */}
