@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { AmbientSoundscape } from './AmbientSoundscape'
-import type { DetectionMethodId } from '../types'
+import { PlanetSonification } from './PlanetSonification'
+import type { DetectionMethodId, Planet } from '../types'
 
 export interface AudioSettings {
   enabled: boolean
@@ -55,6 +56,9 @@ class AudioManagerClass {
 
   // Ambient soundscape
   private ambientSoundscape: AmbientSoundscape | null = null
+
+  // Planet sonification
+  private planetSonification: PlanetSonification | null = null
 
   private constructor() {
     // Load settings from localStorage
@@ -146,6 +150,11 @@ class AudioManagerClass {
       // Create ambient soundscape
       this.ambientSoundscape = new AmbientSoundscape(this.ambientGain)
       await this.ambientSoundscape.init()
+
+      // Create planet sonification
+      this.planetSonification = new PlanetSonification(this.sonificationGain)
+      await this.planetSonification.init()
+      this.planetSonification.setComplexity(this.settings.sonificationComplexity)
 
       this.initialized = true
       console.log('[AudioManager] Initialized successfully')
@@ -291,6 +300,7 @@ class AudioManagerClass {
    */
   setSonificationComplexity(complexity: AudioSettings['sonificationComplexity']): void {
     this.updateSettings({ sonificationComplexity: complexity })
+    this.planetSonification?.setComplexity(complexity)
   }
 
   // ============ Sound Playback Methods ============
@@ -385,6 +395,72 @@ class AudioManagerClass {
     this.planetSynth?.triggerAttackRelease(baseFreq * 2, '4n', now + 0.2, baseVolume * 0.5)
   }
 
+  // ============ Advanced Planet Sonification ============
+
+  /**
+   * Start hovering over a planet (sustained tone)
+   */
+  startPlanetHover(planet: Planet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.startHover(planet)
+  }
+
+  /**
+   * Stop hovering over a planet
+   */
+  stopPlanetHover(planet: Planet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.stopHover(planet)
+  }
+
+  /**
+   * Stop all planet hover sounds
+   */
+  stopAllPlanetHovers(): void {
+    this.planetSonification?.stopAllHovers()
+  }
+
+  /**
+   * Play planet selection sound with full sonification
+   */
+  selectPlanet(planet: Planet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.playSelect(planet)
+  }
+
+  /**
+   * Start brush selection sound
+   */
+  startBrushSelection(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.startBrush()
+  }
+
+  /**
+   * Update brush selection sound
+   * @param size Normalized selection size (0-1)
+   */
+  updateBrushSelection(size: number): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.updateBrush(size)
+  }
+
+  /**
+   * End brush selection with capture sound
+   * @param capturedCount Number of planets captured
+   */
+  endBrushSelection(capturedCount: number): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.planetSonification?.endBrush(capturedCount)
+  }
+
+  /**
+   * Cancel brush selection without sound
+   */
+  cancelBrushSelection(): void {
+    this.planetSonification?.cancelBrush()
+  }
+
   /**
    * Play narrative step advance sound
    */
@@ -434,6 +510,9 @@ class AudioManagerClass {
 
     // Dispose ambient soundscape
     this.ambientSoundscape?.dispose()
+
+    // Dispose planet sonification
+    this.planetSonification?.dispose()
 
     this.ambientNoise?.stop()
     this.ambientNoise?.dispose()

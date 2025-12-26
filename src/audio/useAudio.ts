@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AudioManager, type AudioSettings, DEFAULT_AUDIO_SETTINGS } from './AudioManager'
-import type { DetectionMethodId } from '../types'
+import type { DetectionMethodId, Planet } from '../types'
 
 /**
  * Hook for integrating audio functionality into React components
@@ -83,6 +83,21 @@ export function useAudio() {
   )
   const setZoomLevel = useCallback((level: number) => AudioManager.setZoomLevel(level), [])
 
+  // Advanced planet sonification
+  const startPlanetHover = useCallback((planet: Planet) => AudioManager.startPlanetHover(planet), [])
+  const stopPlanetHover = useCallback((planet: Planet) => AudioManager.stopPlanetHover(planet), [])
+  const stopAllPlanetHovers = useCallback(() => AudioManager.stopAllPlanetHovers(), [])
+  const selectPlanet = useCallback((planet: Planet) => AudioManager.selectPlanet(planet), [])
+
+  // Brush selection sonification
+  const startBrushSelection = useCallback(() => AudioManager.startBrushSelection(), [])
+  const updateBrushSelection = useCallback((size: number) => AudioManager.updateBrushSelection(size), [])
+  const endBrushSelection = useCallback(
+    (capturedCount: number) => AudioManager.endBrushSelection(capturedCount),
+    []
+  )
+  const cancelBrushSelection = useCallback(() => AudioManager.cancelBrushSelection(), [])
+
   return {
     // State
     settings,
@@ -108,5 +123,17 @@ export function useAudio() {
     // Ambient soundscape
     setEnabledMethods,
     setZoomLevel,
+
+    // Advanced planet sonification
+    startPlanetHover,
+    stopPlanetHover,
+    stopAllPlanetHovers,
+    selectPlanet,
+
+    // Brush selection
+    startBrushSelection,
+    updateBrushSelection,
+    endBrushSelection,
+    cancelBrushSelection,
   }
 }
