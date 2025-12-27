@@ -182,13 +182,13 @@ export function Tooltip({ planet, x, y, containerWidth = 1200, containerHeight =
       <div className="px-4 pb-2">
         <table className="w-full text-xs" style={{ color: 'var(--color-text)' }}>
           <tbody>
-            {planet.mass !== undefined && (
+            {planet.mass != null && (
               <tr className="border-t border-white/10">
                 <td className="py-1.5 opacity-60">Mass</td>
                 <td className="py-1.5 text-right">{formatMass(planet.mass)}</td>
               </tr>
             )}
-            {planet.radius !== undefined && (
+            {planet.radius != null && (
               <tr className="border-t border-white/10">
                 <td className="py-1.5 opacity-60">Radius</td>
                 <td className="py-1.5 text-right">{formatRadius(planet.radius)}</td>
@@ -207,13 +207,13 @@ export function Tooltip({ planet, x, y, containerWidth = 1200, containerHeight =
               <td className="py-1.5 opacity-60">Orbital Period</td>
               <td className="py-1.5 text-right">{formatPeriod(planet.period)}</td>
             </tr>
-            {planet.separation !== undefined && (
+            {planet.separation != null && (
               <tr className="border-t border-white/10">
                 <td className="py-1.5 opacity-60">Semi-major Axis</td>
                 <td className="py-1.5 text-right">{planet.separation.toFixed(2)} AU</td>
               </tr>
             )}
-            {planet.distance !== undefined && (
+            {planet.distance != null && (
               <tr className="border-t border-white/10">
                 <td className="py-1.5 opacity-60">Distance</td>
                 <td className="py-1.5 text-right">{planet.distance.toFixed(1)} ly</td>
@@ -238,7 +238,7 @@ export function Tooltip({ planet, x, y, containerWidth = 1200, containerHeight =
       </div>
 
       {/* Size Comparison */}
-      {planet.radius !== undefined && (
+      {planet.radius != null && (
         <div className="px-4 pb-3">
           <div className="text-xs opacity-60 mb-2" style={{ color: 'var(--color-text)' }}>
             Size Comparison
