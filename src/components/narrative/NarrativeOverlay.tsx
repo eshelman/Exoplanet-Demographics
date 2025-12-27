@@ -16,6 +16,7 @@ export function NarrativeOverlay() {
   const showSolarSystem = useVizStore((s) => s.showSolarSystem)
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const enableAllMethods = useVizStore((s) => s.enableAllMethods)
+  const setEnabledPlanetTypes = useVizStore((s) => s.setEnabledPlanetTypes)
 
   const currentStepId = NARRATIVE_STEPS[narrativeStep]
   const currentContent = getStepContent(currentStepId)
@@ -28,6 +29,7 @@ export function NarrativeOverlay() {
     if (!narrativeMode || !currentContent?.viewConfig) return
 
     const config = currentContent.viewConfig
+    const allMethods = ['radial-velocity', 'transit-kepler', 'transit-other', 'microlensing', 'direct-imaging', 'astrometry', 'other'] as const
 
     // Apply showSolarSystem if specified
     if (config.showSolarSystem !== undefined && config.showSolarSystem !== showSolarSystem) {
@@ -43,14 +45,22 @@ export function NarrativeOverlay() {
     if (config.enabledMethods !== undefined) {
       if (config.enabledMethods.length === 0) {
         // Disable all methods (show only solar system)
-        const allMethods = ['radial-velocity', 'transit-kepler', 'transit-other', 'microlensing', 'direct-imaging', 'astrometry'] as const
         allMethods.forEach((m) => setMethodEnabled(m, false))
       } else {
-        enableAllMethods()
+        // Enable only specified methods
+        allMethods.forEach((m) => setMethodEnabled(m, config.enabledMethods!.includes(m)))
       }
     } else {
       // Default: enable all methods
       enableAllMethods()
+    }
+
+    // Apply enabled planet types if specified
+    if (config.enabledPlanetTypes !== undefined) {
+      setEnabledPlanetTypes(config.enabledPlanetTypes)
+    } else {
+      // Default: show all planet types (empty set means no filter)
+      setEnabledPlanetTypes([])
     }
   }, [narrativeStep, narrativeMode])
 

@@ -48,6 +48,7 @@ interface VizState {
   enableAllMethods: () => void
   disableAllMethods: () => void
   togglePlanetType: (type: string) => void
+  setEnabledPlanetTypes: (types: string[]) => void
   toggleSolarSystem: () => void
   toggleBiasOverlay: () => void
 
@@ -146,6 +147,8 @@ export const useVizStore = create<VizState>()(
         }
         return { enabledPlanetTypes: newTypes }
       }),
+
+    setEnabledPlanetTypes: (types) => set({ enabledPlanetTypes: new Set(types) }),
 
     toggleSolarSystem: () => set((state) => ({ showSolarSystem: !state.showSolarSystem })),
 

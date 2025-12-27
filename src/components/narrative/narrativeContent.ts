@@ -10,9 +10,9 @@ export interface NarrativeStepContent {
   // View configuration for this step
   viewConfig?: {
     enabledMethods?: DetectionMethodId[]
+    enabledPlanetTypes?: string[]
     showSolarSystem?: boolean
     showBiasOverlay?: boolean
-    highlightPlanetTypes?: string[]
     zoomRegion?: {
       xMin: number
       xMax: number
@@ -45,6 +45,7 @@ export const NARRATIVE_CONTENT: NarrativeStepContent[] = [
     learnMore:
       'The Kepler space telescope revolutionized exoplanet science by continuously monitoring 150,000 stars, discovering thousands of planets via the transit method. Ground-based radial velocity surveys excel at finding massive planets. Microlensing probes distant, cold worlds, while direct imaging captures young, hot giants.',
     viewConfig: {
+      enabledMethods: ['radial-velocity', 'transit-kepler', 'transit-other'],
       showBiasOverlay: false,
       showSolarSystem: false,
     },
@@ -71,7 +72,7 @@ export const NARRATIVE_CONTENT: NarrativeStepContent[] = [
     learnMore:
       'Super-Earths and sub-Neptunes blur the line between rocky and gaseous worlds. Some may have thick hydrogen atmospheres, others could be water worlds or rocky planets with thin envelopes. Understanding their composition is a major goal of atmospheric characterization missions.',
     viewConfig: {
-      highlightPlanetTypes: ['super-earth', 'sub-neptune'],
+      enabledPlanetTypes: ['super-earth', 'sub-neptune'],
       showSolarSystem: true,
       showBiasOverlay: false,
     },
@@ -103,7 +104,7 @@ export const NARRATIVE_CONTENT: NarrativeStepContent[] = [
     learnMore:
       'Measuring η⊕ (eta-Earth) requires correcting for detection biases and defining "Earth-like" and "habitable zone." Different studies use different assumptions, leading to a range of estimates. Future missions like the Habitable Worlds Observatory aim to directly image and characterize these worlds.',
     viewConfig: {
-      highlightPlanetTypes: ['rocky', 'super-earth'],
+      enabledPlanetTypes: ['rocky', 'super-earth'],
       showSolarSystem: true,
       zoomRegion: {
         xMin: 100,
