@@ -201,12 +201,12 @@ export class PlanetSonification {
   setComplexity(complexity: SonificationComplexity): void {
     this.complexity = complexity
 
-    // Adjust reverb/chorus based on complexity
+    // Adjust reverb/chorus based on complexity (use rampTo to avoid clicks)
     if (this.reverb) {
-      this.reverb.wet.value = complexity === 'simple' ? 0.1 : complexity === 'standard' ? 0.3 : 0.5
+      this.reverb.wet.rampTo(complexity === 'simple' ? 0.1 : complexity === 'standard' ? 0.3 : 0.5, 0.1)
     }
     if (this.chorus) {
-      this.chorus.wet.value = complexity === 'simple' ? 0 : complexity === 'standard' ? 0.3 : 0.5
+      this.chorus.wet.rampTo(complexity === 'simple' ? 0 : complexity === 'standard' ? 0.3 : 0.5, 0.1)
     }
   }
 
@@ -449,6 +449,8 @@ export class PlanetSonification {
   startBrush(): void {
     if (!this.initialized || !this.brushNoise || !this.brushGain) return
 
+    // Ensure gain is 0 before starting to avoid clicks
+    this.brushGain.gain.value = 0
     this.brushNoise.start()
     this.brushGain.gain.rampTo(0.15, 0.1)
   }
@@ -472,9 +474,9 @@ export class PlanetSonification {
   endBrush(capturedCount: number): void {
     if (!this.initialized || !this.brushNoise || !this.brushGain || !this.selectSynth) return
 
-    // Fade out brush noise
-    this.brushGain.gain.rampTo(0, 0.2)
-    setTimeout(() => this.brushNoise?.stop(), 200)
+    // Fade out brush noise - wait for fade before stopping to avoid clicks
+    this.brushGain.gain.rampTo(0, 0.25)
+    setTimeout(() => this.brushNoise?.stop(), 300)
 
     // Play capture sound based on count
     if (capturedCount > 0) {
@@ -493,8 +495,9 @@ export class PlanetSonification {
   cancelBrush(): void {
     if (!this.brushNoise || !this.brushGain) return
 
-    this.brushGain.gain.rampTo(0, 0.1)
-    setTimeout(() => this.brushNoise?.stop(), 100)
+    // Fade out before stopping to avoid clicks
+    this.brushGain.gain.rampTo(0, 0.15)
+    setTimeout(() => this.brushNoise?.stop(), 200)
   }
 
   /**
@@ -512,8 +515,14 @@ export class PlanetSonification {
   dispose(): void {
     this.stopAllHovers()
 
-    this.brushNoise?.stop()
-    this.brushNoise?.dispose()
+    // Fade out brush noise before stopping to avoid clicks
+    if (this.brushGain) {
+      this.brushGain.gain.rampTo(0, 0.1)
+    }
+    setTimeout(() => {
+      this.brushNoise?.stop()
+      this.brushNoise?.dispose()
+    }, 150)
     this.brushFilter?.dispose()
     this.brushGain?.dispose()
 

@@ -210,6 +210,8 @@ export class UISounds {
     if (!this.initialized || !this.wooshNoise || !this.wooshGain || this.isPanning) return
 
     this.isPanning = true
+    // Ensure gain is 0 before starting to avoid clicks
+    this.wooshGain.gain.value = 0
     this.wooshNoise.start()
     this.wooshGain.gain.rampTo(0.15, 0.1)
   }
@@ -238,14 +240,15 @@ export class UISounds {
     this.isPanning = false
 
     // Fade out with filter sweep down
-    this.wooshFilter?.frequency.rampTo(300, 0.2)
-    this.wooshGain.gain.rampTo(0, 0.2)
+    this.wooshFilter?.frequency.rampTo(300, 0.3)
+    this.wooshGain.gain.rampTo(0, 0.3)
 
+    // Wait for fade to complete before stopping to avoid clicks
     setTimeout(() => {
       if (!this.isPanning) {
         this.wooshNoise?.stop()
       }
-    }, 250)
+    }, 350)
   }
 
   /**
@@ -376,8 +379,10 @@ export class UISounds {
    * Clean up resources
    */
   dispose(): void {
-    if (this.isPanning) {
-      this.wooshNoise?.stop()
+    if (this.isPanning && this.wooshGain) {
+      // Fade out before stopping to avoid clicks
+      this.wooshGain.gain.rampTo(0, 0.1)
+      setTimeout(() => this.wooshNoise?.stop(), 150)
     }
 
     this.clickSynth?.dispose()

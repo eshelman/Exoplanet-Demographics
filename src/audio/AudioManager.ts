@@ -190,17 +190,33 @@ class AudioManagerClass {
     if (!this.initialized) return
 
     if (document.hidden) {
-      // Suspend audio when tab is hidden
+      // Suspend audio when tab is hidden - fade out to avoid clicks
       Tone.getTransport().pause()
-      if (this.ambientNoise?.state === 'started') {
-        this.ambientNoise.stop()
+      if (this.ambientNoise?.state === 'started' && this.ambientFilter) {
+        // Fade out through filter before stopping
+        const originalFreq = this.ambientFilter.frequency.value
+        this.ambientFilter.frequency.rampTo(20, 0.2)
+        setTimeout(() => {
+          this.ambientNoise?.stop()
+          if (this.ambientFilter) {
+            this.ambientFilter.frequency.value = originalFreq
+          }
+        }, 250)
       }
     } else {
       // Resume audio when tab is visible
       if (this.settings.enabled) {
         Tone.getTransport().start()
         if (this.settings.categories.ambient && this.ambientNoise?.state === 'stopped') {
-          this.ambientNoise?.start()
+          // Fade in through filter to avoid clicks
+          if (this.ambientFilter) {
+            const targetFreq = this.ambientFilter.frequency.value
+            this.ambientFilter.frequency.value = 20
+            this.ambientNoise?.start()
+            this.ambientFilter.frequency.rampTo(targetFreq, 0.3)
+          } else {
+            this.ambientNoise?.start()
+          }
         }
       }
     }
@@ -279,12 +295,24 @@ class AudioManagerClass {
     // Start/stop ambient based on settings
     if (this.settings.enabled && this.settings.categories.ambient) {
       if (this.ambientNoise?.state === 'stopped') {
-        this.ambientNoise?.start()
+        // Fade in through filter to avoid clicks
+        if (this.ambientFilter) {
+          const targetFreq = 200 // Default filter frequency
+          this.ambientFilter.frequency.value = 20
+          this.ambientNoise?.start()
+          this.ambientFilter.frequency.rampTo(targetFreq, 0.3)
+        } else {
+          this.ambientNoise?.start()
+        }
       }
       // Start ambient soundscape
       this.ambientSoundscape?.start()
     } else {
-      if (this.ambientNoise?.state === 'started') {
+      if (this.ambientNoise?.state === 'started' && this.ambientFilter) {
+        // Fade out through filter before stopping to avoid clicks
+        this.ambientFilter.frequency.rampTo(20, 0.2)
+        setTimeout(() => this.ambientNoise?.stop(), 250)
+      } else if (this.ambientNoise?.state === 'started') {
         this.ambientNoise?.stop()
       }
       // Stop ambient soundscape

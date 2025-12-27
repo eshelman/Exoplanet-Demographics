@@ -209,8 +209,12 @@ export class AmbientSoundscape {
 
     this.playing = true
 
-    // Start base layer
+    // Start base layer with fade-in to avoid clicks
+    if (this.noiseGain) {
+      this.noiseGain.gain.value = 0
+    }
     this.noiseSource?.start()
+    this.noiseGain?.gain.rampTo(0.15, 0.3)
 
     // Start bass drone - slowly modulating between 25-40 Hz
     this.playBassDrone()
@@ -232,8 +236,13 @@ export class AmbientSoundscape {
 
     this.playing = false
 
-    // Stop noise
-    this.noiseSource?.stop()
+    // Fade out noise before stopping to avoid clicks
+    this.noiseGain?.gain.rampTo(0, 0.3)
+    setTimeout(() => {
+      if (!this.playing) {
+        this.noiseSource?.stop()
+      }
+    }, 350)
 
     // Stop whale song interval
     if (this.whaleInterval) {
