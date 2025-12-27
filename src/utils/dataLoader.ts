@@ -43,6 +43,15 @@ interface ExoplanetData {
   discoveryYear: number | null
   planetType: string | null
   isSolarSystem: boolean
+  // Orbital properties
+  eccentricity: number | null
+  insolation: number | null
+  // Stellar properties
+  starTemperature: number | null
+  starRadius: number | null
+  starMass: number | null
+  starSpectralType: string | null
+  distance: number | null
 }
 
 export async function loadExoplanets(): Promise<Planet[]> {
@@ -63,5 +72,14 @@ export async function loadExoplanets(): Promise<Planet[]> {
       discoveryYear: p.discoveryYear,
       planetType: p.planetType || 'unknown',
       isSolarSystem: false,
+      // Orbital properties (used by simulation)
+      eccentricity: p.eccentricity,
+      insolation: p.insolation,
+      // Stellar properties (used by simulation)
+      starTemperature: p.starTemperature,
+      starRadius: p.starRadius,
+      starMass: p.starMass,
+      starSpectralType: p.starSpectralType,
+      distance: p.distance,
     }))
 }
