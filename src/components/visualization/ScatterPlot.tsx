@@ -12,6 +12,7 @@ import { GridLines } from './GridLines'
 import { PlanetPoints } from './PlanetPoints'
 import { BiasOverlay } from './BiasOverlay'
 import { BiasLegend } from './BiasLegend'
+import { Tooltip } from './Tooltip'
 import { ZoomControls } from './ZoomControls'
 import type { Planet, BoundingBox, DetectionMethodId } from '../../types'
 
@@ -36,6 +37,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   // Get state from store
   const xAxis = useVizStore((s) => s.xAxis)
   const yAxis = useVizStore((s) => s.yAxis)
+  const hoveredPlanet = useVizStore((s) => s.hoveredPlanet)
   const selectedPlanet = useVizStore((s) => s.selectedPlanet)
   const brushSelection = useVizStore((s) => s.brushSelection)
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
@@ -58,6 +60,9 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
     () => selectVisiblePlanets(planets),
     [planets, enabledMethods, showSolarSystem, enabledPlanetTypes]
   )
+
+  // Mouse position for tooltip (local state is fine for this)
+  const mousePos = useRef<{ x: number; y: number } | null>(null)
 
   // Base scales (unzoomed)
   const baseXScale = useMemo(() => createXScale(xAxis, innerWidth), [xAxis, innerWidth])
@@ -86,6 +91,14 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
     onBrushEnd: handleBrushEnd,
     modifierKey: 'shift',
   })
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    mousePos.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    }
+  }
 
   const handleClearSelection = () => {
     clearBrush()
@@ -132,6 +145,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
         ref={svgRef}
         width={width}
         height={height}
+        onMouseMove={handleMouseMove}
         onMouseLeave={() => setHoveredPlanet(null)}
         style={{ cursor: 'grab' }}
       >
@@ -231,7 +245,10 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
         </div>
       )}
 
-      {/* Tooltip removed - full details panel now shows on hover */}
+      {/* Tooltip */}
+      {hoveredPlanet && mousePos.current && (
+        <Tooltip planet={hoveredPlanet} x={mousePos.current.x} y={mousePos.current.y} />
+      )}
 
       {/* Instructions hint */}
       {!brushSelection && (
