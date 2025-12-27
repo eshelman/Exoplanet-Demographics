@@ -1,3 +1,5 @@
 export * from './NarrativeOverlay'
+export * from './PlanetTourOverlay'
 export * from './StoryStep'
 export * from './narrativeContent'
+export * from './planetTourContent'

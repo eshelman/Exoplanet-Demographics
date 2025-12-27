@@ -12,6 +12,7 @@ export function Header({ visibleCount }: HeaderProps) {
   const [audioSettingsOpen, setAudioSettingsOpen] = useState(false)
 
   const startNarrative = useVizStore((s) => s.startNarrative)
+  const startPlanetTour = useVizStore((s) => s.startPlanetTour)
   const showSolarSystem = useVizStore((s) => s.showSolarSystem)
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const toggleSolarSystem = useVizStore((s) => s.toggleSolarSystem)
@@ -72,6 +73,30 @@ export function Header({ visibleCount }: HeaderProps) {
               <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
             </svg>
             Take the Tour
+          </button>
+
+          {/* Tour Fun Planets button */}
+          <button
+            onClick={() => {
+              startPlanetTour()
+              playClick()
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all hover:opacity-90"
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--color-accent)',
+              border: '1px solid var(--color-accent)',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+              <line x1="12" y1="2" x2="12" y2="4" />
+              <line x1="12" y1="20" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="4" y2="12" />
+              <line x1="20" y1="12" x2="22" y2="12" />
+            </svg>
+            Visit Notable Systems
           </button>
 
           {/* Planet count badge */}

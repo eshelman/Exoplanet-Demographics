@@ -13,6 +13,9 @@ interface SolarSystemModalProps {
   initialPlanetId?: string
   isOpen: boolean
   onClose: () => void
+  disableBackdropClose?: boolean
+  /** Offset modal to the right to make room for tour panel */
+  tourMode?: boolean
 }
 
 export function SolarSystemModal({
@@ -20,6 +23,8 @@ export function SolarSystemModal({
   initialPlanetId,
   isOpen,
   onClose,
+  disableBackdropClose = false,
+  tourMode = false,
 }: SolarSystemModalProps) {
   // Find initial planet or default to first
   const getInitialPlanet = () => {
@@ -154,8 +159,11 @@ export function SolarSystemModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'Escape':
-          e.preventDefault()
-          onClose()
+          // Don't handle Escape if backdrop close is disabled (tour mode handles it)
+          if (!disableBackdropClose) {
+            e.preventDefault()
+            onClose()
+          }
           break
         case ' ':
           e.preventDefault()
@@ -212,9 +220,12 @@ export function SolarSystemModal({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, system, onClose, navigatePlanet, adjustSpeed, handlePauseToggle, handleOrbitsToggle, handleLabelsToggle, handleHabitableZoneToggle, handleReset])
+  }, [isOpen, system, onClose, disableBackdropClose, navigatePlanet, adjustSpeed, handlePauseToggle, handleOrbitsToggle, handleLabelsToggle, handleHabitableZoneToggle, handleReset])
 
   if (!isOpen) return null
+
+  // Tour mode offset - leave room for tour panel on left
+  const tourPanelWidth = 320
 
   return (
     <AnimatePresence>
@@ -224,6 +235,7 @@ export function SolarSystemModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
+        style={tourMode ? { left: tourPanelWidth } : undefined}
       >
         {/* Backdrop */}
         <motion.div
@@ -231,7 +243,7 @@ export function SolarSystemModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={disableBackdropClose ? undefined : onClose}
         />
 
         {/* Modal content */}

@@ -16,6 +16,20 @@ export const NARRATIVE_STEPS = [
 
 export type NarrativeStepId = (typeof NARRATIVE_STEPS)[number]
 
+// Planet tour steps (notable systems to visit)
+export const PLANET_TOUR_STEPS = [
+  'intro',
+  'trappist-1',
+  '51-peg',
+  'kepler-11',
+  'hd-80606',
+  '55-cnc',
+  'hr-8799',
+  'finale',
+] as const
+
+export type PlanetTourStepId = (typeof PLANET_TOUR_STEPS)[number]
+
 interface VizState {
   // View state
   xAxis: XAxisType
@@ -36,6 +50,10 @@ interface VizState {
   // Narrative state
   narrativeMode: boolean
   narrativeStep: number
+
+  // Planet tour state (simulation-focused tour)
+  planetTourMode: boolean
+  planetTourStep: number
 
   // Simulation state
   simulationOpen: boolean
@@ -69,6 +87,13 @@ interface VizState {
   nextStep: () => void
   prevStep: () => void
   goToStep: (step: number) => void
+
+  // Planet tour actions
+  startPlanetTour: () => void
+  exitPlanetTour: () => void
+  nextPlanetTourStep: () => void
+  prevPlanetTourStep: () => void
+  goToPlanetTourStep: (step: number) => void
 
   // Simulation actions
   openSimulation: (system: SimulatedSystem, planetId: string) => void
@@ -108,6 +133,10 @@ const initialState = {
   // Narrative
   narrativeMode: false,
   narrativeStep: 0,
+
+  // Planet tour
+  planetTourMode: false,
+  planetTourStep: 0,
 
   // Simulation
   simulationOpen: false,
@@ -199,6 +228,26 @@ export const useVizStore = create<VizState>()(
     goToStep: (step) =>
       set({
         narrativeStep: Math.max(0, Math.min(step, NARRATIVE_STEPS.length - 1)),
+      }),
+
+    // Planet tour actions
+    startPlanetTour: () => set({ planetTourMode: true, planetTourStep: 0 }),
+
+    exitPlanetTour: () => set({ planetTourMode: false, simulationOpen: false }),
+
+    nextPlanetTourStep: () =>
+      set((state) => ({
+        planetTourStep: Math.min(state.planetTourStep + 1, PLANET_TOUR_STEPS.length - 1),
+      })),
+
+    prevPlanetTourStep: () =>
+      set((state) => ({
+        planetTourStep: Math.max(state.planetTourStep - 1, 0),
+      })),
+
+    goToPlanetTourStep: (step) =>
+      set({
+        planetTourStep: Math.max(0, Math.min(step, PLANET_TOUR_STEPS.length - 1)),
       }),
 
     // Simulation actions

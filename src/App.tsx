@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ScatterPlot } from './components/visualization'
 import { SidePanel } from './components/info'
-import { NarrativeOverlay } from './components/narrative'
+import { NarrativeOverlay, PlanetTourOverlay } from './components/narrative'
 import { SolarSystemModal } from './components/simulation'
 import { Header, Footer } from './components/layout'
 import { loadSolarSystem, loadExoplanets } from './utils'
@@ -25,6 +25,9 @@ function App() {
   const simulationSystem = useVizStore((s) => s.simulationSystem)
   const simulationPlanetId = useVizStore((s) => s.simulationPlanetId)
   const closeSimulation = useVizStore((s) => s.closeSimulation)
+
+  // Planet tour state
+  const planetTourMode = useVizStore((s) => s.planetTourMode)
 
   useEffect(() => {
     Promise.all([loadSolarSystem(), loadExoplanets()])
@@ -82,6 +85,9 @@ function App() {
       {/* Narrative Overlay (Guided Tour) */}
       <NarrativeOverlay />
 
+      {/* Planet Tour Overlay (Notable Systems) */}
+      <PlanetTourOverlay />
+
       {/* Orbital Simulation Modal */}
       {simulationSystem && (
         <SolarSystemModal
@@ -89,6 +95,8 @@ function App() {
           initialPlanetId={simulationPlanetId || undefined}
           isOpen={simulationOpen}
           onClose={closeSimulation}
+          disableBackdropClose={planetTourMode}
+          tourMode={planetTourMode}
         />
       )}
     </div>
