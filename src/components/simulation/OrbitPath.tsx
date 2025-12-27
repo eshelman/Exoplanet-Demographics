@@ -26,7 +26,12 @@ export const OrbitPath = memo(function OrbitPath({
 }: OrbitPathProps) {
   // Generate orbit path points
   const pathD = useMemo(() => {
-    const points = generateOrbitPath(semiMajorAxis, eccentricity, argumentOfPeriapsis, 72)
+    // Use more points for highly eccentric orbits to keep curves smooth
+    // For e=0, 72 points is plenty. For e=0.93, we need ~360+ points
+    const basePoints = 72
+    const numPoints = Math.round(basePoints + (eccentricity * 300))
+
+    const points = generateOrbitPath(semiMajorAxis, eccentricity, argumentOfPeriapsis, numPoints)
 
     if (points.length === 0) return ''
 
@@ -36,12 +41,33 @@ export const OrbitPath = memo(function OrbitPath({
       y: cy - p.y * scale, // Invert Y for screen coordinates
     }))
 
-    // Build path string
-    const pathParts = scaledPoints.map((p, i) => {
-      return i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`
-    })
+    // Build smooth path using Catmull-Rom to Bezier conversion
+    // This creates smooth curves through all points
+    if (scaledPoints.length < 3) {
+      return scaledPoints.map((p, i) => i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`).join(' ') + ' Z'
+    }
 
-    return pathParts.join(' ') + ' Z'
+    // Start path
+    let path = `M ${scaledPoints[0].x} ${scaledPoints[0].y}`
+
+    // Use quadratic bezier curves for smooth interpolation
+    for (let i = 0; i < scaledPoints.length; i++) {
+      const p0 = scaledPoints[(i - 1 + scaledPoints.length) % scaledPoints.length]
+      const p1 = scaledPoints[i]
+      const p2 = scaledPoints[(i + 1) % scaledPoints.length]
+      const p3 = scaledPoints[(i + 2) % scaledPoints.length]
+
+      // Catmull-Rom to cubic bezier control points
+      const tension = 6 // Higher = tighter curves
+      const cp1x = p1.x + (p2.x - p0.x) / tension
+      const cp1y = p1.y + (p2.y - p0.y) / tension
+      const cp2x = p2.x - (p3.x - p1.x) / tension
+      const cp2y = p2.y - (p3.y - p1.y) / tension
+
+      path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`
+    }
+
+    return path
   }, [semiMajorAxis, eccentricity, argumentOfPeriapsis, cx, cy, scale])
 
   // Calculate periapsis and apoapsis positions for markers
