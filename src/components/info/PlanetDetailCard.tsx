@@ -7,6 +7,7 @@ import { PlanetIcon } from './PlanetIcon'
 interface PlanetDetailCardProps {
   planet: Planet
   onClose: () => void
+  onViewSimulation?: () => void
 }
 
 // Format detection method name for display
@@ -74,7 +75,7 @@ function getDensityInterpretation(density: number): string {
   return 'Very high - extremely dense'
 }
 
-export function PlanetDetailCard({ planet, onClose }: PlanetDetailCardProps) {
+export function PlanetDetailCard({ planet, onClose, onViewSimulation }: PlanetDetailCardProps) {
   const color = planet.isSolarSystem
     ? SOLAR_SYSTEM_COLOR
     : METHOD_COLORS[planet.detectionMethod] || METHOD_COLORS.other
@@ -265,6 +266,30 @@ export function PlanetDetailCard({ planet, onClose }: PlanetDetailCardProps) {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* View Orbital Simulation Button */}
+      {!planet.isSolarSystem && onViewSimulation && (
+        <div
+          className="px-4 py-3 border-t"
+          style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+        >
+          <button
+            onClick={onViewSimulation}
+            className="w-full text-xs flex items-center justify-center gap-2 py-2 px-3 rounded-lg transition-colors hover:opacity-90"
+            style={{
+              backgroundColor: 'var(--color-accent)',
+              color: 'var(--color-background)',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+              <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
+            </svg>
+            View Orbital Simulation
+          </button>
         </div>
       )}
 

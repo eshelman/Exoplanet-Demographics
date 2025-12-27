@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Planet, DetectionMethodId } from '../../types'
 import { PlanetDetailCard } from './PlanetDetailCard'
@@ -7,6 +7,7 @@ import { PlanetIcon } from './PlanetIcon'
 import { useAudio } from '../../audio'
 import { useVizStore } from '../../store'
 import { METHOD_COLORS, PLANET_TYPE_COLORS } from '../../utils/scales'
+import { getSystemForPlanet } from '../../utils/systemGrouping'
 
 interface SidePanelProps {
   selectedPlanet: Planet | null
@@ -53,6 +54,9 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
   const enabledMethods = useVizStore((s) => s.enabledMethods)
   const enableAllMethods = useVizStore((s) => s.enableAllMethods)
 
+  // Simulation
+  const openSimulation = useVizStore((s) => s.openSimulation)
+
   // Auto-switch to details tab when a planet is selected
   if (selectedPlanet && activeTab !== 'details') {
     setActiveTab('details')
@@ -73,6 +77,17 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
     toggleMethod(methodId)
     wasEnabled ? playToggleOff() : playToggleOn()
   }
+
+  // Handle opening simulation for selected planet
+  const handleViewSimulation = useCallback(() => {
+    if (!selectedPlanet || selectedPlanet.isSolarSystem) return
+    try {
+      const system = getSystemForPlanet(selectedPlanet, planets)
+      openSimulation(system, selectedPlanet.id)
+    } catch (error) {
+      console.error('Failed to create simulation system:', error)
+    }
+  }, [selectedPlanet, planets, openSimulation])
 
   // Compute stats
   const stats = useMemo(() => {
@@ -243,7 +258,11 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
                     className="p-4"
                   >
                     {selectedPlanet ? (
-                      <PlanetDetailCard planet={selectedPlanet} onClose={onClearSelection} />
+                      <PlanetDetailCard
+                        planet={selectedPlanet}
+                        onClose={onClearSelection}
+                        onViewSimulation={!selectedPlanet.isSolarSystem ? handleViewSimulation : undefined}
+                      />
                     ) : (
                       <div
                         className="text-center py-8"

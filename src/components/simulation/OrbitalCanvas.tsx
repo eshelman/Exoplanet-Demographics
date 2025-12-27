@@ -1,12 +1,18 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { SimulatedSystem, SimulatedPlanet, OrbitalPosition } from '../../types/simulation'
 import { computeSystemPositions } from '../../utils/orbitalMechanics'
 import { StarRenderer } from './StarRenderer'
 import { PlanetRenderer } from './PlanetRenderer'
 import { OrbitPath } from './OrbitPath'
 import { HabitableZoneRenderer } from './HabitableZoneRenderer'
+import { SimulationTooltip } from './SimulationTooltip'
 import { useSimulationLoop } from '../../hooks/useSimulationLoop'
+
+// Zoom level bounds
+const MIN_ZOOM = 0.25
+const MAX_ZOOM = 4
+const ZOOM_STEP = 0.25
 
 interface OrbitalCanvasProps {
   system: SimulatedSystem
@@ -32,8 +38,10 @@ export function OrbitalCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
   const [hoveredPlanetId, setHoveredPlanetId] = useState<string | null>(null)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
   const [binaryAngle, setBinaryAngle] = useState(0)
+  const [zoomLevel, setZoomLevel] = useState(1)
 
   // Measure container dimensions
   useEffect(() => {
@@ -56,28 +64,63 @@ export function OrbitalCanvas({
     return () => resizeObserver.disconnect()
   }, [])
 
-  // Calculate scale to fit the system
-  const { scale, cx, cy } = useMemo(() => {
+  // Calculate base scale to fit the system
+  const { baseScale, cx, cy, maxSemiMajorAxis } = useMemo(() => {
     const { width, height } = dimensions
     const centerX = width / 2
     const centerY = height / 2
 
     // Find the outermost planet
-    const maxSemiMajorAxis = Math.max(...system.planets.map((p) => p.semiMajorAxis * (1 + p.eccentricity)))
+    const maxAxis = Math.max(...system.planets.map((p) => p.semiMajorAxis * (1 + p.eccentricity)))
 
     // Add padding and calculate scale
     const padding = 80
     const availableRadius = Math.min(width, height) / 2 - padding
 
-    // Pixels per AU
-    const pixelsPerAU = availableRadius / maxSemiMajorAxis
+    // Pixels per AU (base scale, before zoom)
+    const pixelsPerAU = availableRadius / maxAxis
 
     return {
-      scale: pixelsPerAU,
+      baseScale: pixelsPerAU,
       cx: centerX,
       cy: centerY,
+      maxSemiMajorAxis: maxAxis,
     }
   }, [dimensions, system.planets])
+
+  // Apply zoom to scale
+  const scale = baseScale * zoomLevel
+
+  // Zoom controls
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP))
+  }, [])
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP))
+  }, [])
+
+  const handleZoomReset = useCallback(() => {
+    setZoomLevel(1)
+  }, [])
+
+  // Mouse wheel zoom
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP
+    setZoomLevel((z) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z + delta)))
+  }, [])
+
+  // Track mouse position for tooltip
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (rect) {
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+  }, [])
 
   // Animation loop callback
   const handleTick = useCallback(
@@ -108,6 +151,12 @@ export function OrbitalCanvas({
     handleTick(0)
   }, [handleTick])
 
+  // Get hovered planet data for tooltip
+  const hoveredPlanet = hoveredPlanetId
+    ? system.planets.find((p) => p.id === hoveredPlanetId)
+    : null
+  const hoveredPosition = hoveredPlanetId ? positions.get(hoveredPlanetId) : null
+
   return (
     <div
       ref={containerRef}
@@ -115,6 +164,8 @@ export function OrbitalCanvas({
       style={{
         background: 'radial-gradient(ellipse at center, #0a1628 0%, #050a14 100%)',
       }}
+      onWheel={handleWheel}
+      onMouseMove={handleMouseMove}
     >
       {/* Star field background */}
       <StarFieldBackground width={dimensions.width} height={dimensions.height} />
@@ -205,6 +256,67 @@ export function OrbitalCanvas({
       >
         1 sec = 1 day × {speed}
       </div>
+
+      {/* Zoom controls */}
+      <div
+        className="absolute bottom-4 left-4 flex flex-col gap-1"
+        style={{ color: 'var(--color-text)' }}
+      >
+        <button
+          onClick={handleZoomIn}
+          disabled={zoomLevel >= MAX_ZOOM}
+          className="w-8 h-8 rounded flex items-center justify-center transition-colors hover:bg-white/10 disabled:opacity-30"
+          title="Zoom in (+)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="11" y1="8" x2="11" y2="14" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+        <button
+          onClick={handleZoomReset}
+          className="w-8 h-8 rounded flex items-center justify-center text-xs transition-colors hover:bg-white/10"
+          title="Reset zoom"
+        >
+          {Math.round(zoomLevel * 100)}%
+        </button>
+        <button
+          onClick={handleZoomOut}
+          disabled={zoomLevel <= MIN_ZOOM}
+          className="w-8 h-8 rounded flex items-center justify-center transition-colors hover:bg-white/10 disabled:opacity-30"
+          title="Zoom out (-)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Scale indicator */}
+      <div
+        className="absolute bottom-4 right-4 text-xs opacity-50"
+        style={{ color: 'var(--color-text)' }}
+      >
+        {maxSemiMajorAxis.toFixed(1)} AU max
+      </div>
+
+      {/* Planet tooltip */}
+      <AnimatePresence>
+        {hoveredPlanet && hoveredPosition && (
+          <SimulationTooltip
+            planet={hoveredPlanet}
+            position={hoveredPosition}
+            x={mousePos.x}
+            y={mousePos.y}
+            containerWidth={dimensions.width}
+            containerHeight={dimensions.height}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
