@@ -19,10 +19,12 @@ export function useSimulationAudio() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (isAmbientPlaying.current) {
-        AudioManager.stopSimulationAmbient()
-        AudioManager.stopSimulationPlanetVoice()
-      }
+      try {
+        if (isAmbientPlaying.current) {
+          AudioManager.stopSimulationAmbient()
+          AudioManager.stopSimulationPlanetVoice()
+        }
+      } catch {}
     }
   }, [])
 
@@ -30,105 +32,116 @@ export function useSimulationAudio() {
    * Start system ambient when simulation opens
    */
   const startAmbient = useCallback((system: SimulatedSystem) => {
-    currentSystemRef.current = system
-    AudioManager.startSimulationAmbient(system)
-    isAmbientPlaying.current = true
+    try {
+      currentSystemRef.current = system
+      AudioManager.startSimulationAmbient(system)
+      isAmbientPlaying.current = true
+    } catch (e) {
+      console.warn('[useSimulationAudio] startAmbient error:', e)
+    }
   }, [])
 
   /**
    * Stop system ambient when simulation closes
    */
   const stopAmbient = useCallback(() => {
-    AudioManager.stopSimulationAmbient()
-    AudioManager.stopSimulationPlanetVoice()
-    isAmbientPlaying.current = false
-    currentSystemRef.current = null
+    try {
+      AudioManager.stopSimulationAmbient()
+      AudioManager.stopSimulationPlanetVoice()
+      isAmbientPlaying.current = false
+      currentSystemRef.current = null
+    } catch {}
   }, [])
 
   /**
    * Start/update selected planet voice
    */
   const selectPlanet = useCallback((planet: SimulatedPlanet) => {
-    AudioManager.stopSimulationPlanetVoice()
-    AudioManager.playSimulationPlanetSelect(planet)
-    AudioManager.startSimulationPlanetVoice(planet)
+    try {
+      if (!planet) return
+      AudioManager.stopSimulationPlanetVoice()
+      AudioManager.playSimulationPlanetSelect(planet)
+      AudioManager.startSimulationPlanetVoice(planet)
+    } catch (e) {
+      console.warn('[useSimulationAudio] selectPlanet error:', e)
+    }
   }, [])
 
   /**
    * Stop selected planet voice
    */
   const deselectPlanet = useCallback(() => {
-    AudioManager.stopSimulationPlanetVoice()
+    try { AudioManager.stopSimulationPlanetVoice() } catch {}
   }, [])
 
   /**
    * Play planet hover sound
    */
   const hoverPlanet = useCallback((planet: SimulatedPlanet) => {
-    AudioManager.playSimulationPlanetHover(planet)
+    try { if (planet) AudioManager.playSimulationPlanetHover(planet) } catch {}
   }, [])
 
   /**
    * Play speed change sound
    */
   const changeSpeed = useCallback((speed: number) => {
-    AudioManager.playSimulationSpeedChange(speed)
+    try { AudioManager.playSimulationSpeedChange(speed) } catch {}
   }, [])
 
   /**
    * Play pause sound
    */
   const pause = useCallback(() => {
-    AudioManager.playSimulationPause()
+    try { AudioManager.playSimulationPause() } catch {}
   }, [])
 
   /**
    * Play resume sound
    */
   const resume = useCallback(() => {
-    AudioManager.playSimulationResume()
+    try { AudioManager.playSimulationResume() } catch {}
   }, [])
 
   /**
    * Play toggle sound (orbits, labels, HZ)
    */
   const toggle = useCallback((enabled: boolean) => {
-    AudioManager.playSimulationToggle(enabled)
+    try { AudioManager.playSimulationToggle(enabled) } catch {}
   }, [])
 
   /**
    * Play modal open sound
    */
   const openModal = useCallback(() => {
-    AudioManager.playSimulationModalOpen()
+    try { AudioManager.playSimulationModalOpen() } catch {}
   }, [])
 
   /**
    * Play modal close sound
    */
   const closeModal = useCallback(() => {
-    AudioManager.playSimulationModalClose()
+    try { AudioManager.playSimulationModalClose() } catch {}
   }, [])
 
   /**
    * Play periapsis passage sound
    */
   const periapsisPass = useCallback((planet: SimulatedPlanet) => {
-    AudioManager.playPeriapsisPass(planet)
+    try { if (planet) AudioManager.playPeriapsisPass(planet) } catch {}
   }, [])
 
   /**
    * Play orbit complete sound
    */
   const orbitComplete = useCallback((planet: SimulatedPlanet) => {
-    AudioManager.playOrbitComplete(planet)
+    try { if (planet) AudioManager.playOrbitComplete(planet) } catch {}
   }, [])
 
   /**
    * Play conjunction sound
    */
   const conjunction = useCallback((planet1: SimulatedPlanet, planet2: SimulatedPlanet) => {
-    AudioManager.playConjunction(planet1, planet2)
+    try { if (planet1 && planet2) AudioManager.playConjunction(planet1, planet2) } catch {}
   }, [])
 
   return {

@@ -57,28 +57,36 @@ export function SolarSystemModal({
 
   // Start/stop ambient audio when modal opens/closes
   useEffect(() => {
-    if (isOpen) {
-      audio.openModal()
-      audio.startAmbient(system)
-      // Start initial planet voice
-      audio.selectPlanet(selectedPlanet)
-    } else {
-      audio.closeModal()
-      audio.stopAmbient()
+    try {
+      if (isOpen) {
+        audio.openModal()
+        audio.startAmbient(system)
+      } else {
+        audio.closeModal()
+        audio.stopAmbient()
+      }
+    } catch (error) {
+      console.error('[SolarSystemModal] Audio error:', error)
     }
-  }, [isOpen, system])
+  }, [isOpen, system, audio])
 
   // Update planet voice when selection changes
   useEffect(() => {
-    if (isOpen && selectedPlanet) {
-      audio.selectPlanet(selectedPlanet)
+    try {
+      if (isOpen && selectedPlanet) {
+        audio.selectPlanet(selectedPlanet)
+      }
+    } catch (error) {
+      console.error('[SolarSystemModal] Planet voice error:', error)
     }
-  }, [selectedPlanet, isOpen])
+  }, [selectedPlanet, isOpen, audio])
 
   // Callbacks - defined before useEffects that use them
   const navigatePlanet = useCallback(
     (direction: number) => {
+      if (!selectedPlanet || system.planets.length === 0) return
       const currentIndex = system.planets.findIndex((p) => p.id === selectedPlanet.id)
+      if (currentIndex === -1) return
       const newIndex = (currentIndex + direction + system.planets.length) % system.planets.length
       setSelectedPlanet(system.planets[newIndex])
     },
@@ -91,43 +99,47 @@ export function SolarSystemModal({
     const newSpeed = SIMULATION_SPEEDS[newIndex]
     if (newSpeed !== speed) {
       setSpeed(newSpeed)
-      audio.changeSpeed(newSpeed)
+      try { audio.changeSpeed(newSpeed) } catch {}
     }
   }, [audio, speed])
 
   const handleReset = useCallback(() => {
     setSpeed(1)
     setIsPaused(false)
-    audio.resume()
-    audio.changeSpeed(1)
+    try {
+      audio.resume()
+      audio.changeSpeed(1)
+    } catch {}
   }, [audio])
 
   const handleSpeedChange = useCallback((newSpeed: SimulationSpeed) => {
     setSpeed(newSpeed)
-    audio.changeSpeed(newSpeed)
+    try { audio.changeSpeed(newSpeed) } catch {}
   }, [audio])
 
   const handlePauseToggle = useCallback(() => {
-    if (isPaused) {
-      audio.resume()
-    } else {
-      audio.pause()
-    }
+    try {
+      if (isPaused) {
+        audio.resume()
+      } else {
+        audio.pause()
+      }
+    } catch {}
     setIsPaused((p) => !p)
   }, [audio, isPaused])
 
   const handleOrbitsToggle = useCallback(() => {
-    audio.toggle(!showOrbits)
+    try { audio.toggle(!showOrbits) } catch {}
     setShowOrbits((s) => !s)
   }, [audio, showOrbits])
 
   const handleLabelsToggle = useCallback(() => {
-    audio.toggle(!showLabels)
+    try { audio.toggle(!showLabels) } catch {}
     setShowLabels((s) => !s)
   }, [audio, showLabels])
 
   const handleHabitableZoneToggle = useCallback(() => {
-    audio.toggle(!showHabitableZone)
+    try { audio.toggle(!showHabitableZone) } catch {}
     setShowHabitableZone((s) => !s)
   }, [audio, showHabitableZone])
 
