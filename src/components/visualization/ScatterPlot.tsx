@@ -245,9 +245,15 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
         </div>
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip with full details */}
       {hoveredPlanet && mousePos.current && (
-        <Tooltip planet={hoveredPlanet} x={mousePos.current.x} y={mousePos.current.y} />
+        <Tooltip
+          planet={hoveredPlanet}
+          x={mousePos.current.x}
+          y={mousePos.current.y}
+          containerWidth={width}
+          containerHeight={height}
+        />
       )}
 
       {/* Instructions hint */}

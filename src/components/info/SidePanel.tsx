@@ -1,22 +1,16 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Planet, DetectionMethodId } from '../../types'
-import { PlanetDetailCard } from './PlanetDetailCard'
 import { OccurrenceRateHeatmap, EtaEarthTimeline } from '../charts'
 import { PlanetIcon } from './PlanetIcon'
 import { useAudio } from '../../audio'
 import { useVizStore } from '../../store'
 import { METHOD_COLORS, PLANET_TYPE_COLORS } from '../../utils/scales'
-import { getSystemForPlanet } from '../../utils/systemGrouping'
 
 interface SidePanelProps {
-  selectedPlanet: Planet | null
   planets: Planet[]
   totalPlanets: number
-  onClearSelection: () => void
 }
-
-type TabId = 'details' | 'stats'
 
 // Planet type data
 const PLANET_TYPES = [
@@ -39,11 +33,10 @@ const DETECTION_METHODS: { id: DetectionMethodId; name: string }[] = [
   { id: 'other', name: 'Other Methods' },
 ]
 
-export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelection }: SidePanelProps) {
+export function SidePanel({ planets, totalPlanets }: SidePanelProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>(selectedPlanet ? 'details' : 'stats')
 
-  const { playSidebarOpen, playSidebarClose, playClick, playToggleOn, playToggleOff } = useAudio()
+  const { playSidebarOpen, playSidebarClose, playToggleOn, playToggleOff } = useAudio()
 
   // Planet type filtering from store
   const togglePlanetType = useVizStore((s) => s.togglePlanetType)
@@ -53,14 +46,6 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
   const toggleMethod = useVizStore((s) => s.toggleMethod)
   const enabledMethods = useVizStore((s) => s.enabledMethods)
   const enableAllMethods = useVizStore((s) => s.enableAllMethods)
-
-  // Simulation
-  const openSimulation = useVizStore((s) => s.openSimulation)
-
-  // Auto-switch to details tab when a planet is selected
-  if (selectedPlanet && activeTab !== 'details') {
-    setActiveTab('details')
-  }
 
   const handleTypeClick = (typeId: string) => {
     const wasEnabled = enabledPlanetTypes.size === 0 || enabledPlanetTypes.has(typeId)
@@ -77,17 +62,6 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
     toggleMethod(methodId)
     wasEnabled ? playToggleOff() : playToggleOn()
   }
-
-  // Handle opening simulation for selected planet
-  const handleViewSimulation = useCallback(() => {
-    if (!selectedPlanet || selectedPlanet.isSolarSystem) return
-    try {
-      const system = getSystemForPlanet(selectedPlanet, planets)
-      openSimulation(system, selectedPlanet.id)
-    } catch (error) {
-      console.error('Failed to create simulation system:', error)
-    }
-  }, [selectedPlanet, planets, openSimulation])
 
   // Compute stats
   const stats = useMemo(() => {
@@ -175,15 +149,8 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
                 opacity: 0.6,
               }}
             >
-              INFO PANEL
+              STATS
             </div>
-            {selectedPlanet && (
-              <div
-                className="w-3 h-3 rounded-full animate-pulse"
-                style={{ backgroundColor: 'var(--color-accent)' }}
-                title={`Selected: ${selectedPlanet.name}`}
-              />
-            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -198,108 +165,12 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
             transition={{ delay: 0.1 }}
             className="flex flex-col h-full overflow-hidden"
           >
-            {/* Tab Header - Only 2 tabs now */}
-            <div
-              className="flex border-b"
-              style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-            >
-              <button
-                onClick={() => {
-                  setActiveTab('details')
-                  playClick()
-                }}
-                className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
-                style={{
-                  color: activeTab === 'details' ? 'var(--color-accent)' : 'var(--color-text)',
-                  opacity: activeTab === 'details' ? 1 : 0.6,
-                }}
-              >
-                Details
-                {activeTab === 'details' && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5"
-                    style={{ backgroundColor: 'var(--color-accent)' }}
-                  />
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('stats')
-                  playClick()
-                }}
-                className="flex-1 px-2 py-3 text-xs font-medium transition-colors relative"
-                style={{
-                  color: activeTab === 'stats' ? 'var(--color-accent)' : 'var(--color-text)',
-                  opacity: activeTab === 'stats' ? 1 : 0.6,
-                }}
-              >
-                Stats
-                {activeTab === 'stats' && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className="absolute bottom-0 left-0 right-0 h-0.5"
-                    style={{ backgroundColor: 'var(--color-accent)' }}
-                  />
-                )}
-              </button>
-            </div>
-
-            {/* Tab Content */}
+            {/* Stats Content */}
             <div className="flex-1 overflow-y-auto">
-              <AnimatePresence mode="wait">
-                {activeTab === 'details' && (
-                  <motion.div
-                    key="details"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="p-4"
-                  >
-                    {selectedPlanet ? (
-                      <PlanetDetailCard
-                        planet={selectedPlanet}
-                        onClose={onClearSelection}
-                        onViewSimulation={!selectedPlanet.isSolarSystem ? handleViewSimulation : undefined}
-                      />
-                    ) : (
-                      <div
-                        className="text-center py-8"
-                        style={{ color: 'var(--color-text)', opacity: 0.5 }}
-                      >
-                        <svg
-                          className="mx-auto mb-3"
-                          width="48"
-                          height="48"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <circle cx="12" cy="12" r="4" />
-                          <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
-                        </svg>
-                        <p className="text-sm">No planet selected</p>
-                        <p className="text-xs mt-1 opacity-60">
-                          Hover over a planet to view details
-                        </p>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-
-                {activeTab === 'stats' && (
-                  <motion.div
-                    key="stats"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                    className="divide-y"
-                    style={{ color: 'var(--color-text)', borderColor: 'rgba(255,255,255,0.1)' }}
-                  >
+              <div
+                className="divide-y"
+                style={{ color: 'var(--color-text)', borderColor: 'rgba(255,255,255,0.1)' }}
+              >
                     {/* 1. Total Planets */}
                     <div className="px-4 py-3">
                       <div className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
@@ -478,13 +349,11 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
                       <OccurrenceRateHeatmap compact />
                     </div>
 
-                    {/* 7. Eta-Earth Estimates */}
-                    <div className="px-4 py-3">
-                      <EtaEarthTimeline compact />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                {/* 7. Eta-Earth Estimates */}
+                <div className="px-4 py-3">
+                  <EtaEarthTimeline compact />
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

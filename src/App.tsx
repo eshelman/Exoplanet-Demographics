@@ -14,8 +14,6 @@ function App() {
   const [loading, setLoading] = useState(true)
 
   // Get state and actions from store
-  const selectedPlanet = useVizStore((s) => s.selectedPlanet)
-  const clearSelection = useVizStore((s) => s.clearSelection)
   const enabledMethods = useVizStore((s) => s.enabledMethods)
   const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
   const showSolarSystem = useVizStore((s) => s.showSolarSystem)
@@ -70,12 +68,10 @@ function App() {
           <ScatterPlot planets={allPlanets} />
         </main>
 
-        {/* Side Panel */}
+        {/* Side Panel - Stats only, details shown in hover tooltip */}
         <SidePanel
-          selectedPlanet={selectedPlanet}
           planets={visiblePlanets}
           totalPlanets={allPlanets.length}
-          onClearSelection={clearSelection}
         />
       </div>
 
