@@ -47,17 +47,32 @@ When a user clicks on an exoplanet, a full-screen modal opens displaying an anim
 
 **99 planets** orbit in **88 known binary/trinary systems** (identified by "A"/"B" suffix in `hostStar`).
 
-No explicit companion star orbital data exists in the dataset. For binary systems:
-- Show both stars at center, slowly orbiting a common barycenter
-- Use a gentle, visually pleasing orbit (e.g., 30-day period) rather than attempting accurate simulation
-- Stars rendered at appropriate relative sizes if both have radius data
-- Label indicates "Binary System" with note that stellar orbit is illustrative
+No explicit companion star separation data exists in the dataset. Binary systems are classified as **close** or **distant** based on the outermost planet's orbit:
+
+**Classification Heuristic**:
+- If outermost planet has semi-major axis < 5 AU → assume **close binary** (companion at center)
+- If outermost planet has semi-major axis ≥ 5 AU → assume **distant companion** (companion in background)
+
+This heuristic reflects that planets in wide orbits cannot coexist with a close stellar companion (gravitational disruption).
+
+**Close Binary Rendering** (companion at center):
+- Both stars orbit a common barycenter at center
+- Gentle, illustrative orbit (~30-day period, not simulated)
+- Stars rendered at relative sizes if data available
+- Label: "Close Binary (stellar orbit illustrative)"
+
+**Distant Companion Rendering** (companion in background):
+- Primary star at center as normal
+- Companion rendered as a distant bright star in the background sky
+- Position fixed (no orbital motion shown)
+- Labeled with companion designation and "Distant Companion"
+- Optional: show estimated separation if calculable from system dynamics
 
 Notable binary systems:
-- **GJ 676 A** (4 planets) - M-dwarf with distant companion
-- **16 Cyg B** (1 planet) - Solar-type star, famous benchmark system
-- **KELT-4 A** (1 hot Jupiter) - Hierarchical triple system
-- **TOI-4336 A** (1 sub-Neptune) - Only binary system planet in habitable zone
+- **GJ 676 A** (4 planets, outermost at 5.2 AU) - Distant companion, show in background
+- **16 Cyg B** (1 planet at 1.7 AU) - Could be close binary presentation
+- **KELT-4 A** (1 hot Jupiter at 0.04 AU) - Hierarchical triple, close binary at center
+- **TOI-4336 A** (1 sub-Neptune at 0.09 AU) - Close binary presentation
 
 ### Habitable Zone Data
 
@@ -116,6 +131,7 @@ interface SimulatedSystem {
 
   // Binary system support
   isBinarySystem: boolean
+  binaryType?: 'close' | 'distant'  // Based on outermost planet orbit (< 5 AU = close)
   companionStar?: {
     designation: string          // e.g., "B" for the companion
     mass?: number                // Solar masses (if known)
@@ -257,13 +273,22 @@ For very long-period planets (>1000 days), consider auto-scaling or showing orbi
 
 ### Binary Star Rendering
 
-For systems with "A"/"B" suffix in `hostStar`:
+For systems with "A"/"B" suffix in `hostStar`, rendering depends on `binaryType`:
+
+**Close Binary** (`binaryType: 'close'`):
 - Two stars rendered orbiting a common center point
 - Gentle, illustrative orbit (~30-day period, circular)
 - Relative sizes based on available radius data (or estimated from mass)
 - Each star colored by its temperature
-- Small label: "Binary System (stellar orbit illustrative)"
-- Companion star slightly smaller/dimmer if data unavailable
+- Small label: "Close Binary (stellar orbit illustrative)"
+
+**Distant Companion** (`binaryType: 'distant'`):
+- Primary star rendered at center as normal
+- Companion star rendered as bright point in background star field
+- Fixed position (upper corner or based on arbitrary angle)
+- Subtle glow effect, sized smaller than primary
+- Label near companion: "[Name] B - Distant Companion"
+- No orbital motion (separation too large to be meaningful at this scale)
 
 ### Habitable Zone Rendering
 
