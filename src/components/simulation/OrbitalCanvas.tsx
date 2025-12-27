@@ -23,6 +23,7 @@ interface OrbitalCanvasProps {
   showLabels: boolean
   showHabitableZone: boolean
   onPlanetSelect: (planet: SimulatedPlanet) => void
+  onPositionsUpdate?: (positions: Map<string, OrbitalPosition>) => void
 }
 
 export function OrbitalCanvas({
@@ -34,6 +35,7 @@ export function OrbitalCanvas({
   showLabels,
   showHabitableZone,
   onPlanetSelect,
+  onPositionsUpdate,
 }: OrbitalCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
@@ -129,6 +131,9 @@ export function OrbitalCanvas({
       const newPositions = computeSystemPositions(system.planets, simulationTime, system.starMass)
       setPositions(newPositions)
 
+      // Notify parent of position updates (throttled by animation frame)
+      onPositionsUpdate?.(newPositions)
+
       // Update binary star angle (30-day period for illustration)
       if (system.isBinarySystem && system.binaryType === 'close') {
         const binaryPeriod = 30 // days
@@ -136,7 +141,7 @@ export function OrbitalCanvas({
         setBinaryAngle(angle)
       }
     },
-    [system]
+    [system, onPositionsUpdate]
   )
 
   // Start the simulation loop

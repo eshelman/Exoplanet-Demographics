@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { SimulatedSystem, SimulatedPlanet, SimulationSpeed } from '../../types/simulation'
+import type { SimulatedSystem, SimulatedPlanet, SimulationSpeed, OrbitalPosition } from '../../types/simulation'
 import { SIMULATION_SPEEDS, DEFAULT_SIMULATION_STATE } from '../../types/simulation'
 import { OrbitalCanvas } from './OrbitalCanvas'
 import { SimulationControls } from './SimulationControls'
+import { SystemStatsPanel } from './SystemStatsPanel'
 
 interface SolarSystemModalProps {
   system: SimulatedSystem
@@ -32,6 +33,17 @@ export function SolarSystemModal({
   const [showOrbits, setShowOrbits] = useState(DEFAULT_SIMULATION_STATE.showOrbits)
   const [showLabels, setShowLabels] = useState(DEFAULT_SIMULATION_STATE.showLabels)
   const [showHabitableZone, setShowHabitableZone] = useState(DEFAULT_SIMULATION_STATE.showHabitableZone)
+  const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
+
+  // Throttle position updates to stats panel (every 100ms instead of every frame)
+  const lastPositionUpdate = useRef(0)
+  const handlePositionsUpdate = useCallback((newPositions: Map<string, OrbitalPosition>) => {
+    const now = Date.now()
+    if (now - lastPositionUpdate.current > 100) {
+      setPositions(newPositions)
+      lastPositionUpdate.current = now
+    }
+  }, [])
 
   // Reset selected planet when system changes
   useEffect(() => {
@@ -219,87 +231,18 @@ export function SolarSystemModal({
                 showLabels={showLabels}
                 showHabitableZone={showHabitableZone}
                 onPlanetSelect={handlePlanetSelect}
+                onPositionsUpdate={handlePositionsUpdate}
               />
             </div>
 
-            {/* Stats panel placeholder (Phase 4) */}
-            <div
-              className="w-80 overflow-y-auto"
-              style={{
-                backgroundColor: 'rgba(10, 15, 28, 0.95)',
-                borderLeft: '1px solid rgba(255,255,255,0.1)',
-              }}
-            >
-              <div className="p-4">
-                <h3
-                  className="text-sm font-medium uppercase tracking-wider mb-4 opacity-60"
-                  style={{ color: 'var(--color-text)' }}
-                >
-                  Selected Planet
-                </h3>
-
-                <div className="space-y-3">
-                  <div>
-                    <div
-                      className="text-lg font-semibold"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      {selectedPlanet.name}
-                    </div>
-                    <div className="text-xs opacity-50" style={{ color: 'var(--color-text)' }}>
-                      {selectedPlanet.planetType || 'Unknown type'}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm" style={{ color: 'var(--color-text)' }}>
-                    <StatRow label="Period" value={`${selectedPlanet.period.toFixed(2)} days`} />
-                    <StatRow label="Semi-major axis" value={`${selectedPlanet.semiMajorAxis.toFixed(3)} AU`} />
-                    <StatRow
-                      label="Eccentricity"
-                      value={selectedPlanet.eccentricity.toFixed(3)}
-                      estimated={selectedPlanet.eccentricityEstimated}
-                    />
-                    {selectedPlanet.mass && (
-                      <StatRow label="Mass" value={`${selectedPlanet.mass.toFixed(2)} M⊕`} />
-                    )}
-                    {selectedPlanet.radius && (
-                      <StatRow
-                        label="Radius"
-                        value={`${selectedPlanet.radius.toFixed(2)} R⊕`}
-                        estimated={selectedPlanet.radiusEstimated}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Planet list */}
-                <div className="mt-6 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                  <h4 className="text-xs font-medium uppercase tracking-wider mb-3 opacity-60">
-                    All Planets
-                  </h4>
-                  <div className="space-y-1">
-                    {system.planets.map((planet, index) => (
-                      <button
-                        key={planet.id}
-                        onClick={() => setSelectedPlanet(planet)}
-                        className="w-full flex items-center justify-between px-2 py-1.5 rounded text-sm text-left transition-colors"
-                        style={{
-                          backgroundColor: planet.id === selectedPlanet.id ? 'rgba(96, 165, 250, 0.2)' : 'transparent',
-                          color: planet.id === selectedPlanet.id ? 'var(--color-accent)' : 'var(--color-text)',
-                        }}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="opacity-40 text-xs">{index + 1}</span>
-                          {planet.name}
-                        </span>
-                        <span className="text-xs opacity-50">
-                          {planet.period.toFixed(1)}d
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {/* Statistics Panel */}
+            <div className="w-80">
+              <SystemStatsPanel
+                system={system}
+                selectedPlanetId={selectedPlanet.id}
+                positions={positions}
+                onPlanetSelect={handlePlanetSelect}
+              />
             </div>
           </div>
 
@@ -332,23 +275,5 @@ export function SolarSystemModal({
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  )
-}
-
-interface StatRowProps {
-  label: string
-  value: string
-  estimated?: boolean
-}
-
-function StatRow({ label, value, estimated }: StatRowProps) {
-  return (
-    <div className="flex justify-between">
-      <span className="opacity-60">{label}</span>
-      <span className={estimated ? 'italic opacity-70' : ''}>
-        {value}
-        {estimated && <span className="ml-1 text-xs opacity-50">~</span>}
-      </span>
-    </div>
   )
 }
