@@ -83,9 +83,8 @@ export function Header({ visibleCount }: HeaderProps) {
             }}
             className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-all hover:opacity-90"
             style={{
-              backgroundColor: 'transparent',
-              color: 'var(--color-accent)',
-              border: '1px solid var(--color-accent)',
+              backgroundColor: 'var(--color-accent)',
+              color: 'var(--color-background)',
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
