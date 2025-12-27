@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { SimulatedSystem, SimulatedPlanet, OrbitalPosition } from '../../types/simulation'
 import { computeSystemPositions } from '../../utils/orbitalMechanics'
@@ -8,6 +8,9 @@ import { OrbitPath } from './OrbitPath'
 import { HabitableZoneRenderer } from './HabitableZoneRenderer'
 import { SimulationTooltip } from './SimulationTooltip'
 import { useSimulationLoop } from '../../hooks/useSimulationLoop'
+
+// Thresholds for special handling
+const LONG_PERIOD_THRESHOLD = 1000 // days - planets with longer periods get progress indicators
 
 // Zoom level bounds
 const MIN_ZOOM = 0.25
@@ -44,6 +47,7 @@ export function OrbitalCanvas({
   const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
   const [binaryAngle, setBinaryAngle] = useState(0)
   const [zoomLevel, setZoomLevel] = useState(1)
+  const [simulationTime, setSimulationTime] = useState(0)
 
   // Measure container dimensions
   useEffect(() => {
@@ -126,9 +130,12 @@ export function OrbitalCanvas({
 
   // Animation loop callback
   const handleTick = useCallback(
-    (simulationTime: number) => {
+    (time: number) => {
+      // Track simulation time for orbit progress calculations
+      setSimulationTime(time)
+
       // Update planet positions
-      const newPositions = computeSystemPositions(system.planets, simulationTime, system.starMass)
+      const newPositions = computeSystemPositions(system.planets, time, system.starMass)
       setPositions(newPositions)
 
       // Notify parent of position updates (throttled by animation frame)
@@ -137,7 +144,7 @@ export function OrbitalCanvas({
       // Update binary star angle (30-day period for illustration)
       if (system.isBinarySystem && system.binaryType === 'close') {
         const binaryPeriod = 30 // days
-        const angle = (simulationTime / binaryPeriod) * 2 * Math.PI
+        const angle = (time / binaryPeriod) * 2 * Math.PI
         setBinaryAngle(angle)
       }
     },
@@ -309,6 +316,19 @@ export function OrbitalCanvas({
         {maxSemiMajorAxis.toFixed(1)} AU max
       </div>
 
+      {/* Single-planet system indicator */}
+      {system.planets.length === 1 && (
+        <SinglePlanetIndicator planetName={system.planets[0].name} />
+      )}
+
+      {/* Long-period planet progress indicators */}
+      <LongPeriodProgress
+        planets={system.planets}
+        simulationTime={simulationTime}
+        speed={speed}
+        selectedPlanetId={selectedPlanetId}
+      />
+
       {/* Planet tooltip */}
       <AnimatePresence>
         {hoveredPlanet && hoveredPosition && (
@@ -394,4 +414,115 @@ function DistantCompanion({ designation, x, y }: { designation: string; x: numbe
       </span>
     </motion.div>
   )
+}
+
+/**
+ * Single planet system indicator
+ */
+const SinglePlanetIndicator = memo(function SinglePlanetIndicator({ planetName }: { planetName: string }) {
+  return (
+    <motion.div
+      className="absolute top-4 right-4 text-xs px-3 py-2 rounded-lg"
+      style={{
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        border: '1px solid rgba(59, 130, 246, 0.3)',
+        color: 'rgba(147, 197, 253, 0.9)',
+      }}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.3 }}
+    >
+      <div className="font-medium">Single Planet System</div>
+      <div className="opacity-70 mt-0.5">Only {planetName} detected</div>
+    </motion.div>
+  )
+})
+
+/**
+ * Long-period planet orbit progress indicators
+ */
+const LongPeriodProgress = memo(function LongPeriodProgress({
+  planets,
+  simulationTime,
+  speed,
+  selectedPlanetId,
+}: {
+  planets: SimulatedPlanet[]
+  simulationTime: number
+  speed: number
+  selectedPlanetId: string | null
+}) {
+  // Filter for long-period planets
+  const longPeriodPlanets = planets.filter((p) => p.period > LONG_PERIOD_THRESHOLD)
+
+  if (longPeriodPlanets.length === 0) return null
+
+  // Calculate recommended speed for seeing orbits complete
+  const longestPeriod = Math.max(...longPeriodPlanets.map((p) => p.period))
+  const recommendedSpeed = longestPeriod > 10000 ? 10 : longestPeriod > 3000 ? 5 : 2
+
+  return (
+    <div
+      className="absolute top-14 left-4 space-y-2"
+      style={{ color: 'var(--color-text)' }}
+    >
+      {/* Speed recommendation */}
+      {speed < recommendedSpeed && (
+        <motion.div
+          className="text-xs px-2 py-1.5 rounded"
+          style={{
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            border: '1px solid rgba(245, 158, 11, 0.3)',
+            color: 'rgba(252, 211, 77, 0.9)',
+          }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Tip: Use {recommendedSpeed}x speed to see outer orbits
+        </motion.div>
+      )}
+
+      {/* Individual planet progress */}
+      {longPeriodPlanets.map((planet) => {
+        const orbitProgress = ((simulationTime % planet.period) / planet.period) * 100
+        const isSelected = planet.id === selectedPlanetId
+
+        return (
+          <div
+            key={planet.id}
+            className="text-xs"
+            style={{ opacity: isSelected ? 1 : 0.6 }}
+          >
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="truncate max-w-[100px]">{planet.name}</span>
+              <span className="opacity-50">{formatPeriodCompact(planet.period)}</span>
+            </div>
+            <div className="w-32 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{
+                  width: `${orbitProgress}%`,
+                  backgroundColor: isSelected ? '#60A5FA' : 'rgba(255,255,255,0.4)',
+                }}
+                initial={false}
+                animate={{ width: `${orbitProgress}%` }}
+                transition={{ duration: 0.1 }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+})
+
+/**
+ * Compact period format for progress indicators
+ */
+function formatPeriodCompact(days: number): string {
+  if (days < 365) {
+    return `${Math.round(days)}d`
+  } else {
+    return `${(days / 365.25).toFixed(1)}y`
+  }
 }

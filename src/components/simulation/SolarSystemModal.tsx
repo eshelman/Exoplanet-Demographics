@@ -5,6 +5,7 @@ import { SIMULATION_SPEEDS, DEFAULT_SIMULATION_STATE } from '../../types/simulat
 import { OrbitalCanvas } from './OrbitalCanvas'
 import { SimulationControls } from './SimulationControls'
 import { SystemStatsPanel } from './SystemStatsPanel'
+import { SimulationErrorBoundary } from './SimulationErrorBoundary'
 import { useSimulationAudio } from '../../audio'
 
 interface SolarSystemModalProps {
@@ -276,49 +277,51 @@ export function SolarSystemModal({
             </div>
           </div>
 
-          {/* Main content area */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Orbital canvas */}
-            <div className="flex-1">
-              <OrbitalCanvas
-                system={system}
-                selectedPlanetId={selectedPlanet.id}
-                speed={speed}
-                isPaused={isPaused}
-                showOrbits={showOrbits}
-                showLabels={showLabels}
-                showHabitableZone={showHabitableZone}
-                onPlanetSelect={handlePlanetSelect}
-                onPositionsUpdate={handlePositionsUpdate}
-              />
+          {/* Main content area - wrapped in error boundary */}
+          <SimulationErrorBoundary onReset={onClose}>
+            <div className="flex-1 flex overflow-hidden">
+              {/* Orbital canvas */}
+              <div className="flex-1">
+                <OrbitalCanvas
+                  system={system}
+                  selectedPlanetId={selectedPlanet?.id ?? ''}
+                  speed={speed}
+                  isPaused={isPaused}
+                  showOrbits={showOrbits}
+                  showLabels={showLabels}
+                  showHabitableZone={showHabitableZone}
+                  onPlanetSelect={handlePlanetSelect}
+                  onPositionsUpdate={handlePositionsUpdate}
+                />
+              </div>
+
+              {/* Statistics Panel */}
+              <div className="w-80">
+                <SystemStatsPanel
+                  system={system}
+                  selectedPlanetId={selectedPlanet?.id ?? ''}
+                  positions={positions}
+                  onPlanetSelect={handlePlanetSelect}
+                />
+              </div>
             </div>
 
-            {/* Statistics Panel */}
-            <div className="w-80">
-              <SystemStatsPanel
-                system={system}
-                selectedPlanetId={selectedPlanet.id}
-                positions={positions}
-                onPlanetSelect={handlePlanetSelect}
-              />
-            </div>
-          </div>
-
-          {/* Controls bar */}
-          <SimulationControls
-            speed={speed}
-            isPaused={isPaused}
-            showOrbits={showOrbits}
-            showLabels={showLabels}
-            showHabitableZone={showHabitableZone}
-            habitableZoneAvailable={system.habitableZone?.dataAvailable || false}
-            onSpeedChange={handleSpeedChange}
-            onPauseToggle={handlePauseToggle}
-            onOrbitsToggle={handleOrbitsToggle}
-            onLabelsToggle={handleLabelsToggle}
-            onHabitableZoneToggle={handleHabitableZoneToggle}
-            onReset={handleReset}
-          />
+            {/* Controls bar */}
+            <SimulationControls
+              speed={speed}
+              isPaused={isPaused}
+              showOrbits={showOrbits}
+              showLabels={showLabels}
+              showHabitableZone={showHabitableZone}
+              habitableZoneAvailable={system.habitableZone?.dataAvailable || false}
+              onSpeedChange={handleSpeedChange}
+              onPauseToggle={handlePauseToggle}
+              onOrbitsToggle={handleOrbitsToggle}
+              onLabelsToggle={handleLabelsToggle}
+              onHabitableZoneToggle={handleHabitableZoneToggle}
+              onReset={handleReset}
+            />
+          </SimulationErrorBoundary>
 
           {/* Keyboard hint */}
           <div

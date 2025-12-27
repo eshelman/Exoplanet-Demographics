@@ -44,16 +44,26 @@ export const OrbitPath = memo(function OrbitPath({
     return pathParts.join(' ') + ' Z'
   }, [semiMajorAxis, eccentricity, argumentOfPeriapsis, cx, cy, scale])
 
-  // Calculate periapsis position for marker
-  const periapsisPos = useMemo(() => {
+  // Calculate periapsis and apoapsis positions for markers
+  const apsisPositions = useMemo(() => {
     if (eccentricity < 0.05) return null // Don't show for near-circular orbits
 
     const periapsisDistance = semiMajorAxis * (1 - eccentricity)
+    const apoapsisDistance = semiMajorAxis * (1 + eccentricity)
     const omega = (argumentOfPeriapsis * Math.PI) / 180
 
     return {
-      x: cx + periapsisDistance * scale * Math.cos(omega),
-      y: cy - periapsisDistance * scale * Math.sin(omega),
+      periapsis: {
+        x: cx + periapsisDistance * scale * Math.cos(omega),
+        y: cy - periapsisDistance * scale * Math.sin(omega),
+        distance: periapsisDistance,
+      },
+      apoapsis: {
+        x: cx + apoapsisDistance * scale * Math.cos(omega + Math.PI),
+        y: cy - apoapsisDistance * scale * Math.sin(omega + Math.PI),
+        distance: apoapsisDistance,
+      },
+      isHighlyEccentric: eccentricity > 0.3, // Show labels for highly eccentric orbits
     }
   }, [semiMajorAxis, eccentricity, argumentOfPeriapsis, cx, cy, scale])
 
@@ -75,14 +85,53 @@ export const OrbitPath = memo(function OrbitPath({
       />
 
       {/* Periapsis marker for eccentric orbits */}
-      {periapsisPos && (
-        <circle
-          cx={periapsisPos.x}
-          cy={periapsisPos.y}
-          r={3}
-          fill={isSelected ? strokeColor : 'rgba(255,255,255,0.3)'}
-          opacity={0.6}
-        />
+      {apsisPositions && (
+        <>
+          {/* Periapsis (closest approach) */}
+          <circle
+            cx={apsisPositions.periapsis.x}
+            cy={apsisPositions.periapsis.y}
+            r={isSelected ? 4 : 3}
+            fill={isSelected ? '#F59E0B' : 'rgba(245, 158, 11, 0.5)'}
+            opacity={0.8}
+          />
+          {/* Periapsis label for highly eccentric selected orbits */}
+          {isSelected && apsisPositions.isHighlyEccentric && (
+            <text
+              x={apsisPositions.periapsis.x}
+              y={apsisPositions.periapsis.y - 8}
+              fontSize="9"
+              fill="rgba(245, 158, 11, 0.9)"
+              textAnchor="middle"
+            >
+              Periapsis
+            </text>
+          )}
+
+          {/* Apoapsis (farthest point) - only for highly eccentric orbits */}
+          {apsisPositions.isHighlyEccentric && (
+            <>
+              <circle
+                cx={apsisPositions.apoapsis.x}
+                cy={apsisPositions.apoapsis.y}
+                r={isSelected ? 4 : 3}
+                fill={isSelected ? '#3B82F6' : 'rgba(59, 130, 246, 0.5)'}
+                opacity={0.8}
+              />
+              {isSelected && (
+                <text
+                  x={apsisPositions.apoapsis.x}
+                  y={apsisPositions.apoapsis.y - 8}
+                  fontSize="9"
+                  fill="rgba(96, 165, 250, 0.9)"
+                  textAnchor="middle"
+                >
+                  Apoapsis
+                </text>
+              )}
+            </>
+          )}
+        </>
       )}
     </g>
   )

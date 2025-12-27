@@ -117,6 +117,10 @@ export function orbitalVelocity(r: number, a: number, starMass: number = 1): num
  * @returns Mean motion in radians/day
  */
 export function calculateMeanMotion(period: number): number {
+  // Guard against zero/negative/NaN periods
+  if (!period || period <= 0 || !Number.isFinite(period)) {
+    return 0.01 // Default to very slow motion
+  }
   return (2 * Math.PI) / period
 }
 
@@ -133,7 +137,22 @@ export function computeOrbitalPosition(
   daysSinceEpoch: number,
   starMass: number = 1
 ): OrbitalPosition {
-  const { semiMajorAxis, eccentricity, argumentOfPeriapsis, meanAnomalyAtEpoch, meanMotion } = planet
+  // Defensive defaults for missing/invalid values
+  const semiMajorAxis = Number.isFinite(planet.semiMajorAxis) && planet.semiMajorAxis > 0
+    ? planet.semiMajorAxis
+    : 1
+  const eccentricity = Number.isFinite(planet.eccentricity) && planet.eccentricity >= 0 && planet.eccentricity < 1
+    ? planet.eccentricity
+    : 0
+  const argumentOfPeriapsis = Number.isFinite(planet.argumentOfPeriapsis)
+    ? planet.argumentOfPeriapsis
+    : 0
+  const meanAnomalyAtEpoch = Number.isFinite(planet.meanAnomalyAtEpoch)
+    ? planet.meanAnomalyAtEpoch
+    : 0
+  const meanMotion = Number.isFinite(planet.meanMotion) && planet.meanMotion > 0
+    ? planet.meanMotion
+    : 0.01
 
   // Mean anomaly at current time (radians)
   const M = meanAnomalyAtEpoch * (Math.PI / 180) + meanMotion * daysSinceEpoch
@@ -158,12 +177,23 @@ export function computeOrbitalPosition(
   // Velocity
   const velocity = orbitalVelocity(r, semiMajorAxis, starMass)
 
+  // Final NaN check - return safe defaults if any calculation produced NaN
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(r)) {
+    return {
+      x: semiMajorAxis,
+      y: 0,
+      r: semiMajorAxis,
+      trueAnomaly: 0,
+      velocity: 30,
+    }
+  }
+
   return {
     x,
     y,
     r,
     trueAnomaly: nu,
-    velocity,
+    velocity: Number.isFinite(velocity) ? velocity : 30,
   }
 }
 
