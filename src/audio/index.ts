@@ -1,6 +1,8 @@
 export { AudioManager, DEFAULT_AUDIO_SETTINGS } from './AudioManager'
 export type { AudioSettings } from './AudioManager'
 export { useAudio } from './useAudio'
+export { useSimulationAudio } from './useSimulationAudio'
 export { AmbientSoundscape } from './AmbientSoundscape'
 export { PlanetSonification } from './PlanetSonification'
 export { UISounds } from './UISounds'
+export { SimulationAudio } from './SimulationAudio'

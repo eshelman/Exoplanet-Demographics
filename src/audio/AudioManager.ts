@@ -2,7 +2,9 @@ import * as Tone from 'tone'
 import { AmbientSoundscape } from './AmbientSoundscape'
 import { PlanetSonification } from './PlanetSonification'
 import { UISounds } from './UISounds'
+import { SimulationAudio } from './SimulationAudio'
 import type { DetectionMethodId, Planet } from '../types'
+import type { SimulatedSystem, SimulatedPlanet } from '../types/simulation'
 
 export interface AudioSettings {
   enabled: boolean
@@ -63,6 +65,9 @@ class AudioManagerClass {
 
   // UI sounds
   private uiSounds: UISounds | null = null
+
+  // Simulation audio
+  private simulationAudio: SimulationAudio | null = null
 
   private constructor() {
     // Load settings from localStorage
@@ -163,6 +168,10 @@ class AudioManagerClass {
       // Create UI sounds
       this.uiSounds = new UISounds(this.uiGain)
       await this.uiSounds.init()
+
+      // Create simulation audio
+      this.simulationAudio = new SimulationAudio(this.sonificationGain)
+      await this.simulationAudio.init()
 
       this.initialized = true
       console.log('[AudioManager] Initialized successfully')
@@ -591,6 +600,126 @@ class AudioManagerClass {
     this.ambientSoundscape.setZoomLevel(level)
   }
 
+  // ============ Simulation Audio Control ============
+
+  /**
+   * Start system ambient for simulation modal
+   */
+  startSimulationAmbient(system: SimulatedSystem): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.startSystemAmbient(system)
+  }
+
+  /**
+   * Stop system ambient for simulation modal
+   */
+  stopSimulationAmbient(): void {
+    this.simulationAudio?.stopSystemAmbient()
+  }
+
+  /**
+   * Start selected planet voice in simulation
+   */
+  startSimulationPlanetVoice(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.startPlanetVoice(planet)
+  }
+
+  /**
+   * Stop selected planet voice in simulation
+   */
+  stopSimulationPlanetVoice(): void {
+    this.simulationAudio?.stopPlanetVoice()
+  }
+
+  /**
+   * Play planet hover sound in simulation
+   */
+  playSimulationPlanetHover(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playPlanetHover(planet)
+  }
+
+  /**
+   * Play planet selection sound in simulation
+   */
+  playSimulationPlanetSelect(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playPlanetSelect(planet)
+  }
+
+  /**
+   * Play simulation speed change sound
+   */
+  playSimulationSpeedChange(speed: number): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playSpeedChange(speed)
+  }
+
+  /**
+   * Play simulation pause sound
+   */
+  playSimulationPause(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playPause()
+  }
+
+  /**
+   * Play simulation resume sound
+   */
+  playSimulationResume(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playResume()
+  }
+
+  /**
+   * Play simulation toggle sound
+   */
+  playSimulationToggle(enabled: boolean): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playToggle(enabled)
+  }
+
+  /**
+   * Play simulation modal open sound
+   */
+  playSimulationModalOpen(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playModalOpen()
+  }
+
+  /**
+   * Play simulation modal close sound
+   */
+  playSimulationModalClose(): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.ui) return
+    this.simulationAudio?.playModalClose()
+  }
+
+  /**
+   * Play periapsis passage sound
+   */
+  playPeriapsisPass(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playPeriapsisPass(planet)
+  }
+
+  /**
+   * Play orbit complete sound
+   */
+  playOrbitComplete(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playOrbitComplete(planet)
+  }
+
+  /**
+   * Play conjunction sound
+   */
+  playConjunction(planet1: SimulatedPlanet, planet2: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playConjunction(planet1, planet2)
+  }
+
   /**
    * Clean up resources
    */
@@ -607,6 +736,9 @@ class AudioManagerClass {
 
     // Dispose UI sounds
     this.uiSounds?.dispose()
+
+    // Dispose simulation audio
+    this.simulationAudio?.dispose()
 
     this.ambientNoise?.stop()
     this.ambientNoise?.dispose()

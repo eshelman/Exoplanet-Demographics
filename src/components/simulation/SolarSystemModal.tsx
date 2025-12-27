@@ -5,6 +5,7 @@ import { SIMULATION_SPEEDS, DEFAULT_SIMULATION_STATE } from '../../types/simulat
 import { OrbitalCanvas } from './OrbitalCanvas'
 import { SimulationControls } from './SimulationControls'
 import { SystemStatsPanel } from './SystemStatsPanel'
+import { useSimulationAudio } from '../../audio'
 
 interface SolarSystemModalProps {
   system: SimulatedSystem
@@ -35,6 +36,9 @@ export function SolarSystemModal({
   const [showHabitableZone, setShowHabitableZone] = useState(DEFAULT_SIMULATION_STATE.showHabitableZone)
   const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
 
+  // Audio integration
+  const audio = useSimulationAudio()
+
   // Throttle position updates to stats panel (every 100ms instead of every frame)
   const lastPositionUpdate = useRef(0)
   const handlePositionsUpdate = useCallback((newPositions: Map<string, OrbitalPosition>) => {
@@ -50,6 +54,86 @@ export function SolarSystemModal({
     setSelectedPlanet(getInitialPlanet())
   }, [system, initialPlanetId])
 
+  // Start/stop ambient audio when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      audio.openModal()
+      audio.startAmbient(system)
+      // Start initial planet voice
+      audio.selectPlanet(selectedPlanet)
+    } else {
+      audio.closeModal()
+      audio.stopAmbient()
+    }
+  }, [isOpen, system])
+
+  // Update planet voice when selection changes
+  useEffect(() => {
+    if (isOpen && selectedPlanet) {
+      audio.selectPlanet(selectedPlanet)
+    }
+  }, [selectedPlanet, isOpen])
+
+  // Callbacks - defined before useEffects that use them
+  const navigatePlanet = useCallback(
+    (direction: number) => {
+      const currentIndex = system.planets.findIndex((p) => p.id === selectedPlanet.id)
+      const newIndex = (currentIndex + direction + system.planets.length) % system.planets.length
+      setSelectedPlanet(system.planets[newIndex])
+    },
+    [system.planets, selectedPlanet]
+  )
+
+  const adjustSpeed = useCallback((direction: number) => {
+    const currentIndex = SIMULATION_SPEEDS.indexOf(speed)
+    const newIndex = Math.max(0, Math.min(SIMULATION_SPEEDS.length - 1, currentIndex + direction))
+    const newSpeed = SIMULATION_SPEEDS[newIndex]
+    if (newSpeed !== speed) {
+      setSpeed(newSpeed)
+      audio.changeSpeed(newSpeed)
+    }
+  }, [audio, speed])
+
+  const handleReset = useCallback(() => {
+    setSpeed(1)
+    setIsPaused(false)
+    audio.resume()
+    audio.changeSpeed(1)
+  }, [audio])
+
+  const handleSpeedChange = useCallback((newSpeed: SimulationSpeed) => {
+    setSpeed(newSpeed)
+    audio.changeSpeed(newSpeed)
+  }, [audio])
+
+  const handlePauseToggle = useCallback(() => {
+    if (isPaused) {
+      audio.resume()
+    } else {
+      audio.pause()
+    }
+    setIsPaused((p) => !p)
+  }, [audio, isPaused])
+
+  const handleOrbitsToggle = useCallback(() => {
+    audio.toggle(!showOrbits)
+    setShowOrbits((s) => !s)
+  }, [audio, showOrbits])
+
+  const handleLabelsToggle = useCallback(() => {
+    audio.toggle(!showLabels)
+    setShowLabels((s) => !s)
+  }, [audio, showLabels])
+
+  const handleHabitableZoneToggle = useCallback(() => {
+    audio.toggle(!showHabitableZone)
+    setShowHabitableZone((s) => !s)
+  }, [audio, showHabitableZone])
+
+  const handlePlanetSelect = useCallback((planet: SimulatedPlanet) => {
+    setSelectedPlanet(planet)
+  }, [])
+
   // Keyboard controls
   useEffect(() => {
     if (!isOpen) return
@@ -62,7 +146,7 @@ export function SolarSystemModal({
           break
         case ' ':
           e.preventDefault()
-          setIsPaused((p) => !p)
+          handlePauseToggle()
           break
         case 'ArrowLeft':
           e.preventDefault()
@@ -83,18 +167,18 @@ export function SolarSystemModal({
         case 'o':
         case 'O':
           e.preventDefault()
-          setShowOrbits((s) => !s)
+          handleOrbitsToggle()
           break
         case 'l':
         case 'L':
           e.preventDefault()
-          setShowLabels((s) => !s)
+          handleLabelsToggle()
           break
         case 'h':
         case 'H':
           e.preventDefault()
           if (system.habitableZone?.dataAvailable) {
-            setShowHabitableZone((s) => !s)
+            handleHabitableZoneToggle()
           }
           break
         case 'r':
@@ -115,33 +199,7 @@ export function SolarSystemModal({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, system.planets, selectedPlanet])
-
-  const navigatePlanet = useCallback(
-    (direction: number) => {
-      const currentIndex = system.planets.findIndex((p) => p.id === selectedPlanet.id)
-      const newIndex = (currentIndex + direction + system.planets.length) % system.planets.length
-      setSelectedPlanet(system.planets[newIndex])
-    },
-    [system.planets, selectedPlanet]
-  )
-
-  const adjustSpeed = useCallback((direction: number) => {
-    setSpeed((currentSpeed) => {
-      const currentIndex = SIMULATION_SPEEDS.indexOf(currentSpeed)
-      const newIndex = Math.max(0, Math.min(SIMULATION_SPEEDS.length - 1, currentIndex + direction))
-      return SIMULATION_SPEEDS[newIndex]
-    })
-  }, [])
-
-  const handleReset = useCallback(() => {
-    setSpeed(1)
-    setIsPaused(false)
-  }, [])
-
-  const handlePlanetSelect = useCallback((planet: SimulatedPlanet) => {
-    setSelectedPlanet(planet)
-  }, [])
+  }, [isOpen, system, onClose, navigatePlanet, adjustSpeed, handlePauseToggle, handleOrbitsToggle, handleLabelsToggle, handleHabitableZoneToggle, handleReset])
 
   if (!isOpen) return null
 
@@ -254,11 +312,11 @@ export function SolarSystemModal({
             showLabels={showLabels}
             showHabitableZone={showHabitableZone}
             habitableZoneAvailable={system.habitableZone?.dataAvailable || false}
-            onSpeedChange={setSpeed}
-            onPauseToggle={() => setIsPaused((p) => !p)}
-            onOrbitsToggle={() => setShowOrbits((s) => !s)}
-            onLabelsToggle={() => setShowLabels((s) => !s)}
-            onHabitableZoneToggle={() => setShowHabitableZone((s) => !s)}
+            onSpeedChange={handleSpeedChange}
+            onPauseToggle={handlePauseToggle}
+            onOrbitsToggle={handleOrbitsToggle}
+            onLabelsToggle={handleLabelsToggle}
+            onHabitableZoneToggle={handleHabitableZoneToggle}
             onReset={handleReset}
           />
 
