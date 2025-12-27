@@ -3,6 +3,7 @@ import { AmbientSoundscape } from './AmbientSoundscape'
 import { PlanetSonification } from './PlanetSonification'
 import { UISounds } from './UISounds'
 import { SimulationAudio } from './SimulationAudio'
+import { periodToMusicalNote, getConsonantInterval } from './musicalScales'
 import type { DetectionMethodId, Planet } from '../types'
 import type { SimulatedSystem, SimulatedPlanet } from '../types/simulation'
 
@@ -471,6 +472,7 @@ class AudioManagerClass {
 
   /**
    * Play a planet hover sound based on planet properties
+   * Uses pentatonic scale for pleasant, non-grating frequencies
    * @param period Orbital period in days (maps to frequency)
    * @param radius Planet radius in Earth radii (maps to volume)
    */
@@ -478,17 +480,12 @@ class AudioManagerClass {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification)
       return
 
-    // Map period to frequency (log scale: 1 day = 2000Hz, 10000 days = 60Hz)
-    const minPeriod = 1
-    const maxPeriod = 10000
-    const minFreq = 60
-    const maxFreq = 2000
-
-    const logPeriod = Math.log10(Math.max(minPeriod, Math.min(maxPeriod, period)))
-    const logMin = Math.log10(minPeriod)
-    const logMax = Math.log10(maxPeriod)
-    const freqRatio = 1 - (logPeriod - logMin) / (logMax - logMin)
-    const frequency = minFreq + freqRatio * (maxFreq - minFreq)
+    // Map period to pentatonic scale note (max 440Hz for sustained tones)
+    const frequency = periodToMusicalNote(period, {
+      allowHighOctave: false,
+      minPeriod: 1,
+      maxPeriod: 10000,
+    })
 
     // Map radius to volume (larger = louder)
     const minRadius = 0.5
@@ -501,15 +498,18 @@ class AudioManagerClass {
 
   /**
    * Play a planet selection sound
+   * Uses pentatonic scale with consonant intervals for pleasant harmonies
    */
   playPlanetSelect(period: number, radius: number): void {
     if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification)
       return
 
-    // Map period to base frequency
-    const logPeriod = Math.log10(Math.max(1, Math.min(10000, period)))
-    const freqRatio = 1 - (logPeriod - 0) / (4 - 0)
-    const baseFreq = 60 + freqRatio * 1940
+    // Map period to pentatonic scale note
+    const baseFreq = periodToMusicalNote(period, {
+      allowHighOctave: false,
+      minPeriod: 1,
+      maxPeriod: 10000,
+    })
 
     // Map radius to volume (larger = louder selection)
     const minRadius = 0.5
@@ -518,9 +518,10 @@ class AudioManagerClass {
     const baseVolume = 0.2 + normalizedRadius * 0.3
 
     const now = Tone.now()
+    // Use consonant intervals (fifth and octave) capped at 800Hz
     this.planetSynth?.triggerAttackRelease(baseFreq, '4n', now, baseVolume)
-    this.planetSynth?.triggerAttackRelease(baseFreq * 1.5, '4n', now + 0.1, baseVolume * 0.75)
-    this.planetSynth?.triggerAttackRelease(baseFreq * 2, '4n', now + 0.2, baseVolume * 0.5)
+    this.planetSynth?.triggerAttackRelease(getConsonantInterval(baseFreq, 'fifth'), '4n', now + 0.1, baseVolume * 0.75)
+    this.planetSynth?.triggerAttackRelease(getConsonantInterval(baseFreq, 'octave'), '4n', now + 0.2, baseVolume * 0.5)
   }
 
   // ============ Advanced Planet Sonification ============

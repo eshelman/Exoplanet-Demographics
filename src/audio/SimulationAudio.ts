@@ -1,5 +1,10 @@
 import * as Tone from 'tone'
 import type { SimulatedSystem, SimulatedPlanet } from '../types/simulation'
+import {
+  periodToMusicalNote,
+  starTemperatureToNote,
+  getConsonantInterval,
+} from './musicalScales'
 
 /**
  * SimulationAudio - Handles audio for orbital simulation modal
@@ -128,21 +133,12 @@ export class SimulationAudio {
   // ============ Star Ambient ============
 
   /**
-   * Get drone frequency from star temperature
-   * Hot stars = higher frequency, cool stars = lower
+   * Get drone frequency from star temperature using pentatonic scale
+   * Hot stars = slightly higher note, cool stars = lower note
+   * Always in sub-bass to low range for comfortable ambient drone
    */
   private getStarDroneFrequency(temperature: number): number {
-    // Map temperature to frequency
-    // 2500K (cool M-dwarf) = 40Hz
-    // 10000K (hot A-star) = 120Hz
-    const minTemp = 2500
-    const maxTemp = 10000
-    const minFreq = 40
-    const maxFreq = 120
-
-    const clampedTemp = Math.max(minTemp, Math.min(maxTemp, temperature))
-    const normalized = (clampedTemp - minTemp) / (maxTemp - minTemp)
-    return minFreq + normalized * (maxFreq - minFreq)
+    return starTemperatureToNote(temperature)
   }
 
   /**
@@ -193,22 +189,18 @@ export class SimulationAudio {
   // ============ Planet Voices ============
 
   /**
-   * Map planet period to frequency
+   * Map planet period to frequency using pentatonic scale
+   *
+   * Redesigned for "Music of the Spheres" - pleasant, non-grating frequencies:
+   * - All frequencies snap to C major pentatonic scale
+   * - Maximum frequency capped at 440Hz for sustained tones
    */
   private planetToFrequency(planet: SimulatedPlanet): number {
-    const minPeriod = 0.5
-    const maxPeriod = 5000
-    const minFreq = 80
-    const maxFreq = 1200
-
-    const clampedPeriod = Math.max(minPeriod, Math.min(maxPeriod, planet.period))
-    const logPeriod = Math.log10(clampedPeriod)
-    const logMin = Math.log10(minPeriod)
-    const logMax = Math.log10(maxPeriod)
-
-    // Inverse: short period = high frequency
-    const normalized = 1 - (logPeriod - logMin) / (logMax - logMin)
-    return minFreq + normalized * (maxFreq - minFreq)
+    return periodToMusicalNote(planet.period, {
+      allowHighOctave: false, // Sustained simulation tones stay below 440Hz
+      minPeriod: 0.5,
+      maxPeriod: 5000,
+    })
   }
 
   /**
@@ -285,10 +277,10 @@ export class SimulationAudio {
     const volume = this.planetToVolume(planet)
     const now = Tone.now()
 
-    // Resonant ping with harmonics
+    // Resonant ping with consonant intervals (capped at 800Hz)
     this.momentSynth.triggerAttackRelease(frequency, '8n', now, volume)
-    this.momentSynth.triggerAttackRelease(frequency * 1.5, '16n', now + 0.05, volume * 0.6)
-    this.momentSynth.triggerAttackRelease(frequency * 2, '16n', now + 0.1, volume * 0.4)
+    this.momentSynth.triggerAttackRelease(getConsonantInterval(frequency, 'fifth'), '16n', now + 0.05, volume * 0.6)
+    this.momentSynth.triggerAttackRelease(getConsonantInterval(frequency, 'octave'), '16n', now + 0.1, volume * 0.4)
   }
 
   // ============ UI Sounds ============
@@ -398,9 +390,9 @@ export class SimulationAudio {
     const frequency = this.planetToFrequency(planet)
     const now = Tone.now()
 
-    // Gentle completion chime
+    // Gentle completion chime with consonant octave (capped)
     this.momentSynth.triggerAttackRelease(frequency, '8n', now, 0.3)
-    this.momentSynth.triggerAttackRelease(frequency * 2, '4n', now + 0.15, 0.2)
+    this.momentSynth.triggerAttackRelease(getConsonantInterval(frequency, 'octave'), '4n', now + 0.15, 0.2)
   }
 
   /**

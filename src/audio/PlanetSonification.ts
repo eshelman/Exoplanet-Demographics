@@ -1,5 +1,10 @@
 import * as Tone from 'tone'
 import type { Planet } from '../types'
+import {
+  periodToMusicalNote,
+  getConsonantInterval,
+  MAX_SUSTAINED_FREQUENCY,
+} from './musicalScales'
 
 /**
  * Sonification complexity levels
@@ -20,7 +25,7 @@ const SOLAR_SYSTEM_SOUNDS: Record<string, {
   description: string
 }> = {
   Mercury: {
-    frequency: 880, // High, quick
+    frequency: 784, // G5 - highest allowed in pentatonic scale (was 880, capped for comfort)
     oscillatorType: 'triangle',
     attack: 0.01,
     decay: 0.1,
@@ -213,25 +218,21 @@ export class PlanetSonification {
   // ============ Mapping Functions ============
 
   /**
-   * Map orbital period to frequency (logarithmic)
-   * 1 day = 2000 Hz (high), 10 years (~3650 days) = 60 Hz (low)
+   * Map orbital period to frequency using pentatonic scale
+   *
+   * Redesigned for "Music of the Spheres" - pleasant, non-grating frequencies:
+   * - All frequencies snap to C major pentatonic scale (C, D, E, G, A)
+   * - Maximum frequency capped at 440Hz for sustained tones (A4)
+   * - Range: ~65Hz (C2) to ~440Hz (A4)
+   *
+   * Short period = higher note, long period = lower note
    */
   periodToFrequency(periodDays: number): number {
-    const minPeriod = 0.5
-    const maxPeriod = 10000
-    const minFreq = 60
-    const maxFreq = 2000
-
-    const clampedPeriod = Math.max(minPeriod, Math.min(maxPeriod, periodDays))
-    const logPeriod = Math.log10(clampedPeriod)
-    const logMin = Math.log10(minPeriod)
-    const logMax = Math.log10(maxPeriod)
-
-    // Inverse mapping: short period = high frequency
-    const normalizedLog = (logPeriod - logMin) / (logMax - logMin)
-    const frequency = maxFreq - normalizedLog * (maxFreq - minFreq)
-
-    return frequency
+    return periodToMusicalNote(periodDays, {
+      allowHighOctave: false, // Sustained tones stay below 440Hz
+      minPeriod: 0.5,
+      maxPeriod: 10000,
+    })
   }
 
   /**
@@ -430,14 +431,18 @@ export class PlanetSonification {
     // Resonant ping
     this.selectSynth.triggerAttackRelease(frequency, '8n', now, volume)
 
-    // Add harmonics based on complexity
+    // Add harmonics based on complexity (using consonant intervals, capped at 800Hz)
     if (this.complexity !== 'simple') {
-      this.selectSynth.triggerAttackRelease(frequency * 1.5, '16n', now + 0.05, volume * 0.6)
-      this.selectSynth.triggerAttackRelease(frequency * 2, '16n', now + 0.1, volume * 0.4)
+      const fifth = getConsonantInterval(frequency, 'fifth')
+      const octave = getConsonantInterval(frequency, 'octave')
+      this.selectSynth.triggerAttackRelease(fifth, '16n', now + 0.05, volume * 0.6)
+      this.selectSynth.triggerAttackRelease(octave, '16n', now + 0.1, volume * 0.4)
     }
 
     if (this.complexity === 'rich') {
-      this.selectSynth.triggerAttackRelease(frequency * 3, '32n', now + 0.15, volume * 0.2)
+      // For rich mode, add another fifth above the octave (capped)
+      const highFifth = Math.min(getConsonantInterval(frequency, 'octave') * 1.5, MAX_SUSTAINED_FREQUENCY)
+      this.selectSynth.triggerAttackRelease(highFifth, '32n', now + 0.15, volume * 0.2)
     }
   }
 
