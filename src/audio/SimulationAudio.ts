@@ -5,6 +5,7 @@ import {
   starTemperatureToNote,
   getConsonantInterval,
 } from './musicalScales'
+import { MUSICAL_ENVELOPES } from './BellSynth'
 
 /**
  * SimulationAudio - Handles audio for orbital simulation modal
@@ -57,7 +58,7 @@ export class SimulationAudio {
     if (this.initialized || !this.outputGain) return
 
     try {
-      // Star drone setup
+      // Star drone setup - slow, evolving ambient
       this.starDroneGain = new Tone.Gain(0).connect(this.outputGain)
       this.starFilter = new Tone.Filter({
         type: 'lowpass',
@@ -67,12 +68,7 @@ export class SimulationAudio {
 
       this.starDrone = new Tone.Synth({
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 3,
-          decay: 1,
-          sustain: 0.8,
-          release: 4,
-        },
+        envelope: MUSICAL_ENVELOPES.starDrone,
       }).connect(this.starFilter)
 
       // LFO for subtle vibrato on star drone
@@ -82,7 +78,7 @@ export class SimulationAudio {
         max: 1.05,
       })
 
-      // Planet voices
+      // Planet voices - bell-like with natural decay
       this.planetReverb = new Tone.Reverb({ decay: 2, wet: 0.4 })
       await this.planetReverb.generate()
 
@@ -91,36 +87,21 @@ export class SimulationAudio {
 
       this.planetSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 0.3,
-          decay: 0.2,
-          sustain: 0.5,
-          release: 1.5,
-        },
+        envelope: MUSICAL_ENVELOPES.planetHover,
       }).connect(this.planetGain)
 
-      // UI sounds
+      // UI sounds - quick, percussive
       this.uiGain = new Tone.Gain(0.4).connect(this.outputGain)
       this.uiSynth = new Tone.Synth({
         oscillator: { type: 'triangle' },
-        envelope: {
-          attack: 0.01,
-          decay: 0.1,
-          sustain: 0,
-          release: 0.2,
-        },
+        envelope: MUSICAL_ENVELOPES.uiClick,
       }).connect(this.uiGain)
 
-      // Special moment sounds
+      // Special moment sounds - orbital chimes
       this.momentGain = new Tone.Gain(0.5).connect(this.outputGain)
       this.momentSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 0.05,
-          decay: 0.3,
-          sustain: 0.3,
-          release: 1,
-        },
+        envelope: MUSICAL_ENVELOPES.orbitChime,
       }).connect(this.momentGain)
 
       this.initialized = true

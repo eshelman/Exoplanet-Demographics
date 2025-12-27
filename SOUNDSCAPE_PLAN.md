@@ -211,15 +211,15 @@ When multiple sounds play simultaneously:
 
 ## Implementation Phases
 
-### Phase 1: Frequency Constraints
-- [ ] Implement pentatonic scale mapping function
-- [ ] Cap maximum frequency at 800Hz
-- [ ] Update `periodToFrequency()` in audio utilities
+### Phase 1: Frequency Constraints [DONE]
+- [x] Implement pentatonic scale mapping function
+- [x] Cap maximum frequency at 800Hz
+- [x] Update `periodToFrequency()` in audio utilities
 
-### Phase 2: Envelope Overhaul
-- [ ] Replace sustained oscillators with envelope-controlled voices
-- [ ] Implement bell-like decay for planet chimes
-- [ ] Add attack/release parameters to all sound sources
+### Phase 2: Envelope Overhaul [DONE]
+- [x] Replace sustained oscillators with envelope-controlled voices
+- [x] Implement bell-like decay for planet chimes
+- [x] Add attack/release parameters to all sound sources
 
 ### Phase 3: Simulation Rhythmic Chimes
 - [ ] Track orbital angle for each planet

@@ -4,6 +4,7 @@ import { PlanetSonification } from './PlanetSonification'
 import { UISounds } from './UISounds'
 import { SimulationAudio } from './SimulationAudio'
 import { periodToMusicalNote, getConsonantInterval } from './musicalScales'
+import { MUSICAL_ENVELOPES } from './BellSynth'
 import type { DetectionMethodId, Planet } from '../types'
 import type { SimulatedSystem, SimulatedPlanet } from '../types/simulation'
 
@@ -112,37 +113,22 @@ class AudioManagerClass {
         this.masterGain
       )
 
-      // Create UI synth for button clicks, hovers
+      // Create UI synth for button clicks, hovers - quick, percussive
       this.uiSynth = new Tone.Synth({
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 0.01,
-          decay: 0.1,
-          sustain: 0,
-          release: 0.1,
-        },
+        envelope: MUSICAL_ENVELOPES.uiClick,
       }).connect(this.uiGain)
 
-      // Create planet synth for hover/selection sonification
+      // Create planet synth for hover/selection sonification - bell-like decay
       this.planetSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 0.5,
-          decay: 0.3,
-          sustain: 0.4,
-          release: 1,
-        },
+        envelope: MUSICAL_ENVELOPES.planetHover,
       }).connect(this.sonificationGain)
 
-      // Create ambient synth
+      // Create ambient synth - slow, evolving pad
       this.ambientSynth = new Tone.Synth({
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 2,
-          decay: 1,
-          sustain: 0.8,
-          release: 3,
-        },
+        envelope: MUSICAL_ENVELOPES.ambientPad,
       }).connect(this.ambientGain)
 
       // Create ambient noise with filter

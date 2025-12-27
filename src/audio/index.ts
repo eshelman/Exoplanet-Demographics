@@ -19,3 +19,7 @@ export {
   generateChord,
   starTemperatureToNote,
 } from './musicalScales'
+
+// Bell synth and envelope utilities
+export { BellSynth, BELL_ENVELOPES, MUSICAL_ENVELOPES, createBellEnvelope } from './BellSynth'
+export type { BellEnvelopeType, MusicalEnvelopeType } from './BellSynth'

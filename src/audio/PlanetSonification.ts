@@ -5,6 +5,7 @@ import {
   getConsonantInterval,
   MAX_SUSTAINED_FREQUENCY,
 } from './musicalScales'
+import { MUSICAL_ENVELOPES } from './BellSynth'
 
 /**
  * Sonification complexity levels
@@ -161,27 +162,17 @@ export class PlanetSonification {
       // Planet gain
       this.planetGain = new Tone.Gain(0.6).connect(this.panner)
 
-      // Main planet synth
+      // Main planet synth - uses bell-like envelope (no sustain, natural decay)
       this.planetSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine' },
-        envelope: {
-          attack: 0.5, // 500ms fade in
-          decay: 0.2,
-          sustain: 0.6,
-          release: 1, // 1s fade out
-        },
+        envelope: MUSICAL_ENVELOPES.planetHover,
       }).connect(this.planetGain)
 
-      // Selection synth (more percussive)
+      // Selection synth - percussive bell-like sound
       this.selectGain = new Tone.Gain(0.5).connect(this.outputGain)
       this.selectSynth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
-        envelope: {
-          attack: 0.01,
-          decay: 0.3,
-          sustain: 0.2,
-          release: 0.8,
-        },
+        envelope: MUSICAL_ENVELOPES.planetSelect,
       }).connect(this.selectGain)
 
       // Brush noise
