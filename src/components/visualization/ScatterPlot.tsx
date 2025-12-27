@@ -6,6 +6,7 @@ import { useBrush } from '../../hooks/useBrush'
 import { useVizStore, selectVisiblePlanets } from '../../store'
 import { useAudio } from '../../audio'
 import { createXScale, createYScale } from '../../utils/scales'
+import { getSystemForPlanet } from '../../utils/systemGrouping'
 import { Axes } from './Axes'
 import { GridLines } from './GridLines'
 import { PlanetPoints } from './PlanetPoints'
@@ -48,6 +49,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   const setHoveredPlanet = useVizStore((s) => s.setHoveredPlanet)
   const selectPlanet = useVizStore((s) => s.selectPlanet)
   const setBrushSelection = useVizStore((s) => s.setBrushSelection)
+  const openSimulation = useVizStore((s) => s.openSimulation)
 
   // Audio
   const { startPan, endPan } = useAudio()
@@ -102,6 +104,20 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
     clearBrush()
     setBrushSelection(null)
   }
+
+  // Handle opening simulation when clicking a planet
+  const handleSimulate = useCallback(
+    (planet: Planet) => {
+      if (planet.isSolarSystem) return
+      try {
+        const system = getSystemForPlanet(planet, planets)
+        openSimulation(system, planet.id)
+      } catch (error) {
+        console.error('Failed to create simulation system:', error)
+      }
+    },
+    [planets, openSimulation]
+  )
 
   // Count planets in brush selection
   const selectedCount = useMemo(() => {
@@ -172,6 +188,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
               yAxisType={yAxis}
               onHover={setHoveredPlanet}
               onSelect={selectPlanet}
+              onSimulate={handleSimulate}
               selectedPlanet={selectedPlanet}
             />
           </g>
@@ -239,7 +256,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
           className="absolute bottom-4 left-4 text-xs opacity-50"
           style={{ color: 'var(--color-text)' }}
         >
-          Drag to pan • Scroll to zoom • Shift+drag to select
+          Hover for details • Click to simulate • Drag to pan • Scroll to zoom
         </div>
       )}
     </div>

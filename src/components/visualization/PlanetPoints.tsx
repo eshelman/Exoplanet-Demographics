@@ -14,6 +14,7 @@ interface PlanetPointsProps {
   yAxisType: YAxisType
   onHover?: (planet: Planet | null) => void
   onSelect?: (planet: Planet) => void
+  onSimulate?: (planet: Planet) => void
   selectedPlanet?: Planet | null
 }
 
@@ -25,6 +26,7 @@ export function PlanetPoints({
   yAxisType,
   onHover,
   onSelect,
+  onSimulate,
   selectedPlanet,
 }: PlanetPointsProps) {
   const {
@@ -94,6 +96,7 @@ export function PlanetPoints({
                 style={{ cursor: 'pointer' }}
                 onMouseEnter={() => {
                   onHover?.(planet)
+                  onSelect?.(planet)
                   startPlanetHover(planet)
                 }}
                 onMouseLeave={() => {
@@ -101,8 +104,11 @@ export function PlanetPoints({
                   stopPlanetHover(planet)
                 }}
                 onClick={() => {
-                  onSelect?.(planet)
                   selectPlanetSound(planet)
+                  // Open simulation on click (non-solar-system planets only)
+                  if (!planet.isSolarSystem) {
+                    onSimulate?.(planet)
+                  }
                 }}
               />
               {/* Label for Solar System planets */}

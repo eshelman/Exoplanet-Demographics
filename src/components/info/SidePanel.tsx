@@ -283,7 +283,7 @@ export function SidePanel({ selectedPlanet, planets, totalPlanets, onClearSelect
                         </svg>
                         <p className="text-sm">No planet selected</p>
                         <p className="text-xs mt-1 opacity-60">
-                          Click a planet on the chart to view details
+                          Hover over a planet to view details
                         </p>
                       </div>
                     )}
