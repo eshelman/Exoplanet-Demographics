@@ -135,35 +135,20 @@ export function NarrativeOverlay() {
             </button>
           </div>
 
-          {/* Progress bar */}
-          <div className="mb-8">
-            <div
-              className="h-1 rounded-full overflow-hidden"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-            >
-              <motion.div
-                className="h-full rounded-full"
-                style={{ backgroundColor: 'var(--color-accent)' }}
-                initial={false}
-                animate={{ width: `${((narrativeStep + 1) / totalSteps) * 100}%` }}
-                transition={{ duration: 0.3 }}
+          {/* Step dots */}
+          <div className="flex justify-between mb-8">
+            {NARRATIVE_CONTENT.map((step, i) => (
+              <button
+                key={step.id}
+                onClick={() => useVizStore.getState().goToStep(i)}
+                className="w-2 h-2 rounded-full transition-all"
+                style={{
+                  backgroundColor: i <= narrativeStep ? 'var(--color-accent)' : 'rgba(255,255,255,0.2)',
+                  transform: i === narrativeStep ? 'scale(1.5)' : 'scale(1)',
+                }}
+                title={step.title}
               />
-            </div>
-            {/* Step dots */}
-            <div className="flex justify-between mt-2">
-              {NARRATIVE_CONTENT.map((step, i) => (
-                <button
-                  key={step.id}
-                  onClick={() => useVizStore.getState().goToStep(i)}
-                  className="w-2 h-2 rounded-full transition-all"
-                  style={{
-                    backgroundColor: i <= narrativeStep ? 'var(--color-accent)' : 'rgba(255,255,255,0.2)',
-                    transform: i === narrativeStep ? 'scale(1.5)' : 'scale(1)',
-                  }}
-                  title={step.title}
-                />
-              ))}
-            </div>
+            ))}
           </div>
 
           {/* Step content */}
