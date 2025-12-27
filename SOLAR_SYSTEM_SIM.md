@@ -41,6 +41,36 @@ When a user clicks on an exoplanet, a full-screen modal opens displaying an anim
 | `starRadius` | 78.8% | Host star radius (solar radii) |
 | `starTemperature` | 28% | Effective temperature (K) |
 | `starSpectralType` | 21.3% | Spectral classification |
+| `insolation` | 15.6% | Stellar flux in Earth units (for HZ calculation) |
+
+### Binary/Multiple Star Systems
+
+**99 planets** orbit in **88 known binary/trinary systems** (identified by "A"/"B" suffix in `hostStar`).
+
+No explicit companion star orbital data exists in the dataset. For binary systems:
+- Show both stars at center, slowly orbiting a common barycenter
+- Use a gentle, visually pleasing orbit (e.g., 30-day period) rather than attempting accurate simulation
+- Stars rendered at appropriate relative sizes if both have radius data
+- Label indicates "Binary System" with note that stellar orbit is illustrative
+
+Notable binary systems:
+- **GJ 676 A** (4 planets) - M-dwarf with distant companion
+- **16 Cyg B** (1 planet) - Solar-type star, famous benchmark system
+- **KELT-4 A** (1 hot Jupiter) - Hierarchical triple system
+- **TOI-4336 A** (1 sub-Neptune) - Only binary system planet in habitable zone
+
+### Habitable Zone Data
+
+The `insolation` field (stellar flux received, in Earth units) enables habitable zone visualization:
+- **Conservative HZ**: 0.95–1.37 Earth insolation (16 planets)
+- **Optimistic HZ**: 0.25–1.77 Earth insolation (65 planets)
+
+When `insolation` is unavailable, calculate from:
+```
+insolation = (starRadius² × (starTemperature/5778)⁴) / separation²
+```
+
+Display HZ as a translucent green annulus around the star when data is available.
 
 ### Missing Data (Must Be Estimated)
 
@@ -84,6 +114,22 @@ interface SimulatedSystem {
   starSpectralType?: string
   distance?: number              // Light-years
 
+  // Binary system support
+  isBinarySystem: boolean
+  companionStar?: {
+    designation: string          // e.g., "B" for the companion
+    mass?: number                // Solar masses (if known)
+    radius?: number              // Solar radii (if known)
+    temperature?: number         // K (if known)
+  }
+
+  // Habitable zone (calculated from star properties)
+  habitableZone?: {
+    innerEdge: number            // AU (conservative)
+    outerEdge: number            // AU (optimistic)
+    dataAvailable: boolean       // true if calculated from real data
+  }
+
   // Provenance flags
   starRadiusEstimated: boolean
   starTemperatureEstimated: boolean
@@ -94,6 +140,7 @@ interface SimulatedSystem {
   isMultiPlanet: boolean
   hasEccentricOrbits: boolean    // Any e > 0.1
   hasResonantPair: boolean       // Period ratios near integers
+  hasPlanetsInHZ: boolean        // Any planet in habitable zone
 }
 ```
 
@@ -125,7 +172,7 @@ function computeOrbitalPosition(planet: SimulatedPlanet, daysSinceEpoch: number)
   // Distance from star
   const r = planet.semiMajorAxis * (1 - planet.eccentricity * Math.cos(E))
 
-  // Position in orbital plane (2D for now)
+  // Position in orbital plane (2D top-down view)
   const x = r * Math.cos(nu + planet.argumentOfPeriapsis)
   const y = r * Math.sin(nu + planet.argumentOfPeriapsis)
 
@@ -193,7 +240,7 @@ For very long-period planets (>1000 days), consider auto-scaling or showing orbi
 │                                                    │   * Estimated  │
 │                                                    │                │
 ├─────────────────────────────────────────────────────────────────────┤
-│  ◀◀  ▶/❚❚  ▶▶   [0.5x] [1x] [2x] [5x] [10x]    ○ Paths  ○ Labels  │
+│  ◀◀  ▶/❚❚  ▶▶   [0.5x] [1x] [2x] [5x] [10x]   ○ Paths ○ Labels ○ HZ│
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -207,6 +254,26 @@ For very long-period planets (>1000 days), consider auto-scaling or showing orbi
   - 5000-6000K: Yellow-white (#FFFACD)
   - 6000-7500K: White (#FFFFFF)
   - >7500K: Blue-white (#ADD8E6)
+
+### Binary Star Rendering
+
+For systems with "A"/"B" suffix in `hostStar`:
+- Two stars rendered orbiting a common center point
+- Gentle, illustrative orbit (~30-day period, circular)
+- Relative sizes based on available radius data (or estimated from mass)
+- Each star colored by its temperature
+- Small label: "Binary System (stellar orbit illustrative)"
+- Companion star slightly smaller/dimmer if data unavailable
+
+### Habitable Zone Rendering
+
+When star data is sufficient to calculate HZ boundaries:
+- Translucent green annulus between inner and outer edges
+- Inner edge (conservative): `sqrt(luminosity/1.37)` AU
+- Outer edge (optimistic): `sqrt(luminosity/0.25)` AU
+- Subtle gradient from inner (warmer green) to outer (cooler green)
+- Toggle in controls: "Show Habitable Zone"
+- If planet orbits within HZ, subtle indicator in stats panel
 
 ### Planet Rendering
 
@@ -391,7 +458,11 @@ function SolarSystemModal({ system, initialPlanet, onClose }: SolarSystemModalPr
   const [isPaused, setIsPaused] = useState(false)
   const [showOrbits, setShowOrbits] = useState(true)
   const [showLabels, setShowLabels] = useState(true)
+  const [showHabitableZone, setShowHabitableZone] = useState(true)
   const [simulationTime, setSimulationTime] = useState(0) // days since epoch
+
+  // HZ is only available if we have star data to calculate it
+  const habitableZoneAvailable = system.habitableZone?.dataAvailable ?? false
 
   // ... render logic
 }
@@ -405,10 +476,13 @@ interface SimulationControlsProps {
   isPaused: boolean
   showOrbits: boolean
   showLabels: boolean
+  showHabitableZone: boolean
+  habitableZoneAvailable: boolean  // false if insufficient star data
   onSpeedChange: (speed: number) => void
   onPauseToggle: () => void
   onOrbitsToggle: () => void
   onLabelsToggle: () => void
+  onHabitableZoneToggle: () => void
 }
 ```
 
@@ -422,6 +496,7 @@ interface SimulationControlsProps {
 | `↑` / `↓` | Increase/Decrease speed |
 | `O` | Toggle orbital paths |
 | `L` | Toggle labels |
+| `H` | Toggle habitable zone |
 | `R` | Reset to initial state |
 | `1-9` | Select planet by index |
 
@@ -520,6 +595,25 @@ When simulation opens during tour:
 - [ ] Create tour-specific simulation steps
 - [ ] Test full tour flow with simulation interruptions
 
+### Phase 8: Deep Linking
+- [ ] Define URL schema for direct system access (e.g., `?system=TRAPPIST-1&planet=d`)
+- [ ] Parse URL parameters on app load
+- [ ] Auto-open simulation modal when deep link detected
+- [ ] Update URL when user navigates to different systems (without page reload)
+- [ ] Support sharing: "Copy Link" button in simulation modal
+- [ ] Handle invalid/unknown system names gracefully (show error, fall back to main viz)
+- [ ] Preserve simulation state in URL (speed, selected planet, HZ toggle)
+- [ ] SEO-friendly system pages for notable systems (optional: server-side rendering)
+
+**URL Examples**:
+```
+/                                    # Main visualization
+/?system=TRAPPIST-1                  # Open TRAPPIST-1 simulation
+/?system=55-Cnc&planet=e             # 55 Cancri system, planet e selected
+/?system=HD-80606&speed=5            # HD 80606 at 5x speed
+/?system=Kepler-11&hz=1              # Kepler-11 with HZ overlay
+```
+
 ---
 
 ## Technical Considerations
@@ -607,7 +701,9 @@ src/
 ├── utils/
 │   ├── orbitalMechanics.ts            # Pure orbital calculation functions
 │   ├── dataEstimation.ts              # Missing value estimation
-│   └── systemGrouping.ts              # Group planets by host star
+│   ├── systemGrouping.ts              # Group planets by host star
+│   ├── habitableZone.ts               # HZ boundary calculations
+│   └── deepLinking.ts                 # URL parsing and generation
 └── types/
     └── simulation.ts                  # SimulatedPlanet, SimulatedSystem
 ```
@@ -627,12 +723,16 @@ src/
 
 ## Open Questions
 
-1. **3D vs 2D**: Start with 2D (top-down) view? Add 3D toggle later?
-2. **Multi-star systems**: How to handle binary/trinary star systems?
-3. **Moons**: Include known exomoons when data becomes available?
-4. **Habitable Zone**: Overlay habitable zone visualization?
-5. **Comparison Mode**: Side-by-side with Solar System?
-6. **Share/Export**: Allow users to share specific system views?
+1. **Moons**: Include known exomoons when data becomes available?
+2. **Share/Export**: Beyond deep links, allow image/video export of simulations?
+
+### Resolved Decisions
+
+- **2D only**: Top-down view, no 3D toggle planned
+- **Binary systems**: Show stars slowly orbiting center (illustrative, not simulated)
+- **Habitable zone**: Include when data available (15.6% of planets have insolation data)
+- **No comparison mode**: Focus on the selected system only
+- **Deep linking**: Implemented via URL parameters for direct system access
 
 ---
 
