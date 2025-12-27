@@ -620,14 +620,14 @@ When simulation opens during tour:
 - [ ] Create tour-specific simulation steps
 - [ ] Test full tour flow with simulation interruptions
 
-### Phase 8: Deep Linking
-- [ ] Define URL schema for direct system access (e.g., `?system=TRAPPIST-1&planet=d`)
-- [ ] Parse URL parameters on app load
-- [ ] Auto-open simulation modal when deep link detected
-- [ ] Update URL when user navigates to different systems (without page reload)
-- [ ] Support sharing: "Copy Link" button in simulation modal
-- [ ] Handle invalid/unknown system names gracefully (show error, fall back to main viz)
-- [ ] Preserve simulation state in URL (speed, selected planet, HZ toggle)
+### Phase 8: Deep Linking ✅
+- [x] Define URL schema for direct system access (e.g., `?system=TRAPPIST-1&planet=d`)
+- [x] Parse URL parameters on app load
+- [x] Auto-open simulation modal when deep link detected
+- [x] Update URL when user navigates to different systems (without page reload)
+- [x] Support sharing: "Copy Link" button in simulation modal
+- [x] Handle invalid/unknown system names gracefully (show error, fall back to main viz)
+- [x] Preserve simulation state in URL (speed, selected planet, HZ toggle)
 - [ ] SEO-friendly system pages for notable systems (optional: server-side rendering)
 
 **URL Examples**:

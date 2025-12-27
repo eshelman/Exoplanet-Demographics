@@ -7,6 +7,7 @@ import { SimulationControls } from './SimulationControls'
 import { SystemStatsPanel } from './SystemStatsPanel'
 import { SimulationErrorBoundary } from './SimulationErrorBoundary'
 import { useSimulationAudio } from '../../audio'
+import { getShareableUrl, copyToClipboard, extractPlanetLetter } from '../../utils/deepLinks'
 
 interface SolarSystemModalProps {
   system: SimulatedSystem
@@ -41,6 +42,7 @@ export function SolarSystemModal({
   const [showLabels, setShowLabels] = useState(DEFAULT_SIMULATION_STATE.showLabels)
   const [showHabitableZone, setShowHabitableZone] = useState(DEFAULT_SIMULATION_STATE.showHabitableZone)
   const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Audio integration
   const audio = useSimulationAudio()
@@ -151,6 +153,21 @@ export function SolarSystemModal({
   const handlePlanetSelect = useCallback((planet: SimulatedPlanet) => {
     setSelectedPlanet(planet)
   }, [])
+
+  // Copy link handler
+  const handleCopyLink = useCallback(async () => {
+    const planetLetter = selectedPlanet ? extractPlanetLetter(selectedPlanet.name) : undefined
+    const url = getShareableUrl({
+      system: system.hostStar,
+      planet: planetLetter || undefined,
+    })
+
+    const success = await copyToClipboard(url)
+    if (success) {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    }
+  }, [system.hostStar, selectedPlanet])
 
   // Keyboard controls
   useEffect(() => {
@@ -275,7 +292,36 @@ export function SolarSystemModal({
               </p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {/* Copy Link button */}
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm"
+                style={{
+                  backgroundColor: linkCopied ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                  color: linkCopied ? '#22c55e' : 'var(--color-text)',
+                  border: linkCopied ? '1px solid rgba(34, 197, 94, 0.4)' : '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+                title="Copy shareable link"
+              >
+                {linkCopied ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    Share
+                  </>
+                )}
+              </button>
+
               {/* Help button */}
               <button
                 className="p-2 rounded-full hover:bg-white/10 transition-colors opacity-60 hover:opacity-100"

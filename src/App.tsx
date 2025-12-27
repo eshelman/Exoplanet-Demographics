@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { ScatterPlot } from './components/visualization'
 import { SidePanel } from './components/info'
 import { NarrativeOverlay, PlanetTourOverlay } from './components/narrative'
@@ -7,6 +7,7 @@ import { Header, Footer } from './components/layout'
 import { SectionErrorBoundary } from './components/ErrorBoundary'
 import { loadSolarSystem, loadExoplanets } from './utils'
 import { useVizStore, selectVisiblePlanets } from './store'
+import { useDeepLink } from './hooks'
 import type { Planet } from './types'
 
 function App() {
@@ -29,6 +30,25 @@ function App() {
   // Planet tour state
   const planetTourMode = useVizStore((s) => s.planetTourMode)
 
+  // Deep link error state
+  const [deepLinkError, setDeepLinkError] = useState<string | null>(null)
+
+  // Combine all planets for deep link hook (needs to be declared before hook)
+  const allPlanets = useMemo(() => [...solarSystem, ...exoplanets], [solarSystem, exoplanets])
+
+  // Handle system not found from deep link
+  const handleSystemNotFound = useCallback((systemName: string) => {
+    setDeepLinkError(`System "${systemName}" not found`)
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => setDeepLinkError(null), 5000)
+  }, [])
+
+  // Deep link URL sync
+  useDeepLink({
+    planets: allPlanets,
+    onSystemNotFound: handleSystemNotFound,
+  })
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -44,9 +64,6 @@ function App() {
     }
     loadData()
   }, [])
-
-  // Combine all planets - filtering happens in ScatterPlot via store
-  const allPlanets = useMemo(() => [...solarSystem, ...exoplanets], [solarSystem, exoplanets])
 
   // Get visible planets for stats panel (re-compute when filters change)
   const visiblePlanets = useMemo(
@@ -177,6 +194,32 @@ function App() {
           disableBackdropClose={planetTourMode}
           tourMode={planetTourMode}
         />
+      )}
+
+      {/* Deep Link Error Toast */}
+      {deepLinkError && (
+        <div
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50 animate-fade-in"
+          style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.9)',
+            color: '#fff',
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span className="text-sm">{deepLinkError}</span>
+          <button
+            onClick={() => setDeepLinkError(null)}
+            className="ml-2 p-1 rounded hover:bg-white/20"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       )}
     </div>
   )
