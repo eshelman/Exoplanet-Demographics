@@ -21,9 +21,13 @@ export const PLANET_TOUR_STEPS = [
   'intro',
   'trappist-1',
   '51-peg',
+  'hd-209458',
+  'kepler-16',
   'kepler-11',
   'hd-80606',
   '55-cnc',
+  'wasp-76',
+  'kepler-90',
   'hr-8799',
   'finale',
 ] as const

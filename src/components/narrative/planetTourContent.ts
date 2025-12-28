@@ -53,6 +53,34 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     },
   },
   {
+    id: 'hd-209458',
+    title: 'HD 209458',
+    subtitle: 'The First Atmospheric Detection',
+    content:
+      'In 2001, HD 209458 b became the first exoplanet to have its atmosphere detected. Sodium was found in its upper atmosphere as starlight filtered through during transit—giving birth to the field of exoplanet atmospheric science.',
+    learnMore:
+      'This technique, called transmission spectroscopy, has since revealed water, carbon dioxide, and other molecules in dozens of exoplanet atmospheres. HD 209458 b also showed evidence of atmospheric escape—the planet is slowly losing its atmosphere to space.',
+    systemConfig: {
+      hostStar: 'HD 209458',
+      highlightPlanet: 'b',
+      initialSpeed: 10,
+    },
+  },
+  {
+    id: 'kepler-16',
+    title: 'Kepler-16',
+    subtitle: 'A Real-Life Tatooine',
+    content:
+      'Kepler-16 b orbits two stars—a true circumbinary planet. Like Luke Skywalker\'s homeworld Tatooine, this world experiences double sunsets. Discovered in 2011, it proved that planets can form and survive in the complex gravitational environment of binary star systems.',
+    learnMore:
+      'The planet is about the size of Saturn and orbits its two parent stars every 229 days. The binary stars themselves orbit each other every 41 days. This discovery opened our eyes to the possibility of planets in the many binary star systems throughout the galaxy.',
+    systemConfig: {
+      hostStar: 'Kepler-16',
+      highlightPlanet: 'b',
+      initialSpeed: 2,
+    },
+  },
+  {
     id: 'kepler-11',
     title: 'Kepler-11',
     subtitle: 'A Remarkably Compact System',
@@ -92,6 +120,34 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
       hostStar: '55 Cnc',
       highlightPlanet: 'e',
       initialSpeed: 10,
+    },
+  },
+  {
+    id: 'wasp-76',
+    title: 'WASP-76',
+    subtitle: 'Where Iron Rains From the Sky',
+    content:
+      'WASP-76 b is an ultra-hot Jupiter so close to its star that iron vaporizes on its dayside. As winds carry this iron vapor to the cooler nightside, it condenses and falls as liquid iron rain. A world of literal metal storms.',
+    learnMore:
+      'With dayside temperatures exceeding 2,400°C, WASP-76 b showcases the extreme conditions found on some exoplanets. High-resolution spectroscopy detected iron in the planet\'s atmosphere in 2020, revealing the asymmetric signature of iron condensing on the nightside.',
+    systemConfig: {
+      hostStar: 'WASP-76',
+      highlightPlanet: 'b',
+      initialSpeed: 10,
+    },
+  },
+  {
+    id: 'kepler-90',
+    title: 'Kepler-90',
+    subtitle: 'AI Joins the Planet Hunt',
+    content:
+      'In 2017, Google\'s machine learning algorithms discovered Kepler-90 i—the eighth planet in this system—hidden in Kepler data that humans had missed. This made Kepler-90 the first known system to match our Solar System\'s planet count.',
+    learnMore:
+      'The AI was trained on 15,000 vetted Kepler signals and found subtle patterns humans overlooked. Kepler-90\'s eight planets are all crammed within the orbit of Earth, making it a compressed version of our Solar System. This discovery marked a new era of AI-assisted astronomy.',
+    systemConfig: {
+      hostStar: 'KOI-351',  // Listed as KOI-351 in the database
+      highlightPlanet: 'i',
+      initialSpeed: 5,
     },
   },
   {
