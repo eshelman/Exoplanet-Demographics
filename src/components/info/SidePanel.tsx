@@ -34,7 +34,7 @@ const DETECTION_METHODS: { id: DetectionMethodId; name: string }[] = [
 ]
 
 export function SidePanel({ planets, totalPlanets }: SidePanelProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(true)
 
   const { playSidebarOpen, playSidebarClose, playToggleOn, playToggleOff } = useAudio()
 
