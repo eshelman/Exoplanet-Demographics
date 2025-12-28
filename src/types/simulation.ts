@@ -67,6 +67,7 @@ export interface SimulatedSystem {
 
   // Binary system support
   isBinarySystem: boolean
+  isCircumbinary: boolean // True if planets orbit both stars (P-type binary)
   binaryType?: 'close' | 'distant' // Based on outermost planet orbit (< 5 AU = close)
   companionStar?: CompanionStar
 

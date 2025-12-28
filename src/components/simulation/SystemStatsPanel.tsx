@@ -149,9 +149,18 @@ function HostStarSection({ system }: { system: SimulatedSystem }) {
             <div className="flex items-center gap-2 text-xs">
               <span className="opacity-60">Binary System:</span>
               <span className="px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
-                {system.binaryType === 'close' ? 'Close Binary' : 'Distant Companion'}
+                {system.isCircumbinary
+                  ? 'Circumbinary'
+                  : system.binaryType === 'close'
+                    ? 'Close Binary'
+                    : 'Distant Companion'}
               </span>
             </div>
+            {system.isCircumbinary && (
+              <div className="text-[10px] opacity-50 mt-1" style={{ color: 'var(--color-text)' }}>
+                Planet orbits both stars
+              </div>
+            )}
           </div>
         )}
       </div>

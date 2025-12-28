@@ -11,6 +11,24 @@ import { checkResonance } from './orbitalMechanics'
 const BINARY_CLASSIFICATION_THRESHOLD_AU = 5
 
 /**
+ * Known circumbinary systems (P-type binaries where planets orbit both stars).
+ * These don't follow A/B naming conventions since the planet orbits the pair.
+ */
+const KNOWN_CIRCUMBINARY_SYSTEMS = new Set([
+  'Kepler-16', // First discovered circumbinary planet (2011)
+  'Kepler-34',
+  'Kepler-35',
+  'Kepler-38',
+  'Kepler-47', // First multi-planet circumbinary system
+  'Kepler-64', // Also known as PH1
+  'Kepler-413',
+  'Kepler-453',
+  'Kepler-1647', // Longest period circumbinary
+  'Kepler-1661',
+  'TOI-1338',
+])
+
+/**
  * Extended planet data as it appears in our JSON (includes stellar properties)
  */
 interface RawPlanetData extends Planet {
@@ -48,16 +66,27 @@ export function groupPlanetsBySystem(planets: Planet[]): Map<string, Planet[]> {
 
 /**
  * Check if a host star name indicates a binary system
- * Binary systems typically have " A" or " B" suffix
+ * Binary systems typically have " A" or " B" suffix, or are known circumbinary systems
  *
  * @param hostStar - Host star name
  * @returns Object with binary info
  */
 export function detectBinarySystem(hostStar: string): {
   isBinary: boolean
+  isCircumbinary: boolean
   primaryDesignation?: string
   companionDesignation?: string
 } {
+  // Check for known circumbinary systems first
+  if (KNOWN_CIRCUMBINARY_SYSTEMS.has(hostStar)) {
+    return {
+      isBinary: true,
+      isCircumbinary: true,
+      primaryDesignation: 'A',
+      companionDesignation: 'B',
+    }
+  }
+
   // Check for " A" or " B" suffix (with space before letter)
   const binaryMatch = hostStar.match(/^(.+)\s+([AB])$/i)
 
@@ -66,6 +95,7 @@ export function detectBinarySystem(hostStar: string): {
 
     return {
       isBinary: true,
+      isCircumbinary: false,
       primaryDesignation: designation,
       companionDesignation: designation === 'A' ? 'B' : 'A',
     }
@@ -81,13 +111,14 @@ export function detectBinarySystem(hostStar: string): {
     if (designation === attachedMatch[2]) {
       return {
         isBinary: true,
+        isCircumbinary: false,
         primaryDesignation: designation,
         companionDesignation: designation === 'A' ? 'B' : 'A',
       }
     }
   }
 
-  return { isBinary: false }
+  return { isBinary: false, isCircumbinary: false }
 }
 
 /**
@@ -184,7 +215,9 @@ export function buildSimulatedSystem(hostStar: string, planets: Planet[]): Simul
   let binaryType: 'close' | 'distant' | undefined
 
   if (binaryInfo.isBinary) {
-    binaryType = classifyBinaryType(planets)
+    // Circumbinary systems are always 'close' - the planet orbits both stars,
+    // so the stars must be interior to the planet's orbit
+    binaryType = binaryInfo.isCircumbinary ? 'close' : classifyBinaryType(planets)
     companionStar = {
       designation: binaryInfo.companionDesignation || 'B',
       // We don't have detailed companion data, so leave optional fields undefined
@@ -200,6 +233,7 @@ export function buildSimulatedSystem(hostStar: string, planets: Planet[]): Simul
     distance: firstPlanet.distance || undefined,
 
     isBinarySystem: binaryInfo.isBinary,
+    isCircumbinary: binaryInfo.isCircumbinary,
     binaryType,
     companionStar,
 
