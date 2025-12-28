@@ -1,5 +1,7 @@
 # Learn about Exoplanets!
 
+**[Try it live: exoplanets.6by9.net](https://exoplanets.6by9.net/)**
+
 Exoplanets are the planets in other solar systems (orbiting distant stars).
 
 This interactive web visualization explores exoplanet demographics, inspired by
