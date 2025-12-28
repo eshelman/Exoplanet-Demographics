@@ -29,6 +29,7 @@ export class SimulationAudio {
   private bassRumble: Tone.Synth | null = null
   private bassRumbleGain: Tone.Gain | null = null
   private bassRumbleLfo: Tone.LFO | null = null
+  private bassRumbleStarted = false
 
   // ===== AMBIENT LAYER 2: Harmonic chord pad =====
   private chordPad: Tone.PolySynth | null = null
@@ -44,12 +45,14 @@ export class SimulationAudio {
   private textureFilter: Tone.Filter | null = null
   private textureGain: Tone.Gain | null = null
   private textureBurstInterval: ReturnType<typeof setInterval> | null = null
+  private textureNoiseStarted = false
 
   // Legacy star drone (kept for compatibility, now integrated into bass rumble)
   private starDrone: Tone.Synth | null = null
   private starDroneGain: Tone.Gain | null = null
   private starLfo: Tone.LFO | null = null
   private starFilter: Tone.Filter | null = null
+  private starDroneStarted = false
 
   // Planet voices
   private planetSynth: Tone.PolySynth | null = null
@@ -69,6 +72,10 @@ export class SimulationAudio {
 
   // Track completed orbits to avoid repeated sounds
   private completedOrbits: Set<string> = new Set()
+
+  // Global rate limiter for orbital chimes to prevent polyphony overflow
+  private lastGlobalChimeTime = 0
+  private static readonly MIN_GLOBAL_CHIME_INTERVAL = 120 // Max ~8 chimes/sec globally
 
   constructor(outputNode: Tone.ToneAudioNode) {
     this.outputGain = new Tone.Gain(0.6).connect(outputNode)
@@ -186,7 +193,7 @@ export class SimulationAudio {
       this.momentGain = new Tone.Gain(0.5).connect(this.outputGain)
       this.momentSynth = new Tone.PolySynth({
         voice: Tone.Synth,
-        maxPolyphony: 16, // Higher limit for rapid orbital chimes
+        maxPolyphony: 32, // High limit for rapid orbital chimes at high simulation speeds
         options: {
           oscillator: { type: 'sine' },
           envelope: MUSICAL_ENVELOPES.orbitChime,
@@ -339,10 +346,19 @@ export class SimulationAudio {
 
     // ===== LAYER 1: Sub-bass rumble =====
     if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
-      const bassFreq = this.getBassRumbleFrequency(system.starTemperature)
-      this.bassRumble.triggerAttack(bassFreq)
-      this.bassRumbleLfo.start()
-      // LFO controls the gain, so we just let it run
+      try {
+        const bassFreq = this.getBassRumbleFrequency(system.starTemperature)
+        // Release any existing note first, then start fresh
+        if (this.bassRumbleStarted) {
+          this.bassRumble.triggerRelease()
+          this.bassRumbleLfo.stop()
+        }
+        this.bassRumble.triggerAttack(bassFreq)
+        this.bassRumbleLfo.start()
+        this.bassRumbleStarted = true
+      } catch (e) {
+        // Silently handle Tone.js timing errors
+      }
     }
 
     // ===== LAYER 2: Harmonic chord pad =====
@@ -350,6 +366,7 @@ export class SimulationAudio {
     this.startChordPad()
 
     // Schedule slow chord evolution (every 15-25 seconds)
+    if (this.chordEvolutionInterval) clearInterval(this.chordEvolutionInterval)
     this.chordEvolutionInterval = setInterval(() => {
       if (Math.random() > 0.4) { // 60% chance to evolve
         this.evolveChordPad()
@@ -358,11 +375,22 @@ export class SimulationAudio {
 
     // ===== LAYER 3: Texture bursts =====
     if (this.textureNoise && this.textureFilter) {
-      const textureFreq = this.getTextureFilterFrequency(system.starTemperature)
-      this.textureFilter.frequency.value = textureFreq
-      this.textureNoise.start()
+      try {
+        const textureFreq = this.getTextureFilterFrequency(system.starTemperature)
+        this.textureFilter.frequency.value = textureFreq
+
+        // Stop and restart to ensure clean state
+        if (this.textureNoiseStarted) {
+          this.textureNoise.stop()
+        }
+        this.textureNoise.start()
+        this.textureNoiseStarted = true
+      } catch (e) {
+        // Silently handle Tone.js timing errors
+      }
 
       // Schedule random texture bursts (every 5-15 seconds)
+      if (this.textureBurstInterval) clearInterval(this.textureBurstInterval)
       this.textureBurstInterval = setInterval(() => {
         if (Math.random() > 0.3) { // 70% chance for burst
           this.playTextureBurst()
@@ -375,24 +403,37 @@ export class SimulationAudio {
 
     // ===== Legacy star drone (reduced role) =====
     if (this.starDrone && this.starDroneGain && this.starFilter) {
-      const droneFreq = starTemperatureToNote(system.starTemperature)
-      this.starFilter.frequency.rampTo(300, 0.5) // Lower filter for subtlety
-      this.starDrone.triggerAttack(droneFreq)
-      this.starDroneGain.gain.rampTo(0.1, 2) // Quieter than before
+      try {
+        // Release any existing note first, then start fresh
+        if (this.starDroneStarted) {
+          this.starDrone.triggerRelease()
+        }
+        const droneFreq = starTemperatureToNote(system.starTemperature)
+        this.starFilter.frequency.rampTo(300, 0.5) // Lower filter for subtlety
+        this.starDrone.triggerAttack(droneFreq)
+        this.starDroneGain.gain.rampTo(0.1, 2) // Quieter than before
+        this.starDroneStarted = true
+      } catch (e) {
+        // Silently handle Tone.js timing errors
+      }
     }
   }
 
   /**
    * Stop system ambient - all layers
+   * Note: This is now synchronous to avoid race conditions when switching systems
    */
   stopSystemAmbient(): void {
     // ===== LAYER 1: Sub-bass rumble =====
     if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
-      this.bassRumbleLfo.stop()
-      this.bassRumbleGain.gain.rampTo(0, 1)
-      setTimeout(() => {
-        this.bassRumble?.triggerRelease()
-      }, 1000)
+      try {
+        this.bassRumbleLfo.stop()
+        this.bassRumbleGain.gain.rampTo(0, 0.3)
+        this.bassRumble.triggerRelease()
+      } catch (e) {
+        // Silently handle errors
+      }
+      this.bassRumbleStarted = false
     }
 
     // ===== LAYER 2: Chord pad =====
@@ -401,13 +442,13 @@ export class SimulationAudio {
       this.chordEvolutionInterval = null
     }
     if (this.chordPad && this.chordPadGain) {
-      this.chordPadGain.gain.rampTo(0, 2)
-      setTimeout(() => {
-        this.currentChordNotes.forEach((freq) => {
-          this.chordPad?.triggerRelease(freq)
-        })
-        this.currentChordNotes = []
-      }, 2000)
+      try {
+        this.chordPadGain.gain.rampTo(0, 0.3)
+        this.chordPad.releaseAll()
+      } catch (e) {
+        // Silently handle errors
+      }
+      this.currentChordNotes = []
     }
 
     // ===== LAYER 3: Texture =====
@@ -416,18 +457,24 @@ export class SimulationAudio {
       this.textureBurstInterval = null
     }
     if (this.textureNoise && this.textureGain) {
-      this.textureGain.gain.rampTo(0, 0.5)
-      setTimeout(() => {
-        this.textureNoise?.stop()
-      }, 500)
+      try {
+        this.textureGain.gain.rampTo(0, 0.2)
+        this.textureNoise.stop()
+      } catch (e) {
+        // Silently handle errors
+      }
+      this.textureNoiseStarted = false
     }
 
     // ===== Legacy star drone =====
     if (this.starDrone && this.starDroneGain) {
-      this.starDroneGain.gain.rampTo(0, 1)
-      setTimeout(() => {
-        this.starDrone?.triggerRelease()
-      }, 1000)
+      try {
+        this.starDroneGain.gain.rampTo(0, 0.3)
+        this.starDrone.triggerRelease()
+      } catch (e) {
+        // Silently handle errors
+      }
+      this.starDroneStarted = false
     }
 
     this.currentSystem = null
@@ -614,15 +661,27 @@ export class SimulationAudio {
    * - Faster orbits = more frequent chimes (rhythm, not pitch)
    * - Each planet has a unique pitch from the pentatonic scale
    * - Short, bell-like decay prevents sustained high-frequency exposure
+   * - Global rate limiting prevents polyphony overflow at high speeds
    */
   playOrbitalChime(planet: SimulatedPlanet): void {
     if (!this.initialized || !this.momentSynth) return
 
-    const frequency = this.planetToFrequency(planet)
-    const volume = this.planetToVolume(planet) * 0.7 // Slightly quieter for rhythm
+    // Global rate limiting to prevent polyphony overflow
+    const now = Date.now()
+    if (now - this.lastGlobalChimeTime < SimulationAudio.MIN_GLOBAL_CHIME_INTERVAL) {
+      return // Skip this chime to prevent overflow
+    }
+    this.lastGlobalChimeTime = now
 
-    // Short, pleasant chime with natural decay
-    this.momentSynth.triggerAttackRelease(frequency, '16n', undefined, volume)
+    try {
+      const frequency = this.planetToFrequency(planet)
+      const volume = this.planetToVolume(planet) * 0.7 // Slightly quieter for rhythm
+
+      // Short, pleasant chime with natural decay
+      this.momentSynth.triggerAttackRelease(frequency, '16n', undefined, volume)
+    } catch (e) {
+      // Silently handle polyphony overflow
+    }
   }
 
   // ============ Special Moment Sounds ============
@@ -635,13 +694,24 @@ export class SimulationAudio {
     if (!this.initialized || !this.momentSynth) return
     if (planet.eccentricity < 0.1) return // Only for eccentric orbits
 
-    const frequency = this.planetToFrequency(planet)
-    // Whoosh effect - quick frequency sweep
-    const now = Tone.now()
+    // Use global rate limiter (periapsis also uses momentSynth)
+    const nowMs = Date.now()
+    if (nowMs - this.lastGlobalChimeTime < SimulationAudio.MIN_GLOBAL_CHIME_INTERVAL * 2) {
+      return // Skip to prevent polyphony overflow
+    }
+    this.lastGlobalChimeTime = nowMs
 
-    this.momentSynth.triggerAttackRelease(frequency * 0.8, '32n', now, 0.2)
-    this.momentSynth.triggerAttackRelease(frequency, '16n', now + 0.03, 0.3)
-    this.momentSynth.triggerAttackRelease(frequency * 1.2, '32n', now + 0.08, 0.2)
+    try {
+      const frequency = this.planetToFrequency(planet)
+      // Whoosh effect - quick frequency sweep
+      const now = Tone.now()
+
+      this.momentSynth.triggerAttackRelease(frequency * 0.8, '32n', now, 0.2)
+      this.momentSynth.triggerAttackRelease(frequency, '16n', now + 0.03, 0.3)
+      this.momentSynth.triggerAttackRelease(frequency * 1.2, '32n', now + 0.08, 0.2)
+    } catch (e) {
+      // Silently handle polyphony overflow
+    }
   }
 
   /**
@@ -655,12 +725,16 @@ export class SimulationAudio {
     if (this.completedOrbits.has(planet.id)) return
     this.completedOrbits.add(planet.id)
 
-    const frequency = this.planetToFrequency(planet)
-    const now = Tone.now()
+    try {
+      const frequency = this.planetToFrequency(planet)
+      const now = Tone.now()
 
-    // Gentle completion chime with consonant octave (capped)
-    this.momentSynth.triggerAttackRelease(frequency, '8n', now, 0.3)
-    this.momentSynth.triggerAttackRelease(getConsonantInterval(frequency, 'octave'), '4n', now + 0.15, 0.2)
+      // Gentle completion chime with consonant octave (capped)
+      this.momentSynth.triggerAttackRelease(frequency, '8n', now, 0.3)
+      this.momentSynth.triggerAttackRelease(getConsonantInterval(frequency, 'octave'), '4n', now + 0.15, 0.2)
+    } catch (e) {
+      // Silently handle errors
+    }
   }
 
   /**
@@ -669,14 +743,18 @@ export class SimulationAudio {
   playConjunction(planet1: SimulatedPlanet, planet2: SimulatedPlanet): void {
     if (!this.initialized || !this.momentSynth) return
 
-    const freq1 = this.planetToFrequency(planet1)
-    const freq2 = this.planetToFrequency(planet2)
-    const now = Tone.now()
+    try {
+      const freq1 = this.planetToFrequency(planet1)
+      const freq2 = this.planetToFrequency(planet2)
+      const now = Tone.now()
 
-    // Harmonic chord
-    this.momentSynth.triggerAttackRelease(freq1, '4n', now, 0.25)
-    this.momentSynth.triggerAttackRelease(freq2, '4n', now + 0.05, 0.25)
-    this.momentSynth.triggerAttackRelease((freq1 + freq2) / 2, '4n', now + 0.1, 0.15)
+      // Harmonic chord
+      this.momentSynth.triggerAttackRelease(freq1, '4n', now, 0.25)
+      this.momentSynth.triggerAttackRelease(freq2, '4n', now + 0.05, 0.25)
+      this.momentSynth.triggerAttackRelease((freq1 + freq2) / 2, '4n', now + 0.1, 0.15)
+    } catch (e) {
+      // Silently handle errors
+    }
   }
 
   // ============ Utility ============
