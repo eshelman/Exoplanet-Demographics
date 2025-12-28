@@ -7,6 +7,13 @@ export interface ZoomTransform {
   y: number // translate y
 }
 
+export interface ZoomRegion {
+  xMin: number
+  xMax: number
+  yMin: number
+  yMax: number
+}
+
 export interface UseZoomOptions {
   scaleExtent?: [number, number]
   onZoomStart?: () => void
@@ -27,6 +34,13 @@ export function useZoom(
   resetZoom: () => void
   zoomIn: () => void
   zoomOut: () => void
+  zoomToRegion: (
+    region: ZoomRegion,
+    xScale: d3.ScaleLogarithmic<number, number>,
+    yScale: d3.ScaleLogarithmic<number, number>,
+    width: number,
+    height: number
+  ) => void
 } {
   const { scaleExtent, onZoomStart, onZoomEnd, enabled } = { ...defaultOptions, ...options }
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
@@ -83,10 +97,56 @@ export function useZoom(
     d3.select(svgRef.current).transition().duration(200).call(zoomRef.current.scaleBy, 0.67)
   }, [svgRef])
 
+  const zoomToRegion = useCallback(
+    (
+      region: ZoomRegion,
+      xScale: d3.ScaleLogarithmic<number, number>,
+      yScale: d3.ScaleLogarithmic<number, number>,
+      width: number,
+      height: number
+    ) => {
+      if (!svgRef.current || !zoomRef.current) return
+
+      // Convert data coordinates to pixel coordinates using the base scales
+      const x0 = xScale(region.xMin)
+      const x1 = xScale(region.xMax)
+      const y0 = yScale(region.yMax) // Note: yScale is inverted (larger values at top)
+      const y1 = yScale(region.yMin)
+
+      // Calculate the zoom transform to fit this region
+      const regionWidth = Math.abs(x1 - x0)
+      const regionHeight = Math.abs(y1 - y0)
+
+      // Calculate scale to fit the region (with some padding)
+      const padding = 0.9 // Use 90% of available space
+      const scaleX = (width * padding) / regionWidth
+      const scaleY = (height * padding) / regionHeight
+      const k = Math.min(scaleX, scaleY, scaleExtent![1]) // Don't exceed max zoom
+
+      // Calculate center of the region
+      const centerX = (x0 + x1) / 2
+      const centerY = (y0 + y1) / 2
+
+      // Calculate translation to center the region
+      const tx = width / 2 - centerX * k
+      const ty = height / 2 - centerY * k
+
+      // Apply the transform
+      const newTransform = d3.zoomIdentity.translate(tx, ty).scale(k)
+
+      d3.select(svgRef.current)
+        .transition()
+        .duration(750)
+        .call(zoomRef.current.transform, newTransform)
+    },
+    [svgRef, scaleExtent]
+  )
+
   return {
     transform,
     resetZoom,
     zoomIn,
     zoomOut,
+    zoomToRegion,
   }
 }

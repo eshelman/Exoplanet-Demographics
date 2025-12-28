@@ -52,6 +52,9 @@ interface VizState {
   hoveredPlanet: Planet | null
   brushSelection: BoundingBox | null
 
+  // Zoom region (for narrative-driven zoom)
+  zoomRegion: { xMin: number; xMax: number; yMin: number; yMax: number } | null
+
   // Narrative state
   narrativeMode: boolean
   narrativeStep: number
@@ -85,6 +88,7 @@ interface VizState {
   selectPlanet: (planet: Planet | null) => void
   setHoveredPlanet: (planet: Planet | null) => void
   setBrushSelection: (selection: BoundingBox | null) => void
+  setZoomRegion: (region: { xMin: number; xMax: number; yMin: number; yMax: number } | null) => void
   clearSelection: () => void
 
   // Narrative actions
@@ -135,6 +139,9 @@ const initialState = {
   selectedPlanet: null,
   hoveredPlanet: null,
   brushSelection: null,
+
+  // Zoom region
+  zoomRegion: null,
 
   // Narrative
   narrativeMode: false,
@@ -210,6 +217,8 @@ export const useVizStore = create<VizState>()(
     setHoveredPlanet: (planet) => set({ hoveredPlanet: planet }),
 
     setBrushSelection: (selection) => set({ brushSelection: selection }),
+
+    setZoomRegion: (region) => set({ zoomRegion: region }),
 
     clearSelection: () =>
       set({

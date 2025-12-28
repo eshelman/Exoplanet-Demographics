@@ -1,4 +1,4 @@
-import { useRef, useMemo, useCallback } from 'react'
+import { useRef, useMemo, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useDimensions } from '../../hooks/useDimensions'
 import { useZoom } from '../../hooks/useZoom'
@@ -44,6 +44,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   const enabledMethods = useVizStore((s) => s.enabledMethods)
   const showSolarSystem = useVizStore((s) => s.showSolarSystem)
   const enabledPlanetTypes = useVizStore((s) => s.enabledPlanetTypes)
+  const zoomRegion = useVizStore((s) => s.zoomRegion)
 
   // Get actions from store
   const setHoveredPlanet = useVizStore((s) => s.setHoveredPlanet)
@@ -69,7 +70,7 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   const baseYScale = useMemo(() => createYScale(yAxis, innerHeight), [yAxis, innerHeight])
 
   // Zoom behavior - returns transform state
-  const { transform, resetZoom, zoomIn, zoomOut } = useZoom(svgRef, {
+  const { transform, resetZoom, zoomIn, zoomOut, zoomToRegion } = useZoom(svgRef, {
     scaleExtent: [0.5, 20],
     onZoomStart: startPan,
     onZoomEnd: endPan,
@@ -78,6 +79,16 @@ export function ScatterPlot({ planets }: ScatterPlotProps) {
   // Apply zoom transform to scales (semantic zoom)
   const xScale = useMemo(() => transform.rescaleX(baseXScale), [transform, baseXScale])
   const yScale = useMemo(() => transform.rescaleY(baseYScale), [transform, baseYScale])
+
+  // Handle narrative-driven zoom regions
+  useEffect(() => {
+    if (zoomRegion && innerWidth > 0 && innerHeight > 0) {
+      zoomToRegion(zoomRegion, baseXScale, baseYScale, innerWidth, innerHeight)
+    } else if (zoomRegion === null) {
+      // Reset zoom when region is cleared
+      resetZoom()
+    }
+  }, [zoomRegion, baseXScale, baseYScale, innerWidth, innerHeight, zoomToRegion, resetZoom])
 
   // Brush behavior (hold Shift to brush)
   const handleBrushEnd = useCallback(

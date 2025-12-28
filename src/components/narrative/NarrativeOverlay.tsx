@@ -17,6 +17,7 @@ export function NarrativeOverlay() {
   const showBiasOverlay = useVizStore((s) => s.showBiasOverlay)
   const enableAllMethods = useVizStore((s) => s.enableAllMethods)
   const setEnabledPlanetTypes = useVizStore((s) => s.setEnabledPlanetTypes)
+  const setZoomRegion = useVizStore((s) => s.setZoomRegion)
 
   const currentStepId = NARRATIVE_STEPS[narrativeStep]
   const currentContent = getStepContent(currentStepId)
@@ -61,6 +62,14 @@ export function NarrativeOverlay() {
     } else {
       // Default: show all planet types (empty set means no filter)
       setEnabledPlanetTypes([])
+    }
+
+    // Apply zoom region if specified
+    if (config.zoomRegion) {
+      setZoomRegion(config.zoomRegion)
+    } else {
+      // Reset zoom when no region specified
+      setZoomRegion(null)
     }
   }, [narrativeStep, narrativeMode])
 
