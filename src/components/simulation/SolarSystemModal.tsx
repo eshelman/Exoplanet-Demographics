@@ -13,6 +13,7 @@ import { getShareableUrl, copyToClipboard, extractPlanetLetter } from '../../uti
 interface SolarSystemModalProps {
   system: SimulatedSystem
   initialPlanetId?: string
+  initialSpeed?: SimulationSpeed
   isOpen: boolean
   onClose: () => void
   disableBackdropClose?: boolean
@@ -23,6 +24,7 @@ interface SolarSystemModalProps {
 export function SolarSystemModal({
   system,
   initialPlanetId,
+  initialSpeed,
   isOpen,
   onClose,
   disableBackdropClose = false,
@@ -37,7 +39,7 @@ export function SolarSystemModal({
   }
 
   const [selectedPlanet, setSelectedPlanet] = useState<SimulatedPlanet>(getInitialPlanet)
-  const [speed, setSpeed] = useState<SimulationSpeed>(DEFAULT_SIMULATION_STATE.speed as SimulationSpeed)
+  const [speed, setSpeed] = useState<SimulationSpeed>(initialSpeed ?? DEFAULT_SIMULATION_STATE.speed as SimulationSpeed)
   const [isPaused, setIsPaused] = useState(DEFAULT_SIMULATION_STATE.isPaused)
   const [showOrbits, setShowOrbits] = useState(DEFAULT_SIMULATION_STATE.showOrbits)
   const [showLabels, setShowLabels] = useState(DEFAULT_SIMULATION_STATE.showLabels)
@@ -59,10 +61,13 @@ export function SolarSystemModal({
     }
   }, [])
 
-  // Reset selected planet when system changes
+  // Reset selected planet and speed when system changes
   useEffect(() => {
     setSelectedPlanet(getInitialPlanet())
-  }, [system, initialPlanetId])
+    if (initialSpeed !== undefined) {
+      setSpeed(initialSpeed)
+    }
+  }, [system, initialPlanetId, initialSpeed])
 
   // Start/stop ambient audio when modal opens/closes
   useEffect(() => {

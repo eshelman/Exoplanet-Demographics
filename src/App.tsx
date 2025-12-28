@@ -25,6 +25,7 @@ function App() {
   const simulationOpen = useVizStore((s) => s.simulationOpen)
   const simulationSystem = useVizStore((s) => s.simulationSystem)
   const simulationPlanetId = useVizStore((s) => s.simulationPlanetId)
+  const simulationInitialSpeed = useVizStore((s) => s.simulationInitialSpeed)
   const closeSimulation = useVizStore((s) => s.closeSimulation)
 
   // Planet tour state
@@ -189,6 +190,7 @@ function App() {
         <SolarSystemModal
           system={simulationSystem}
           initialPlanetId={simulationPlanetId || undefined}
+          initialSpeed={simulationInitialSpeed || undefined}
           isOpen={simulationOpen}
           onClose={closeSimulation}
           disableBackdropClose={planetTourMode}

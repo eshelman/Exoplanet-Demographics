@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { Planet, XAxisType, YAxisType, ColorMode, BoundingBox, DetectionMethodId, SimulatedSystem } from '../types'
+import type { SimulationSpeed } from '../types/simulation'
 
 // Narrative tour steps
 export const NARRATIVE_STEPS = [
@@ -63,6 +64,7 @@ interface VizState {
   simulationOpen: boolean
   simulationSystem: SimulatedSystem | null
   simulationPlanetId: string | null
+  simulationInitialSpeed: SimulationSpeed | null
 
   // View actions
   setXAxis: (axis: XAxisType) => void
@@ -100,7 +102,7 @@ interface VizState {
   goToPlanetTourStep: (step: number) => void
 
   // Simulation actions
-  openSimulation: (system: SimulatedSystem, planetId: string) => void
+  openSimulation: (system: SimulatedSystem, planetId: string, initialSpeed?: SimulationSpeed) => void
   closeSimulation: () => void
 
   // Reset
@@ -146,6 +148,7 @@ const initialState = {
   simulationOpen: false,
   simulationSystem: null,
   simulationPlanetId: null,
+  simulationInitialSpeed: null,
 }
 
 export const useVizStore = create<VizState>()(
@@ -255,11 +258,12 @@ export const useVizStore = create<VizState>()(
       }),
 
     // Simulation actions
-    openSimulation: (system, planetId) =>
+    openSimulation: (system, planetId, initialSpeed) =>
       set({
         simulationOpen: true,
         simulationSystem: system,
         simulationPlanetId: planetId,
+        simulationInitialSpeed: initialSpeed ?? null,
       }),
 
     closeSimulation: () =>
@@ -267,6 +271,7 @@ export const useVizStore = create<VizState>()(
         simulationOpen: false,
         simulationSystem: null,
         simulationPlanetId: null,
+        simulationInitialSpeed: null,
       }),
 
     // Reset

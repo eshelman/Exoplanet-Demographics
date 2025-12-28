@@ -6,7 +6,7 @@ import { buildSimulatedSystem, groupPlanetsBySystem } from '../../utils/systemGr
 import { loadExoplanets } from '../../utils'
 import { useAudio } from '../../audio'
 import type { Planet } from '../../types'
-import type { SimulatedSystem, SimulatedPlanet } from '../../types/simulation'
+import type { SimulatedSystem, SimulatedPlanet, SimulationSpeed } from '../../types/simulation'
 
 export function PlanetTourOverlay() {
   const [planets, setPlanets] = useState<Planet[]>([])
@@ -73,7 +73,7 @@ export function PlanetTourOverlay() {
           planetId = matchingPlanet.id
         }
       }
-      openSimulation(currentSystem, planetId)
+      openSimulation(currentSystem, planetId, config.initialSpeed as SimulationSpeed | undefined)
     } else {
       // No system for this step, close simulation
       closeSimulation()
