@@ -261,20 +261,30 @@ export class SimulationAudio {
 
   /**
    * Start the chord pad with current notes
+   * Uses exponential ramp for smooth fade-in
    */
   private startChordPad(): void {
     if (!this.chordPad || !this.chordPadGain || this.currentChordNotes.length === 0) return
 
-    // Trigger all chord notes
-    this.currentChordNotes.forEach((freq) => {
-      this.chordPad?.triggerAttack(freq, undefined, 0.15)
-    })
-    this.chordPadGain.gain.rampTo(0.2, 3) // Fade in over 3s
+    try {
+      // Ensure gain starts at minimum
+      this.chordPadGain.gain.value = 0.001
+
+      // Trigger all chord notes
+      this.currentChordNotes.forEach((freq) => {
+        this.chordPad?.triggerAttack(freq, undefined, 0.15)
+      })
+
+      // Slow exponential fade in for smooth entry
+      this.chordPadGain.gain.exponentialRampTo(0.18, 4) // Slightly longer fade
+    } catch (e) {
+      // Silently handle errors
+    }
   }
 
   /**
    * Evolve the chord pad to new notes (smooth transition)
-   * Uses releaseAll to prevent polyphony overflow
+   * Uses very long crossfade to prevent any audible clicks
    */
   private evolveChordPad(): void {
     if (!this.chordPad || !this.chordPadGain || !this.currentSystem) return
@@ -287,47 +297,54 @@ export class SimulationAudio {
     const sortedNew = [...newNotes].sort()
     if (JSON.stringify(sortedCurrent) === JSON.stringify(sortedNew)) return
 
-    // Fade out, release all, then fade in with new notes
-    // This prevents polyphony buildup from overlapping attack/release
-    this.chordPadGain.gain.rampTo(0, 1.5)
+    // Very slow crossfade to prevent any audible transition
+    // Fade to near-silent (not zero - exponential ramps can't reach 0)
+    this.chordPadGain.gain.exponentialRampTo(0.001, 3.0)
 
     setTimeout(() => {
-      // Release all current notes
-      this.chordPad?.releaseAll()
+      // Release all current notes (now inaudible)
+      try {
+        this.chordPad?.releaseAll()
+      } catch (e) { /* ignore */ }
       this.currentChordNotes = []
 
       // Start new notes after brief pause
       setTimeout(() => {
         if (!this.chordPad || !this.chordPadGain || !this.currentSystem) return
-        newNotes.forEach((freq) => {
-          this.chordPad?.triggerAttack(freq, undefined, 0.15)
-        })
-        this.currentChordNotes = newNotes
-        this.chordPadGain.gain.rampTo(0.2, 2)
-      }, 200)
-    }, 1500)
+        try {
+          newNotes.forEach((freq) => {
+            this.chordPad?.triggerAttack(freq, undefined, 0.15)
+          })
+          this.currentChordNotes = newNotes
+          // Slow fade back in
+          this.chordPadGain.gain.exponentialRampTo(0.18, 3.5)
+        } catch (e) { /* ignore */ }
+      }, 300)
+    }, 3200) // Wait for fade-out to complete
   }
 
   /**
    * Play a texture burst (stellar wind effect)
+   * Uses longer, smoother ramps to prevent clicks/pops
    */
   private playTextureBurst(): void {
     if (!this.textureNoise || !this.textureGain || !this.textureFilter) return
 
-    // Random filter frequency variation
+    // Random filter frequency variation - slower ramp
     const baseFreq = this.textureFilter.frequency.value as number
-    const variation = baseFreq * (0.8 + Math.random() * 0.4)
-    this.textureFilter.frequency.rampTo(variation, 0.2)
+    const variation = baseFreq * (0.85 + Math.random() * 0.3)
+    this.textureFilter.frequency.rampTo(variation, 0.8)
 
-    // Quick burst: fade in, hold briefly, fade out
-    this.textureGain.gain.rampTo(0.12, 0.3) // Fade in
+    // Smooth burst: longer fade in, hold, longer fade out
+    // Use exponential ramps for smoother sound
+    this.textureGain.gain.exponentialRampTo(0.08, 1.0) // Slower, gentler fade in
     setTimeout(() => {
-      this.textureGain?.gain.rampTo(0, 1.5) // Fade out
-      // Reset filter
+      this.textureGain?.gain.exponentialRampTo(0.001, 2.5) // Much longer fade out to inaudible
+      // Reset filter very slowly
       setTimeout(() => {
-        this.textureFilter?.frequency.rampTo(baseFreq, 0.5)
-      }, 1500)
-    }, 500 + Math.random() * 1000)
+        this.textureFilter?.frequency.rampTo(baseFreq, 1.0)
+      }, 2500)
+    }, 800 + Math.random() * 1200)
   }
 
   /**
@@ -348,14 +365,17 @@ export class SimulationAudio {
     if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
       try {
         const bassFreq = this.getBassRumbleFrequency(system.starTemperature)
-        // Release any existing note first, then start fresh
+
+        // If already started, just update frequency (no restart to prevent clicks)
         if (this.bassRumbleStarted) {
-          this.bassRumble.triggerRelease()
-          this.bassRumbleLfo.stop()
+          this.bassRumble.frequency.rampTo(bassFreq, 1.0)
+        } else {
+          // Fresh start - ensure gain at minimum first
+          this.bassRumbleGain.gain.value = 0.001
+          this.bassRumble.triggerAttack(bassFreq)
+          this.bassRumbleLfo.start()
+          this.bassRumbleStarted = true
         }
-        this.bassRumble.triggerAttack(bassFreq)
-        this.bassRumbleLfo.start()
-        this.bassRumbleStarted = true
       } catch (e) {
         // Silently handle Tone.js timing errors
       }
@@ -374,45 +394,51 @@ export class SimulationAudio {
     }, 15000 + Math.random() * 10000)
 
     // ===== LAYER 3: Texture bursts =====
-    if (this.textureNoise && this.textureFilter) {
+    if (this.textureNoise && this.textureFilter && this.textureGain) {
       try {
         const textureFreq = this.getTextureFilterFrequency(system.starTemperature)
-        this.textureFilter.frequency.value = textureFreq
+        this.textureFilter.frequency.rampTo(textureFreq, 0.5) // Smooth filter change
 
-        // Stop and restart to ensure clean state
-        if (this.textureNoiseStarted) {
-          this.textureNoise.stop()
+        // Only start noise if not already running (keep running to prevent clicks)
+        if (!this.textureNoiseStarted) {
+          this.textureNoise.start()
+          this.textureNoiseStarted = true
         }
-        this.textureNoise.start()
-        this.textureNoiseStarted = true
+        // Ensure gain is at baseline (near-silent) before bursts
+        this.textureGain.gain.value = 0.001
       } catch (e) {
         // Silently handle Tone.js timing errors
       }
 
-      // Schedule random texture bursts (every 5-15 seconds)
+      // Schedule random texture bursts (every 8-20 seconds - less frequent)
       if (this.textureBurstInterval) clearInterval(this.textureBurstInterval)
       this.textureBurstInterval = setInterval(() => {
-        if (Math.random() > 0.3) { // 70% chance for burst
+        if (Math.random() > 0.4) { // 60% chance for burst (slightly less frequent)
           this.playTextureBurst()
         }
-      }, 5000 + Math.random() * 10000)
+      }, 8000 + Math.random() * 12000)
 
-      // Initial burst after short delay
-      setTimeout(() => this.playTextureBurst(), 2000 + Math.random() * 3000)
+      // Initial burst after longer delay
+      setTimeout(() => this.playTextureBurst(), 3000 + Math.random() * 4000)
     }
 
     // ===== Legacy star drone (reduced role) =====
     if (this.starDrone && this.starDroneGain && this.starFilter) {
       try {
-        // Release any existing note first, then start fresh
-        if (this.starDroneStarted) {
-          this.starDrone.triggerRelease()
-        }
         const droneFreq = starTemperatureToNote(system.starTemperature)
-        this.starFilter.frequency.rampTo(300, 0.5) // Lower filter for subtlety
-        this.starDrone.triggerAttack(droneFreq)
-        this.starDroneGain.gain.rampTo(0.1, 2) // Quieter than before
-        this.starDroneStarted = true
+
+        // If already started, just update frequency (no restart to prevent clicks)
+        if (this.starDroneStarted) {
+          this.starDrone.frequency.rampTo(droneFreq, 1.0)
+          this.starFilter.frequency.rampTo(300, 1.0)
+        } else {
+          // Fresh start - ensure gain at minimum first
+          this.starDroneGain.gain.value = 0.001
+          this.starFilter.frequency.rampTo(300, 0.5)
+          this.starDrone.triggerAttack(droneFreq)
+          this.starDroneGain.gain.exponentialRampTo(0.08, 3) // Slower, quieter fade in
+          this.starDroneStarted = true
+        }
       } catch (e) {
         // Silently handle Tone.js timing errors
       }
@@ -421,15 +447,33 @@ export class SimulationAudio {
 
   /**
    * Stop system ambient - all layers
-   * Note: This is now synchronous to avoid race conditions when switching systems
+   * Uses long gain ramps to prevent clicks/pops. Sources stay running
+   * (controlled by gain only) to prevent restart clicks.
    */
   stopSystemAmbient(): void {
+    // Clear intervals first to prevent new bursts/evolutions
+    if (this.chordEvolutionInterval) {
+      clearInterval(this.chordEvolutionInterval)
+      this.chordEvolutionInterval = null
+    }
+    if (this.textureBurstInterval) {
+      clearInterval(this.textureBurstInterval)
+      this.textureBurstInterval = null
+    }
+
     // ===== LAYER 1: Sub-bass rumble =====
+    // Use envelope release (long decay) - don't stop abruptly
     if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
       try {
-        this.bassRumbleLfo.stop()
-        this.bassRumbleGain.gain.rampTo(0, 0.3)
-        this.bassRumble.triggerRelease()
+        // Ramp LFO influence to minimum, then stop after ramp completes
+        this.bassRumbleGain.gain.exponentialRampTo(0.001, 1.0)
+        this.bassRumble.triggerRelease() // Let envelope handle release
+        // Stop LFO after gain fades (prevents modulation clicks)
+        setTimeout(() => {
+          try {
+            this.bassRumbleLfo?.stop()
+          } catch (e) { /* ignore */ }
+        }, 1200)
       } catch (e) {
         // Silently handle errors
       }
@@ -437,14 +481,16 @@ export class SimulationAudio {
     }
 
     // ===== LAYER 2: Chord pad =====
-    if (this.chordEvolutionInterval) {
-      clearInterval(this.chordEvolutionInterval)
-      this.chordEvolutionInterval = null
-    }
+    // Fade out gain THEN release notes to prevent clicks
     if (this.chordPad && this.chordPadGain) {
       try {
-        this.chordPadGain.gain.rampTo(0, 0.3)
-        this.chordPad.releaseAll()
+        this.chordPadGain.gain.exponentialRampTo(0.001, 1.0)
+        // Release notes after gain fades
+        setTimeout(() => {
+          try {
+            this.chordPad?.releaseAll()
+          } catch (e) { /* ignore */ }
+        }, 1100)
       } catch (e) {
         // Silently handle errors
       }
@@ -452,24 +498,22 @@ export class SimulationAudio {
     }
 
     // ===== LAYER 3: Texture =====
-    if (this.textureBurstInterval) {
-      clearInterval(this.textureBurstInterval)
-      this.textureBurstInterval = null
-    }
-    if (this.textureNoise && this.textureGain) {
+    // Just fade gain - noise can keep running silently (prevents start/stop clicks)
+    if (this.textureGain) {
       try {
-        this.textureGain.gain.rampTo(0, 0.2)
-        this.textureNoise.stop()
+        this.textureGain.gain.exponentialRampTo(0.001, 1.0)
+        // Don't stop the noise - just silence it via gain
+        // This prevents clicks from stopping/starting the oscillator
       } catch (e) {
         // Silently handle errors
       }
-      this.textureNoiseStarted = false
     }
+    // Note: textureNoiseStarted stays true - noise keeps running silently
 
     // ===== Legacy star drone =====
     if (this.starDrone && this.starDroneGain) {
       try {
-        this.starDroneGain.gain.rampTo(0, 0.3)
+        this.starDroneGain.gain.exponentialRampTo(0.001, 1.0)
         this.starDrone.triggerRelease()
       } catch (e) {
         // Silently handle errors
