@@ -20,22 +20,22 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'Tour the Cosmos',
     subtitle: 'Visit the Most Remarkable Planetary Systems',
     content:
-      'Welcome to a guided tour of some of the most fascinating planetary systems we\'ve discovered. Each stop showcases a unique world or system that has expanded our understanding of what planets can be.',
+      'You\'re about to visit real places: worlds orbiting distant suns, some close enough that light from there reaches us in a human lifetime. Each stop reveals something unexpected about what planets can be.',
     learnMore:
-      'We\'ll visit systems with multiple Earth-sized planets, extreme orbits, the first exoplanet discovered around a Sun-like star, and more. Use the controls to navigate, or let the tour guide you through each system.',
+      'We\'ll visit systems packed with Earth-sized worlds, planets on wild eccentric orbits, the first exoplanet ever found around a Sun-like star, and more. Along the way, you may notice something surprising: our own Solar System is starting to look like the odd one out.',
   },
   {
     id: 'trappist-1',
     title: 'TRAPPIST-1',
     subtitle: 'Seven Worlds Around a Cool Red Star',
     content:
-      'Perhaps the most remarkable system known: seven Earth-sized planets orbiting a tiny red dwarf star just 40 light-years away. Three of these worlds—d, e, and f—orbit in the habitable zone where liquid water could exist.',
+      'Imagine seven Earth-sized worlds, close enough to see each other looming large in their skies — all orbiting a star so dim and red you could stare straight at it. Three of them, e, f, and g, sit in the zone where liquid water could pool on their surfaces.',
     learnMore:
-      'The TRAPPIST-1 planets are locked in a resonant chain, with orbital periods forming near-perfect ratios. This tight configuration suggests they migrated inward together. JWST is currently studying their atmospheres.',
+      'At just 40 light-years away, TRAPPIST-1 is practically next door. Its planets are locked in a resonant chain, with orbital periods forming near-perfect ratios — a kind of gravitational music. This delicate arrangement suggests they migrated inward together, maintaining their dance. JWST is currently studying their atmospheres, searching for signs of water, carbon dioxide, or something more unexpected.',
     systemConfig: {
       hostStar: 'TRAPPIST-1',
       highlightPlanet: 'e', // Most Earth-like
-      initialSpeed: 5,
+      initialSpeed: 1,
     },
   },
   {
@@ -43,13 +43,13 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: '51 Pegasi',
     subtitle: 'Where It All Began',
     content:
-      'The planet that launched a revolution. In 1995, astronomers discovered 51 Pegasi b—a Jupiter-mass planet orbiting its star in just 4 days. This "hot Jupiter" shouldn\'t exist according to our Solar System-based models. It changed everything.',
+      'The planet that launched a revolution. In 1995, astronomers found 51 Pegasi b: a Jupiter-mass world whipping around its star in just four days, so close it would sit inside Mercury\'s orbit. A giant planet in the wrong place. It forced scientists to rethink everything.',
     learnMore:
-      'Michel Mayor and Didier Queloz won the 2019 Nobel Prize in Physics for this discovery. Hot Jupiters like 51 Peg b likely formed farther out and migrated inward, sometimes swallowing any inner planets in their path.',
+      'Before 51 Peg b, we assumed planetary systems would look like ours: small rocky worlds close in, gas giants far out. This "hot Jupiter" defied those expectations so completely that some astronomers initially suspected the data was wrong. Michel Mayor and Didier Queloz won the 2019 Nobel Prize for the discovery. We now know hot Jupiters likely form farther out and migrate inward, sometimes consuming smaller planets in their path.',
     systemConfig: {
       hostStar: '51 Peg',
       highlightPlanet: 'b',
-      initialSpeed: 10,
+      initialSpeed: 5,
     },
   },
   {
@@ -57,13 +57,13 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'HD 209458',
     subtitle: 'The First Atmospheric Detection',
     content:
-      'In 2001, HD 209458 b became the first exoplanet to have its atmosphere detected. Sodium was found in its upper atmosphere as starlight filtered through during transit—giving birth to the field of exoplanet atmospheric science.',
+      'In 2001, starlight filtering through the edge of this planet revealed something remarkable: sodium. For the first time, we had tasted the air of another world. An entire field of science was born in that moment.',
     learnMore:
-      'This technique, called transmission spectroscopy, has since revealed water, carbon dioxide, and other molecules in dozens of exoplanet atmospheres. HD 209458 b also showed evidence of atmospheric escape—the planet is slowly losing its atmosphere to space.',
+      'The technique is called transmission spectroscopy — when a planet crosses in front of its star, a sliver of starlight passes through its atmosphere, carrying chemical fingerprints. HD 209458 b also showed us something dramatic: its atmosphere is escaping into space, streaming away like a comet\'s tail. Since then, we\'ve detected water, carbon dioxide, methane, and dozens of other molecules in exoplanet atmospheres.',
     systemConfig: {
       hostStar: 'HD 209458',
       highlightPlanet: 'b',
-      initialSpeed: 10,
+      initialSpeed: 2,
     },
   },
   {
@@ -71,9 +71,9 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'Kepler-16',
     subtitle: 'A Real-Life Tatooine',
     content:
-      'Kepler-16 b orbits two stars—a true circumbinary planet. Like Luke Skywalker\'s homeworld Tatooine, this world experiences double sunsets. Discovered in 2011, it proved that planets can form and survive in the complex gravitational environment of binary star systems.',
+      'Two suns set over this world. Kepler-16 b orbits a pair of stars locked in their own dance, casting double shadows and creating complex seasons. Before 2011, many doubted such worlds could exist—the gravitational chaos would tear them apart, or so we thought.',
     learnMore:
-      'The planet is about the size of Saturn and orbits its two parent stars every 229 days. The binary stars themselves orbit each other every 41 days. This discovery opened our eyes to the possibility of planets in the many binary star systems throughout the galaxy.',
+      'The planet is about Saturn\'s size and orbits both stars every 229 days. The binary stars themselves circle each other every 41 days, creating an ever-shifting two-sun sky. This discovery forced us to reconsider planets around the many binary systems in our galaxy—roughly half of all Sun-like stars have a stellar companion.',
     systemConfig: {
       hostStar: 'Kepler-16',
       highlightPlanet: 'b',
@@ -85,9 +85,9 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'Kepler-11',
     subtitle: 'A Remarkably Compact System',
     content:
-      'Six planets orbit closer than Venus does to our Sun. These "peas in a pod" systems—where similar-sized planets crowd together—are common in the galaxy but absent from our Solar System. What makes us different?',
+      'Six planets, all packed closer to their star than Venus is to our Sun. These "peas in a pod" systems (similar-sized worlds crowded together in tight orbits) turn out to be common across the galaxy. Our widely-spaced Solar System may be the unusual one.',
     learnMore:
-      'The Kepler-11 planets range from 2 to 4.5 Earth radii, likely mini-Neptunes with thick atmospheres. Their tight spacing and circular orbits suggest a calm formation history, very different from the violent scattering thought to have shaped our outer Solar System.',
+      'The Kepler-11 planets range from 2 to 4.5 times Earth\'s radius, likely mini-Neptunes wrapped in thick atmospheres. Their tight spacing and circular orbits suggest a calm formation history, very different from the violent scattering events thought to have shaped our outer Solar System. Finding compact systems like this everywhere raises a question we\'re still answering: what happened in ours?',
     systemConfig: {
       hostStar: 'Kepler-11',
       highlightPlanet: 'b',
@@ -99,9 +99,9 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'HD 80606',
     subtitle: 'The Most Extreme Orbit',
     content:
-      'Watch this planet\'s wild ride: HD 80606 b has an orbital eccentricity of 0.93—more comet-like than planetary. It swings from 0.03 AU (closer than Mercury) to 0.88 AU (nearly at Earth\'s distance), experiencing extreme temperature swings.',
+      'This planet doesn\'t orbit — it plunges. HD 80606 b swings from nearly Earth\'s distance from its star to closer than Mercury, then back out again. At closest approach, its atmosphere flash-heats by hundreds of degrees in just six hours. More comet than planet.',
     learnMore:
-      'At closest approach, HD 80606 b receives 800 times more radiation than at its farthest point. Astronomers have observed the planet\'s atmosphere flash-heating over just six hours. This orbit may result from gravitational interactions with the binary companion star HD 80607.',
+      'With an eccentricity of 0.93, this orbit is almost off the charts (Earth\'s is just 0.017). At closest approach, HD 80606 b receives 800 times more radiation than at its farthest point. Measured in AU (where 1 AU is the Earth-Sun distance), it swings from 0.88 AU down to just 0.03 AU. A nearby companion star, HD 80607, likely kicked the planet into this wild trajectory over millions of years of gravitational tugging.',
     systemConfig: {
       hostStar: 'HD 80606',
       highlightPlanet: 'b',
@@ -113,9 +113,9 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: '55 Cancri',
     subtitle: 'Five Planets, Diverse Worlds',
     content:
-      '55 Cancri hosts five known planets, from a scorching super-Earth that orbits in 18 hours to a giant planet at Jupiter-like distances. This diversity in a single system shows the range of what planetary systems can produce.',
+      'A system that contains multitudes: from a lava world so close it completes an orbit in 18 hours, to a cold giant at Jupiter-like distances. Five planets spanning almost the full range of what we thought possible, all around one star visible to the naked eye.',
     learnMore:
-      '55 Cancri e, the innermost planet, is so hot its surface may be covered in lava oceans. Meanwhile, 55 Cancri d orbits in the outer reaches at 5.4 AU—demonstrating that planetary systems can fill a wide range of orbital distances.',
+      '55 Cancri e, the innermost planet, orbits so close that its surface likely glows with molten rock. Meanwhile, 55 Cancri d orbits out at 5.4 AU—beyond where our asteroid belt sits. At just 41 light-years away, this is one of the nearest systems with such diversity, making it a favorite target for atmospheric studies.',
     systemConfig: {
       hostStar: '55 Cnc',
       highlightPlanet: 'e',
@@ -127,13 +127,13 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'WASP-76',
     subtitle: 'Where Iron Rains From the Sky',
     content:
-      'WASP-76 b is an ultra-hot Jupiter so close to its star that iron vaporizes on its dayside. As winds carry this iron vapor to the cooler nightside, it condenses and falls as liquid iron rain. A world of literal metal storms.',
+      'On the permanent dayside of WASP-76 b, temperatures soar past 2,400°C—hot enough to vaporize iron. Winds carry that iron vapor to the cooler nightside, where it appears to condense and fall as glowing metallic rain. A world of literal metal storms.',
     learnMore:
-      'With dayside temperatures exceeding 2,400°C, WASP-76 b showcases the extreme conditions found on some exoplanets. High-resolution spectroscopy detected iron in the planet\'s atmosphere in 2020, revealing the asymmetric signature of iron condensing on the nightside.',
+      'In 2020, high-resolution spectroscopy detected iron in this planet\'s atmosphere with a telling asymmetry: iron signatures appear on the evening terminator but vanish on the morning side. The best explanation is that iron is condensing out and raining down as the atmosphere cools. WASP-76 b is tidally locked—one face always toward its star—creating a permanent boundary between blazing day and cooler night where these exotic conditions likely occur.',
     systemConfig: {
       hostStar: 'WASP-76',
       highlightPlanet: 'b',
-      initialSpeed: 10,
+      initialSpeed: 1,
     },
   },
   {
@@ -141,27 +141,27 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'Kepler-90',
     subtitle: 'AI Joins the Planet Hunt',
     content:
-      'In 2017, Google\'s machine learning algorithms discovered Kepler-90 i—the eighth planet in this system—hidden in Kepler data that humans had missed. This made Kepler-90 the first known system to match our Solar System\'s planet count.',
+      'In 2017, machine learning found what humans had missed: an eighth planet hidden in Kepler data. Kepler-90 became the first known system to match our Solar System\'s planet count — except all eight worlds are crammed inside what would be Earth\'s orbit.',
     learnMore:
-      'The AI was trained on 15,000 vetted Kepler signals and found subtle patterns humans overlooked. Kepler-90\'s eight planets are all crammed within the orbit of Earth, making it a compressed version of our Solar System. This discovery marked a new era of AI-assisted astronomy.',
+      'Google trained a neural network on 15,000 vetted Kepler signals, teaching it to recognize the subtle dips of transiting planets. It found Kepler-90 i, a small world overlooked in previous searches. This compressed planetary system (eight planets where we have one) shows again how tightly packed worlds can be. The discovery marked a turning point for AI-assisted astronomy, a collaboration now accelerating discoveries across the field.',
     systemConfig: {
       hostStar: 'KOI-351',  // Listed as KOI-351 in the database
       highlightPlanet: 'i',
-      initialSpeed: 5,
+      initialSpeed: 1,
     },
   },
   {
     id: 'hr-8799',
     title: 'HR 8799',
-    subtitle: 'Planets You Can See',
+    subtitle: 'Planets You Can Actually See',
     content:
-      'Four giant planets directly photographed orbiting their star. Unlike most exoplanets detected indirectly, we have actual images of these worlds—young, hot, and massive—orbiting far from their bright young star.',
+      'Most exoplanets are invisible — detected only by their effects on starlight. But these four giant worlds have been directly photographed, glowing with the heat of their own formation. Real images of real planets, 130 light-years away.',
     learnMore:
-      'Direct imaging works for young, self-luminous planets at large distances from their stars. The HR 8799 planets are 5-10 times Jupiter\'s mass and orbit at 15-70 AU. Their atmospheres have been spectroscopically analyzed, revealing clouds and exotic chemistry.',
+      'Direct imaging works for young, self-luminous planets far from their stars. The HR 8799 planets are just 30 million years old (infants in cosmic terms) still radiating the heat of their formation. At 5–10 Jupiter masses and orbiting at 15–70 AU, their atmospheres have been spectroscopically analyzed, revealing clouds of iron and silicates, and chemistry unlike anything in our Solar System.',
     systemConfig: {
       hostStar: 'HR 8799',
       highlightPlanet: 'e',
-      initialSpeed: 1,
+      initialSpeed: 10,
     },
   },
   {
@@ -169,9 +169,9 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     title: 'The Journey Continues',
     subtitle: 'Thousands More Worlds Await',
     content:
-      'You\'ve visited just a handful of the 5,500+ exoplanets discovered so far. Each system tells a story about how planets form, evolve, and sometimes end up in configurations we never imagined. The universe is far more creative than we are.',
+      'You\'ve visited eleven systems out of thousands discovered — and counting. Compact worlds, extreme orbits, iron rain, planets around binary stars. Each one expanded our sense of what\'s possible. The real question now: what haven\'t we thought to look for yet?',
     learnMore:
-      'New missions like JWST, Roman Space Telescope, and PLATO will discover thousands more planets and characterize their atmospheres. The ultimate goal: finding signs of life on a world like Earth, orbiting a star like the Sun.',
+      'JWST is peering into exoplanet atmospheres with unprecedented precision. The Roman Space Telescope and PLATO will discover thousands more worlds in the coming decade. Somewhere out there — perhaps orbiting a star we\'ve already cataloged — could be a world with oceans, weather, and seasons. Maybe something looking back.',
   },
 ]
 
