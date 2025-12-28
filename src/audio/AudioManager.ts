@@ -172,6 +172,7 @@ class AudioManagerClass {
 
   /**
    * Handle tab visibility changes - suspend/resume audio context
+   * Uses longer fades and keeps noise running silently to prevent clicks
    */
   private handleVisibilityChange = (): void => {
     if (!this.initialized) return
@@ -180,29 +181,24 @@ class AudioManagerClass {
       // Suspend audio when tab is hidden - fade out to avoid clicks
       Tone.getTransport().pause()
       if (this.ambientNoise?.state === 'started' && this.ambientFilter) {
-        // Fade out through filter before stopping
-        const originalFreq = this.ambientFilter.frequency.value
-        this.ambientFilter.frequency.rampTo(20, 0.2)
-        setTimeout(() => {
-          this.ambientNoise?.stop()
-          if (this.ambientFilter) {
-            this.ambientFilter.frequency.value = originalFreq
-          }
-        }, 250)
+        // Fade out through filter (don't stop - prevents restart clicks)
+        this.ambientFilter.frequency.rampTo(20, 0.5)
+        // Also fade gain
+        this.ambientGain?.gain.exponentialRampTo(0.001, 0.5)
       }
     } else {
       // Resume audio when tab is visible
       if (this.settings.enabled) {
         Tone.getTransport().start()
-        if (this.settings.categories.ambient && this.ambientNoise?.state === 'stopped') {
-          // Fade in through filter to avoid clicks
-          if (this.ambientFilter) {
-            const targetFreq = this.ambientFilter.frequency.value
-            this.ambientFilter.frequency.value = 20
-            this.ambientNoise?.start()
-            this.ambientFilter.frequency.rampTo(targetFreq, 0.3)
-          } else {
-            this.ambientNoise?.start()
+        if (this.settings.categories.ambient) {
+          // Fade in through filter
+          if (this.ambientFilter && this.ambientGain) {
+            // Start noise if not already running
+            try {
+              this.ambientNoise?.start()
+            } catch (e) { /* already running */ }
+            this.ambientFilter.frequency.rampTo(200, 0.8)
+            this.ambientGain.gain.exponentialRampTo(1, 0.8)
           }
         }
       }
@@ -256,51 +252,53 @@ class AudioManagerClass {
 
   /**
    * Apply current settings to audio nodes
+   * Uses exponential ramps and avoids stopping oscillators to prevent clicks
    */
   private applySettings(): void {
     if (!this.initialized) return
 
-    // Update master volume
+    // Update master volume with exponential ramp
     if (this.masterGain) {
-      this.masterGain.gain.rampTo(this.settings.enabled ? this.settings.masterVolume : 0, 0.1)
+      const targetVol = this.settings.enabled ? Math.max(0.001, this.settings.masterVolume) : 0.001
+      this.masterGain.gain.exponentialRampTo(targetVol, 0.3)
     }
 
-    // Update category volumes
+    // Update category volumes with exponential ramps
     if (this.ambientGain) {
-      this.ambientGain.gain.rampTo(this.settings.categories.ambient ? 1 : 0, 0.1)
+      const targetVol = this.settings.categories.ambient ? 1 : 0.001
+      this.ambientGain.gain.exponentialRampTo(targetVol, 0.3)
     }
     if (this.uiGain) {
-      this.uiGain.gain.rampTo(this.settings.categories.ui ? 1 : 0, 0.1)
+      const targetVol = this.settings.categories.ui ? 1 : 0.001
+      this.uiGain.gain.exponentialRampTo(targetVol, 0.3)
     }
     if (this.sonificationGain) {
-      this.sonificationGain.gain.rampTo(this.settings.categories.sonification ? 1 : 0, 0.1)
+      const targetVol = this.settings.categories.sonification ? 1 : 0.001
+      this.sonificationGain.gain.exponentialRampTo(targetVol, 0.3)
     }
     if (this.narrationGain) {
-      this.narrationGain.gain.rampTo(this.settings.categories.narration ? 1 : 0, 0.1)
+      const targetVol = this.settings.categories.narration ? 1 : 0.001
+      this.narrationGain.gain.exponentialRampTo(targetVol, 0.3)
     }
 
     // Start/stop ambient based on settings
+    // Keep noise running but control via gain to prevent clicks
     if (this.settings.enabled && this.settings.categories.ambient) {
-      if (this.ambientNoise?.state === 'stopped') {
-        // Fade in through filter to avoid clicks
-        if (this.ambientFilter) {
-          const targetFreq = 200 // Default filter frequency
-          this.ambientFilter.frequency.value = 20
-          this.ambientNoise?.start()
-          this.ambientFilter.frequency.rampTo(targetFreq, 0.3)
-        } else {
-          this.ambientNoise?.start()
-        }
+      // Start noise if not running
+      try {
+        this.ambientNoise?.start()
+      } catch (e) { /* already running */ }
+
+      // Fade in through filter
+      if (this.ambientFilter) {
+        this.ambientFilter.frequency.rampTo(200, 0.5)
       }
       // Start ambient soundscape
       this.ambientSoundscape?.start()
     } else {
-      if (this.ambientNoise?.state === 'started' && this.ambientFilter) {
-        // Fade out through filter before stopping to avoid clicks
-        this.ambientFilter.frequency.rampTo(20, 0.2)
-        setTimeout(() => this.ambientNoise?.stop(), 250)
-      } else if (this.ambientNoise?.state === 'started') {
-        this.ambientNoise?.stop()
+      // Fade out through filter (don't stop the noise)
+      if (this.ambientFilter) {
+        this.ambientFilter.frequency.rampTo(20, 0.5)
       }
       // Stop ambient soundscape
       this.ambientSoundscape?.stop()
@@ -752,29 +750,37 @@ class AudioManagerClass {
       document.removeEventListener('visibilitychange', this.handleVisibilityChange)
     }
 
-    // Dispose ambient soundscape
-    this.ambientSoundscape?.dispose()
+    // Fade out master gain before disposing
+    if (this.masterGain) {
+      this.masterGain.gain.exponentialRampTo(0.001, 0.3)
+    }
 
-    // Dispose planet sonification
-    this.planetSonification?.dispose()
+    // Wait for fade-out then dispose all
+    setTimeout(() => {
+      // Dispose ambient soundscape
+      this.ambientSoundscape?.dispose()
 
-    // Dispose UI sounds
-    this.uiSounds?.dispose()
+      // Dispose planet sonification
+      this.planetSonification?.dispose()
 
-    // Dispose simulation audio
-    this.simulationAudio?.dispose()
+      // Dispose UI sounds
+      this.uiSounds?.dispose()
 
-    this.ambientNoise?.stop()
-    this.ambientNoise?.dispose()
-    this.ambientFilter?.dispose()
-    this.uiSynth?.dispose()
-    this.planetSynth?.dispose()
-    this.ambientSynth?.dispose()
-    this.ambientGain?.dispose()
-    this.uiGain?.dispose()
-    this.sonificationGain?.dispose()
-    this.narrationGain?.dispose()
-    this.masterGain?.dispose()
+      // Dispose simulation audio
+      this.simulationAudio?.dispose()
+
+      try { this.ambientNoise?.stop() } catch (e) { /* ignore */ }
+      this.ambientNoise?.dispose()
+      this.ambientFilter?.dispose()
+      this.uiSynth?.dispose()
+      this.planetSynth?.dispose()
+      this.ambientSynth?.dispose()
+      this.ambientGain?.dispose()
+      this.uiGain?.dispose()
+      this.sonificationGain?.dispose()
+      this.narrationGain?.dispose()
+      this.masterGain?.dispose()
+    }, 350)
 
     this.initialized = false
   }

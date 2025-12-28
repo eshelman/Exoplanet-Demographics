@@ -211,10 +211,15 @@ export class AmbientSoundscape {
 
     // Start base layer with fade-in to avoid clicks
     if (this.noiseGain) {
-      this.noiseGain.gain.value = 0
+      this.noiseGain.gain.value = 0.001
     }
-    this.noiseSource?.start()
-    this.noiseGain?.gain.rampTo(0.15, 0.3)
+    try {
+      this.noiseSource?.start()
+    } catch (e) {
+      // Already started - ignore
+    }
+    // Use exponential ramp for smoother fade-in
+    this.noiseGain?.gain.exponentialRampTo(0.12, 1.0)
 
     // Start bass drone - slowly modulating between 25-40 Hz
     this.playBassDrone()
@@ -230,19 +235,20 @@ export class AmbientSoundscape {
 
   /**
    * Stop the ambient soundscape
+   * Uses long fade-outs to prevent clicks. Noise stays running silently.
    */
   stop(): void {
     if (!this.playing) return
 
     this.playing = false
 
-    // Fade out noise before stopping to avoid clicks
-    this.noiseGain?.gain.rampTo(0, 0.3)
-    setTimeout(() => {
-      if (!this.playing) {
-        this.noiseSource?.stop()
-      }
-    }, 350)
+    // Fade out noise to near-silent (don't stop - prevents restart clicks)
+    this.noiseGain?.gain.exponentialRampTo(0.001, 1.0)
+
+    // Release bass drone with natural envelope
+    try {
+      this.bassDrone?.triggerRelease()
+    } catch (e) { /* ignore */ }
 
     // Stop whale song interval
     if (this.whaleInterval) {
@@ -250,12 +256,20 @@ export class AmbientSoundscape {
       this.whaleInterval = null
     }
 
-    // Stop method intervals
+    // Stop method intervals and fade out their gains
     this.methodLayers.forEach((layer) => {
       if (layer.interval) {
         clearInterval(layer.interval)
         layer.interval = undefined
       }
+      // Fade out method layers
+      try {
+        layer.gain.gain.exponentialRampTo(0.001, 1.0)
+        // Release any sustained synths
+        if ('triggerRelease' in layer.synth) {
+          (layer.synth as Tone.Synth).triggerRelease()
+        }
+      } catch (e) { /* ignore */ }
     })
 
     console.log('[AmbientSoundscape] Stopped')
@@ -265,19 +279,37 @@ export class AmbientSoundscape {
    * Play the sub-bass drone with slow modulation
    */
   private playBassDrone(): void {
-    if (!this.bassDrone || !this.playing) return
+    if (!this.bassDrone || !this.bassDroneGain || !this.playing) return
 
-    // Random frequency between 25-40 Hz
-    const freq = 25 + Math.random() * 15
-    this.bassDrone.triggerAttack(freq)
-
-    // Schedule next drone note
-    setTimeout(() => {
-      if (this.playing) {
-        this.bassDrone?.triggerRelease()
-        setTimeout(() => this.playBassDrone(), 2000)
+    try {
+      // Ensure gain starts low
+      if (this.bassDroneGain.gain.value < 0.01) {
+        this.bassDroneGain.gain.value = 0.001
       }
-    }, 8000 + Math.random() * 4000)
+
+      // Random frequency between 25-40 Hz
+      const freq = 25 + Math.random() * 15
+      this.bassDrone.triggerAttack(freq)
+
+      // Smooth fade in
+      this.bassDroneGain.gain.exponentialRampTo(0.25, 2.0)
+
+      // Schedule next drone note
+      setTimeout(() => {
+        if (this.playing) {
+          // Fade out before release
+          this.bassDroneGain?.gain.exponentialRampTo(0.001, 1.5)
+          setTimeout(() => {
+            try {
+              this.bassDrone?.triggerRelease()
+            } catch (e) { /* ignore */ }
+            setTimeout(() => this.playBassDrone(), 1500)
+          }, 1600)
+        }
+      }, 8000 + Math.random() * 4000)
+    } catch (e) {
+      // Silently handle errors
+    }
   }
 
   /**
@@ -317,6 +349,7 @@ export class AmbientSoundscape {
 
   /**
    * Start method-specific ambient textures
+   * Uses try-catch and gain management to prevent clicks
    */
   private startMethodTextures(): void {
     // Transit chimes - random crystalline notes
@@ -324,12 +357,14 @@ export class AmbientSoundscape {
     if (transitLayer) {
       const chimeNotes = ['C5', 'E5', 'G5', 'B5', 'D6', 'F#6']
       transitLayer.interval = setInterval(() => {
-        if (this.playing && transitLayer.gain.gain.value > 0) {
-          const synth = transitLayer.synth as Tone.PolySynth
-          const note = chimeNotes[Math.floor(Math.random() * chimeNotes.length)]
-          synth.triggerAttackRelease(note, '8n', undefined, 0.1 + Math.random() * 0.2)
+        if (this.playing && transitLayer.gain.gain.value > 0.01) {
+          try {
+            const synth = transitLayer.synth as Tone.PolySynth
+            const note = chimeNotes[Math.floor(Math.random() * chimeNotes.length)]
+            synth.triggerAttackRelease(note, '8n', undefined, 0.1 + Math.random() * 0.15)
+          } catch (e) { /* ignore */ }
         }
-      }, 2000 + Math.random() * 3000)
+      }, 3000 + Math.random() * 4000)
     }
 
     // Transit other - similar chimes
@@ -337,34 +372,38 @@ export class AmbientSoundscape {
     if (transitOtherLayer) {
       const chimeNotes = ['D5', 'F5', 'A5', 'C6', 'E6']
       transitOtherLayer.interval = setInterval(() => {
-        if (this.playing && transitOtherLayer.gain.gain.value > 0) {
-          const synth = transitOtherLayer.synth as Tone.PolySynth
-          const note = chimeNotes[Math.floor(Math.random() * chimeNotes.length)]
-          synth.triggerAttackRelease(note, '8n', undefined, 0.1 + Math.random() * 0.15)
+        if (this.playing && transitOtherLayer.gain.gain.value > 0.01) {
+          try {
+            const synth = transitOtherLayer.synth as Tone.PolySynth
+            const note = chimeNotes[Math.floor(Math.random() * chimeNotes.length)]
+            synth.triggerAttackRelease(note, '8n', undefined, 0.1 + Math.random() * 0.12)
+          } catch (e) { /* ignore */ }
         }
-      }, 2500 + Math.random() * 4000)
+      }, 3500 + Math.random() * 5000)
     }
 
     // Radial velocity - sustained pulsing tone
+    // Only start if gain is already up (set by setEnabledMethods)
     const rvLayer = this.methodLayers.get('radial-velocity')
-    if (rvLayer) {
-      const rvSynth = rvLayer.synth as Tone.Synth
-      // Start a low sustained tone
-      if (rvLayer.gain.gain.value > 0) {
+    if (rvLayer && rvLayer.gain.gain.value > 0.01) {
+      try {
+        const rvSynth = rvLayer.synth as Tone.Synth
         rvSynth.triggerAttack(55) // A1
-      }
+      } catch (e) { /* ignore */ }
     }
 
     // Microlensing - occasional deep swells
     const microLayer = this.methodLayers.get('microlensing')
     if (microLayer) {
       microLayer.interval = setInterval(() => {
-        if (this.playing && microLayer.gain.gain.value > 0) {
-          const synth = microLayer.synth as Tone.Synth
-          const freq = 30 + Math.random() * 20
-          synth.triggerAttackRelease(freq, '4n')
+        if (this.playing && microLayer.gain.gain.value > 0.01) {
+          try {
+            const synth = microLayer.synth as Tone.Synth
+            const freq = 30 + Math.random() * 20
+            synth.triggerAttackRelease(freq, '4n')
+          } catch (e) { /* ignore */ }
         }
-      }, 8000 + Math.random() * 12000)
+      }, 10000 + Math.random() * 15000)
     }
 
     // Direct imaging - warm pad chords
@@ -377,41 +416,51 @@ export class AmbientSoundscape {
       ]
       let chordIndex = 0
       diLayer.interval = setInterval(() => {
-        if (this.playing && diLayer.gain.gain.value > 0) {
-          const synth = diLayer.synth as Tone.PolySynth
-          synth.triggerAttackRelease(chords[chordIndex], '2n', undefined, 0.15)
-          chordIndex = (chordIndex + 1) % chords.length
+        if (this.playing && diLayer.gain.gain.value > 0.01) {
+          try {
+            const synth = diLayer.synth as Tone.PolySynth
+            synth.triggerAttackRelease(chords[chordIndex], '2n', undefined, 0.12)
+            chordIndex = (chordIndex + 1) % chords.length
+          } catch (e) { /* ignore */ }
         }
-      }, 10000 + Math.random() * 5000)
+      }, 12000 + Math.random() * 8000)
     }
 
     // Astrometry - subtle wobbling tone
+    // Only start if gain is already up
     const astroLayer = this.methodLayers.get('astrometry')
-    if (astroLayer && astroLayer.gain.gain.value > 0) {
-      const synth = astroLayer.synth as Tone.Synth
-      synth.triggerAttack(110) // A2
+    if (astroLayer && astroLayer.gain.gain.value > 0.01) {
+      try {
+        const synth = astroLayer.synth as Tone.Synth
+        synth.triggerAttack(110) // A2
+      } catch (e) { /* ignore */ }
     }
   }
 
   /**
    * Update which detection methods are audible
+   * Uses exponential ramps and proper gain management
    */
   setEnabledMethods(methods: Set<DetectionMethodId>): void {
     this.methodLayers.forEach((layer, methodId) => {
       const shouldBeEnabled = methods.has(methodId)
-      const targetGain = shouldBeEnabled ? 0.3 : 0
+      const targetGain = shouldBeEnabled ? 0.25 : 0.001
 
-      // Smooth transition
-      layer.gain.gain.rampTo(targetGain, 1)
+      // Smooth exponential transition
+      try {
+        layer.gain.gain.exponentialRampTo(targetGain, 1.5)
+      } catch (e) { /* ignore */ }
 
       // Handle sustained tones
       if (methodId === 'radial-velocity' || methodId === 'astrometry') {
         const synth = layer.synth as Tone.Synth
-        if (shouldBeEnabled && this.playing) {
-          synth.triggerAttack(methodId === 'radial-velocity' ? 55 : 110)
-        } else {
-          synth.triggerRelease()
-        }
+        try {
+          if (shouldBeEnabled && this.playing) {
+            synth.triggerAttack(methodId === 'radial-velocity' ? 55 : 110)
+          } else {
+            synth.triggerRelease()
+          }
+        } catch (e) { /* ignore */ }
       }
     })
   }
@@ -427,23 +476,23 @@ export class AmbientSoundscape {
 
     // Adjust volumes based on zoom
     // Zoomed out = more ambient, zoomed in = less ambient
-    const ambientVolume = 0.5 * (1 - this.zoomLevel * 0.7)
+    const ambientVolume = Math.max(0.05, 0.4 * (1 - this.zoomLevel * 0.7))
 
     if (this.ambientGain) {
-      this.ambientGain.gain.rampTo(ambientVolume, 0.5)
+      this.ambientGain.gain.exponentialRampTo(ambientVolume, 0.8)
     }
 
     // Adjust noise filter - more open when zoomed out
     if (this.noiseFilter) {
       const filterFreq = 150 - this.zoomLevel * 100
-      this.noiseFilter.frequency.rampTo(Math.max(50, filterFreq), 0.5)
+      this.noiseFilter.frequency.rampTo(Math.max(50, filterFreq), 0.8)
     }
 
     // Adjust method layer volumes
     this.methodLayers.forEach((layer) => {
-      if (layer.gain.gain.value > 0) {
-        const adjustedGain = 0.3 * (1 - this.zoomLevel * 0.6)
-        layer.gain.gain.rampTo(adjustedGain, 0.5)
+      if (layer.gain.gain.value > 0.01) {
+        const adjustedGain = Math.max(0.01, 0.25 * (1 - this.zoomLevel * 0.6))
+        layer.gain.gain.exponentialRampTo(adjustedGain, 0.8)
       }
     })
   }
@@ -453,7 +502,8 @@ export class AmbientSoundscape {
    */
   setVolume(volume: number): void {
     if (this.ambientGain) {
-      this.ambientGain.gain.rampTo(volume * 0.5, 0.1)
+      const targetVol = Math.max(0.001, volume * 0.4)
+      this.ambientGain.gain.exponentialRampTo(targetVol, 0.3)
     }
   }
 

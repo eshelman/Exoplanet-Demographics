@@ -210,10 +210,15 @@ export class UISounds {
     if (!this.initialized || !this.wooshNoise || !this.wooshGain || this.isPanning) return
 
     this.isPanning = true
-    // Ensure gain is 0 before starting to avoid clicks
-    this.wooshGain.gain.value = 0
-    this.wooshNoise.start()
-    this.wooshGain.gain.rampTo(0.15, 0.1)
+    // Ensure gain is at minimum before starting to avoid clicks
+    this.wooshGain.gain.value = 0.001
+    try {
+      this.wooshNoise.start()
+    } catch (e) {
+      // Already started - ignore
+    }
+    // Smooth exponential fade in
+    this.wooshGain.gain.exponentialRampTo(0.12, 0.3)
   }
 
   /**
@@ -225,30 +230,26 @@ export class UISounds {
 
     // Higher velocity = higher filter frequency and volume
     const freq = 500 + velocity * 2000
-    const vol = 0.05 + velocity * 0.2
+    const vol = Math.max(0.02, 0.04 + velocity * 0.15)
 
-    this.wooshFilter.frequency.rampTo(freq, 0.05)
-    this.wooshGain.gain.rampTo(vol, 0.05)
+    this.wooshFilter.frequency.rampTo(freq, 0.1)
+    this.wooshGain.gain.exponentialRampTo(vol, 0.1)
   }
 
   /**
    * End pan sound - gentle deceleration woosh
+   * Don't stop the noise, just fade to silent to prevent restart clicks
    */
   endPan(): void {
-    if (!this.initialized || !this.wooshNoise || !this.wooshGain || !this.isPanning) return
+    if (!this.initialized || !this.wooshGain || !this.isPanning) return
 
     this.isPanning = false
 
-    // Fade out with filter sweep down
-    this.wooshFilter?.frequency.rampTo(300, 0.3)
-    this.wooshGain.gain.rampTo(0, 0.3)
+    // Fade out with filter sweep down - longer to prevent clicks
+    this.wooshFilter?.frequency.rampTo(300, 0.5)
+    this.wooshGain.gain.exponentialRampTo(0.001, 0.5)
 
-    // Wait for fade to complete before stopping to avoid clicks
-    setTimeout(() => {
-      if (!this.isPanning) {
-        this.wooshNoise?.stop()
-      }
-    }, 350)
+    // Don't stop the noise - just leave it silent to prevent restart clicks
   }
 
   /**
@@ -371,7 +372,8 @@ export class UISounds {
    */
   setVolume(volume: number): void {
     if (this.outputGain) {
-      this.outputGain.gain.rampTo(volume * 0.6, 0.1)
+      const targetVol = Math.max(0.001, volume * 0.5)
+      this.outputGain.gain.exponentialRampTo(targetVol, 0.2)
     }
   }
 
@@ -379,28 +381,32 @@ export class UISounds {
    * Clean up resources
    */
   dispose(): void {
-    if (this.isPanning && this.wooshGain) {
-      // Fade out before stopping to avoid clicks
-      this.wooshGain.gain.rampTo(0, 0.1)
-      setTimeout(() => this.wooshNoise?.stop(), 150)
+    // Fade out woosh noise before disposing
+    if (this.wooshGain) {
+      this.wooshGain.gain.exponentialRampTo(0.001, 0.3)
     }
 
-    this.clickSynth?.dispose()
-    this.clickFilter?.dispose()
-    this.hoverSynth?.dispose()
-    this.hoverFilter?.dispose()
-    this.chimeSynth?.dispose()
-    this.chimeReverb?.dispose()
-    this.wooshNoise?.dispose()
-    this.wooshFilter?.dispose()
-    this.wooshGain?.dispose()
-    this.zoomSynth?.dispose()
-    this.zoomFilter?.dispose()
-    this.transitionSynth?.dispose()
-    this.transitionReverb?.dispose()
-    this.slideSynth?.dispose()
-    this.slideFilter?.dispose()
-    this.outputGain?.dispose()
+    // Wait for fade-out then dispose all
+    setTimeout(() => {
+      try { this.wooshNoise?.stop() } catch (e) { /* ignore */ }
+
+      this.clickSynth?.dispose()
+      this.clickFilter?.dispose()
+      this.hoverSynth?.dispose()
+      this.hoverFilter?.dispose()
+      this.chimeSynth?.dispose()
+      this.chimeReverb?.dispose()
+      this.wooshNoise?.dispose()
+      this.wooshFilter?.dispose()
+      this.wooshGain?.dispose()
+      this.zoomSynth?.dispose()
+      this.zoomFilter?.dispose()
+      this.transitionSynth?.dispose()
+      this.transitionReverb?.dispose()
+      this.slideSynth?.dispose()
+      this.slideFilter?.dispose()
+      this.outputGain?.dispose()
+    }, 350)
 
     this.initialized = false
   }

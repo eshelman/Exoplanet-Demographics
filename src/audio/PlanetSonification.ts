@@ -445,10 +445,14 @@ export class PlanetSonification {
   startBrush(): void {
     if (!this.initialized || !this.brushNoise || !this.brushGain) return
 
-    // Ensure gain is 0 before starting to avoid clicks
-    this.brushGain.gain.value = 0
-    this.brushNoise.start()
-    this.brushGain.gain.rampTo(0.15, 0.1)
+    // Ensure gain is at minimum before starting to avoid clicks
+    this.brushGain.gain.value = 0.001
+    try {
+      this.brushNoise.start()
+    } catch (e) {
+      // Already started - ignore
+    }
+    this.brushGain.gain.exponentialRampTo(0.12, 0.3)
   }
 
   /**
@@ -460,40 +464,43 @@ export class PlanetSonification {
 
     // Larger selection = lower frequency, louder
     const frequency = 3000 - size * 2000
-    this.brushFilter.frequency.rampTo(frequency, 0.05)
-    this.brushGain.gain.rampTo(0.1 + size * 0.2, 0.05)
+    const vol = Math.max(0.05, 0.08 + size * 0.15)
+    this.brushFilter.frequency.rampTo(frequency, 0.1)
+    this.brushGain.gain.exponentialRampTo(vol, 0.1)
   }
 
   /**
    * End brush selection with satisfying sound
+   * Don't stop the noise, just fade to silent
    */
   endBrush(capturedCount: number): void {
-    if (!this.initialized || !this.brushNoise || !this.brushGain || !this.selectSynth) return
+    if (!this.initialized || !this.brushGain || !this.selectSynth) return
 
-    // Fade out brush noise - wait for fade before stopping to avoid clicks
-    this.brushGain.gain.rampTo(0, 0.25)
-    setTimeout(() => this.brushNoise?.stop(), 300)
+    // Fade out brush noise to silent (don't stop to prevent restart clicks)
+    this.brushGain.gain.exponentialRampTo(0.001, 0.5)
 
     // Play capture sound based on count
     if (capturedCount > 0) {
-      const now = Tone.now()
-      const baseFreq = 200 + Math.min(capturedCount, 100) * 5
+      try {
+        const now = Tone.now()
+        const baseFreq = 200 + Math.min(capturedCount, 100) * 5
 
-      this.selectSynth.triggerAttackRelease(baseFreq, '8n', now, 0.4)
-      this.selectSynth.triggerAttackRelease(baseFreq * 1.25, '8n', now + 0.08, 0.3) // Major third
-      this.selectSynth.triggerAttackRelease(baseFreq * 1.5, '8n', now + 0.16, 0.25) // Fifth
+        this.selectSynth.triggerAttackRelease(baseFreq, '8n', now, 0.35)
+        this.selectSynth.triggerAttackRelease(baseFreq * 1.25, '8n', now + 0.08, 0.25) // Major third
+        this.selectSynth.triggerAttackRelease(baseFreq * 1.5, '8n', now + 0.16, 0.2) // Fifth
+      } catch (e) { /* ignore */ }
     }
   }
 
   /**
    * Cancel brush without capture sound
+   * Don't stop the noise, just fade to silent
    */
   cancelBrush(): void {
-    if (!this.brushNoise || !this.brushGain) return
+    if (!this.brushGain) return
 
-    // Fade out before stopping to avoid clicks
-    this.brushGain.gain.rampTo(0, 0.15)
-    setTimeout(() => this.brushNoise?.stop(), 200)
+    // Fade out to silent (don't stop to prevent restart clicks)
+    this.brushGain.gain.exponentialRampTo(0.001, 0.4)
   }
 
   /**
@@ -501,7 +508,8 @@ export class PlanetSonification {
    */
   setVolume(volume: number): void {
     if (this.outputGain) {
-      this.outputGain.gain.rampTo(volume * 0.8, 0.1)
+      const targetVol = Math.max(0.001, volume * 0.7)
+      this.outputGain.gain.exponentialRampTo(targetVol, 0.2)
     }
   }
 
@@ -511,26 +519,28 @@ export class PlanetSonification {
   dispose(): void {
     this.stopAllHovers()
 
-    // Fade out brush noise before stopping to avoid clicks
+    // Fade out brush noise before disposing
     if (this.brushGain) {
-      this.brushGain.gain.rampTo(0, 0.1)
+      this.brushGain.gain.exponentialRampTo(0.001, 0.3)
     }
+
+    // Wait for fade-out then dispose all
     setTimeout(() => {
-      this.brushNoise?.stop()
+      try { this.brushNoise?.stop() } catch (e) { /* ignore */ }
       this.brushNoise?.dispose()
-    }, 150)
-    this.brushFilter?.dispose()
-    this.brushGain?.dispose()
+      this.brushFilter?.dispose()
+      this.brushGain?.dispose()
 
-    this.planetSynth?.dispose()
-    this.planetGain?.dispose()
-    this.selectSynth?.dispose()
-    this.selectGain?.dispose()
+      this.planetSynth?.dispose()
+      this.planetGain?.dispose()
+      this.selectSynth?.dispose()
+      this.selectGain?.dispose()
 
-    this.reverb?.dispose()
-    this.chorus?.dispose()
-    this.panner?.dispose()
-    this.outputGain?.dispose()
+      this.reverb?.dispose()
+      this.chorus?.dispose()
+      this.panner?.dispose()
+      this.outputGain?.dispose()
+    }, 350)
 
     this.initialized = false
   }
