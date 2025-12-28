@@ -32,9 +32,6 @@ export function PlanetTourOverlay() {
   const isFirstStep = planetTourStep === 0
   const isLastStep = planetTourStep === totalSteps - 1
 
-  // Check if current step has a system to show
-  const hasSystem = currentContent?.systemConfig !== undefined
-
   // Memoize the system preparation to avoid recalculating on every render
   const currentSystem = useMemo((): SimulatedSystem | null => {
     if (!currentContent?.systemConfig || !planets.length) return null
@@ -253,58 +250,17 @@ export function PlanetTourOverlay() {
 
                 {/* Learn More */}
                 {currentContent.learnMore && (
-                  <details className="group">
-                    <summary
-                      className="text-xs font-medium cursor-pointer mb-2 flex items-center gap-1"
-                      style={{ color: 'var(--color-accent)' }}
-                    >
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="transition-transform group-open:rotate-90"
-                      >
-                        <path d="M9 18l6-6-6-6" />
-                      </svg>
-                      Learn More
-                    </summary>
+                  <div className="mt-4">
+                    <hr
+                      className="mb-4"
+                      style={{ borderColor: 'rgba(255,255,255,0.15)' }}
+                    />
                     <p
-                      className="text-xs leading-relaxed pl-4 opacity-70"
+                      className="text-xs leading-relaxed opacity-70"
                       style={{ color: 'var(--color-text)' }}
                     >
                       {currentContent.learnMore}
                     </p>
-                  </details>
-                )}
-
-                {/* System indicator */}
-                {hasSystem && currentSystem && (
-                  <div
-                    className="mt-4 p-3 rounded-lg"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full animate-pulse"
-                        style={{ backgroundColor: 'var(--color-accent)' }}
-                      />
-                      <span
-                        className="text-xs font-medium"
-                        style={{ color: 'var(--color-text)' }}
-                      >
-                        Viewing: {currentSystem.hostStar}
-                      </span>
-                    </div>
-                    <div
-                      className="text-xs mt-1 opacity-60"
-                      style={{ color: 'var(--color-text)' }}
-                    >
-                      {currentSystem.planets.length} planet{currentSystem.planets.length !== 1 ? 's' : ''}
-                      {currentSystem.distance && ` • ${currentSystem.distance.toFixed(1)} ly`}
-                    </div>
                   </div>
                 )}
               </motion.div>
