@@ -15,7 +15,7 @@ Interactive web visualization for exploring exoplanet demographics, based on ["T
 - **State**: Zustand
 - **Animation**: Framer Motion (UI) + D3 transitions (data)
 - **Audio**: Tone.js (Web Audio synthesis for data sonification)
-- **Deployment**: Static (Vercel/Netlify)
+- **Deployment**: Digital Ocean App Platform (see `agent-docs/DEPLOYMENT_PLAN.md`)
 
 ## Common Commands
 
@@ -61,6 +61,7 @@ src/
 
 public/data/             # Static JSON data files
 public/audio/            # Audio assets (ambient, UI sounds, solar system tones)
+agent-docs/              # Planning and implementation docs for Claude Code
 ```
 
 ### State Management (Zustand)
@@ -91,7 +92,7 @@ Central store manages:
 
 ## Audio/Soundscape
 
-The visualization includes an optional "cosmic ambient minimalism" soundscape. See `exoplanet-viz-soundscape.md` for full design document.
+The visualization includes an optional "cosmic ambient minimalism" soundscape. See `agent-docs/SOUNDSCAPE_PLAN.md` for implementation details.
 
 ### Audio Philosophy
 - Sound off by default; opt-in experience
