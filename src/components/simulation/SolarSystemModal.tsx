@@ -6,6 +6,7 @@ import { OrbitalCanvas } from './OrbitalCanvas'
 import { SimulationControls } from './SimulationControls'
 import { SystemStatsPanel } from './SystemStatsPanel'
 import { SimulationErrorBoundary } from './SimulationErrorBoundary'
+import { SimulationHelpModal } from './SimulationHelpModal'
 import { useSimulationAudio } from '../../audio'
 import { getShareableUrl, copyToClipboard, extractPlanetLetter } from '../../utils/deepLinks'
 
@@ -43,6 +44,7 @@ export function SolarSystemModal({
   const [showHabitableZone, setShowHabitableZone] = useState(DEFAULT_SIMULATION_STATE.showHabitableZone)
   const [positions, setPositions] = useState<Map<string, OrbitalPosition>>(new Map())
   const [linkCopied, setLinkCopied] = useState(false)
+  const [showHelp, setShowHelp] = useState(false)
 
   // Audio integration
   const audio = useSimulationAudio()
@@ -224,6 +226,10 @@ export function SolarSystemModal({
           e.preventDefault()
           handleReset()
           break
+        case '?':
+          e.preventDefault()
+          setShowHelp(true)
+          break
         default:
           // Number keys 1-9 for planet selection
           if (e.key >= '1' && e.key <= '9') {
@@ -324,8 +330,9 @@ export function SolarSystemModal({
 
               {/* Help button */}
               <button
+                onClick={() => setShowHelp(true)}
                 className="p-2 rounded-full hover:bg-white/10 transition-colors opacity-60 hover:opacity-100"
-                title="Keyboard shortcuts"
+                title="Help"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
@@ -403,9 +410,12 @@ export function SolarSystemModal({
               color: 'var(--color-text)',
             }}
           >
-            ←→ Navigate planets • ↑↓ Adjust speed • Space Pause • O/L/H Toggles • Esc Close
+            ←→ Navigate planets • ↑↓ Adjust speed • Space Pause • O/L/H Toggles • ? Help • Esc Close
           </div>
         </motion.div>
+
+        {/* Help Modal */}
+        <SimulationHelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
       </motion.div>
     </AnimatePresence>
   )
