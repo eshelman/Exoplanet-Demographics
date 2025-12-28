@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AudioManager } from './AudioManager'
 import type { SimulatedSystem, SimulatedPlanet } from '../types/simulation'
 
@@ -152,28 +152,49 @@ export function useSimulationAudio() {
     try { if (planet1 && planet2) AudioManager.playConjunction(planet1, planet2) } catch {}
   }, [])
 
-  return {
-    // Ambient control
-    startAmbient,
-    stopAmbient,
+  // Memoize the return object to prevent infinite render loops
+  // when used as a dependency in useEffect or useCallback
+  return useMemo(
+    () => ({
+      // Ambient control
+      startAmbient,
+      stopAmbient,
 
-    // Planet sounds
-    selectPlanet,
-    deselectPlanet,
-    hoverPlanet,
+      // Planet sounds
+      selectPlanet,
+      deselectPlanet,
+      hoverPlanet,
 
-    // UI sounds
-    changeSpeed,
-    pause,
-    resume,
-    toggle,
-    openModal,
-    closeModal,
+      // UI sounds
+      changeSpeed,
+      pause,
+      resume,
+      toggle,
+      openModal,
+      closeModal,
 
-    // Special moments
-    orbitalChime,
-    periapsisPass,
-    orbitComplete,
-    conjunction,
-  }
+      // Special moments
+      orbitalChime,
+      periapsisPass,
+      orbitComplete,
+      conjunction,
+    }),
+    [
+      startAmbient,
+      stopAmbient,
+      selectPlanet,
+      deselectPlanet,
+      hoverPlanet,
+      changeSpeed,
+      pause,
+      resume,
+      toggle,
+      openModal,
+      closeModal,
+      orbitalChime,
+      periapsisPass,
+      orbitComplete,
+      conjunction,
+    ]
+  )
 }

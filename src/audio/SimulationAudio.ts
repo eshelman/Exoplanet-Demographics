@@ -11,7 +11,10 @@ import { MUSICAL_ENVELOPES } from './BellSynth'
  * SimulationAudio - Handles audio for orbital simulation modal
  *
  * Features:
- * - Star-based ambient drone (temperature-dependent)
+ * - Three-layer ambient system (Phase 4: Music of the Spheres)
+ *   - Base Layer: Sub-bass rumble with slow volume undulation
+ *   - Harmonic Layer: Generative chord pad from visible planets
+ *   - Texture Layer: Filtered noise bursts (stellar wind)
  * - Planet voice sonification
  * - Simulation control sounds
  * - Special moment sounds (periapsis, orbit complete)
@@ -22,7 +25,27 @@ export class SimulationAudio {
   // Output node
   private outputGain: Tone.Gain | null = null
 
-  // Star ambient drone
+  // ===== AMBIENT LAYER 1: Sub-bass rumble =====
+  private bassRumble: Tone.Synth | null = null
+  private bassRumbleGain: Tone.Gain | null = null
+  private bassRumbleLfo: Tone.LFO | null = null
+
+  // ===== AMBIENT LAYER 2: Harmonic chord pad =====
+  private chordPad: Tone.PolySynth | null = null
+  private chordPadGain: Tone.Gain | null = null
+  private chordPadReverb: Tone.Reverb | null = null
+  private chordPadFilter: Tone.Filter | null = null
+  private chordEvolutionInterval: ReturnType<typeof setInterval> | null = null
+  private currentChordNotes: number[] = []
+  private currentSystem: SimulatedSystem | null = null
+
+  // ===== AMBIENT LAYER 3: Texture (stellar wind) =====
+  private textureNoise: Tone.Noise | null = null
+  private textureFilter: Tone.Filter | null = null
+  private textureGain: Tone.Gain | null = null
+  private textureBurstInterval: ReturnType<typeof setInterval> | null = null
+
+  // Legacy star drone (kept for compatibility, now integrated into bass rumble)
   private starDrone: Tone.Synth | null = null
   private starDroneGain: Tone.Gain | null = null
   private starLfo: Tone.LFO | null = null
@@ -58,7 +81,69 @@ export class SimulationAudio {
     if (this.initialized || !this.outputGain) return
 
     try {
-      // Star drone setup - slow, evolving ambient
+      // ===== AMBIENT LAYER 1: Sub-bass rumble (30-60Hz) =====
+      // "The Void" - felt more than heard, slow volume undulation
+      this.bassRumbleGain = new Tone.Gain(0).connect(this.outputGain)
+      this.bassRumble = new Tone.Synth({
+        oscillator: { type: 'sine' },
+        envelope: {
+          attack: 4,
+          decay: 2,
+          sustain: 1,
+          release: 6,
+        },
+      }).connect(this.bassRumbleGain)
+
+      // LFO for slow volume undulation (20-40 second period)
+      this.bassRumbleLfo = new Tone.LFO({
+        frequency: 1 / 30, // ~30 second period
+        min: 0.1,
+        max: 0.25,
+      }).connect(this.bassRumbleGain.gain)
+
+      // ===== AMBIENT LAYER 2: Harmonic chord pad =====
+      // Generative chord from visible planet frequencies
+      this.chordPadReverb = new Tone.Reverb({
+        decay: 4,
+        wet: 0.6,
+      })
+      await this.chordPadReverb.generate()
+
+      this.chordPadFilter = new Tone.Filter({
+        type: 'lowpass',
+        frequency: 400,
+        Q: 0.5,
+      }).connect(this.chordPadReverb)
+      this.chordPadReverb.connect(this.outputGain)
+
+      this.chordPadGain = new Tone.Gain(0).connect(this.chordPadFilter)
+      this.chordPad = new Tone.PolySynth({
+        voice: Tone.Synth,
+        maxPolyphony: 8, // Limit to prevent note overflow
+        options: {
+          oscillator: { type: 'triangle' },
+          envelope: {
+            attack: 3,
+            decay: 2,
+            sustain: 0.7,
+            release: 5,
+          },
+        },
+      }).connect(this.chordPadGain)
+
+      // ===== AMBIENT LAYER 3: Texture (stellar wind) =====
+      // Filtered noise bursts, very quiet (10-15% volume)
+      this.textureGain = new Tone.Gain(0).connect(this.outputGain)
+      this.textureFilter = new Tone.Filter({
+        type: 'bandpass',
+        frequency: 800,
+        Q: 2,
+      }).connect(this.textureGain)
+      this.textureNoise = new Tone.Noise({
+        type: 'pink',
+      }).connect(this.textureFilter)
+
+      // ===== Legacy star drone (now minimal, bass rumble takes over) =====
       this.starDroneGain = new Tone.Gain(0).connect(this.outputGain)
       this.starFilter = new Tone.Filter({
         type: 'lowpass',
@@ -97,11 +182,15 @@ export class SimulationAudio {
         envelope: MUSICAL_ENVELOPES.uiClick,
       }).connect(this.uiGain)
 
-      // Special moment sounds - orbital chimes
+      // Special moment sounds - orbital chimes (needs higher polyphony for multiple planets)
       this.momentGain = new Tone.Gain(0.5).connect(this.outputGain)
-      this.momentSynth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: { type: 'sine' },
-        envelope: MUSICAL_ENVELOPES.orbitChime,
+      this.momentSynth = new Tone.PolySynth({
+        voice: Tone.Synth,
+        maxPolyphony: 16, // Higher limit for rapid orbital chimes
+        options: {
+          oscillator: { type: 'sine' },
+          envelope: MUSICAL_ENVELOPES.orbitChime,
+        },
       }).connect(this.momentGain)
 
       this.initialized = true
@@ -111,59 +200,225 @@ export class SimulationAudio {
     }
   }
 
-  // ============ Star Ambient ============
+  // ============ Three-Layer Ambient System (Phase 4) ============
 
   /**
-   * Get drone frequency from star temperature using pentatonic scale
-   * Hot stars = slightly higher note, cool stars = lower note
-   * Always in sub-bass to low range for comfortable ambient drone
+   * Get bass rumble frequency from star temperature
+   * Maps to 30-60Hz range - felt more than heard
    */
-  private getStarDroneFrequency(temperature: number): number {
-    return starTemperatureToNote(temperature)
+  private getBassRumbleFrequency(temperature: number): number {
+    const minTemp = 2500
+    const maxTemp = 10000
+    const clamped = Math.max(minTemp, Math.min(maxTemp, temperature))
+    const normalized = (clamped - minTemp) / (maxTemp - minTemp)
+    // Map to 30-60Hz range
+    return 30 + normalized * 30
   }
 
   /**
-   * Get filter frequency from star temperature
-   * Hot stars = brighter harmonics
+   * Get texture filter frequency from star temperature
+   * Hot stars = brighter texture, cool stars = darker
    */
-  private getStarFilterFrequency(temperature: number): number {
-    if (temperature > 7500) return 800 // A-type, bright
-    if (temperature > 6000) return 600 // F-type
-    if (temperature > 5000) return 400 // G-type (Sun-like)
-    if (temperature > 3500) return 300 // K-type
-    return 200 // M-type, warm/dark
+  private getTextureFilterFrequency(temperature: number): number {
+    if (temperature > 7500) return 1200 // A-type, bright
+    if (temperature > 6000) return 1000 // F-type
+    if (temperature > 5000) return 800 // G-type (Sun-like)
+    if (temperature > 3500) return 600 // K-type
+    return 400 // M-type, warm/dark
   }
 
   /**
-   * Start system ambient based on star type
+   * Extract chord notes from planets using their orbital periods
+   * Takes 3-5 most prominent planets and extracts their pentatonic notes
+   */
+  private extractChordFromPlanets(planets: SimulatedPlanet[]): number[] {
+    if (planets.length === 0) return [65.41, 98.0, 130.81] // Default C power chord
+
+    // Sort by radius (most prominent first) and take top 3-5
+    const sorted = [...planets].sort((a, b) => (b.radius || 1) - (a.radius || 1))
+    const prominent = sorted.slice(0, Math.min(5, sorted.length))
+
+    // Extract unique frequencies
+    const frequencies = prominent.map((p) => this.planetToFrequency(p))
+
+    // Ensure we have at least 3 notes for a chord
+    const uniqueFreqs = [...new Set(frequencies)]
+    if (uniqueFreqs.length < 3) {
+      // Add consonant intervals to fill out the chord
+      const base = uniqueFreqs[0] || 130.81
+      return [base, getConsonantInterval(base, 'fifth'), getConsonantInterval(base, 'octave')]
+    }
+
+    return uniqueFreqs.slice(0, 5)
+  }
+
+  /**
+   * Start the chord pad with current notes
+   */
+  private startChordPad(): void {
+    if (!this.chordPad || !this.chordPadGain || this.currentChordNotes.length === 0) return
+
+    // Trigger all chord notes
+    this.currentChordNotes.forEach((freq) => {
+      this.chordPad?.triggerAttack(freq, undefined, 0.15)
+    })
+    this.chordPadGain.gain.rampTo(0.2, 3) // Fade in over 3s
+  }
+
+  /**
+   * Evolve the chord pad to new notes (smooth transition)
+   */
+  private evolveChordPad(): void {
+    if (!this.chordPad || !this.currentSystem) return
+
+    // Calculate new chord from planets
+    const newNotes = this.extractChordFromPlanets(this.currentSystem.planets)
+
+    // Release notes that are no longer in the chord
+    const notesToRelease = this.currentChordNotes.filter((n) => !newNotes.includes(n))
+    notesToRelease.forEach((freq) => {
+      this.chordPad?.triggerRelease(freq)
+    })
+
+    // Attack new notes
+    const notesToAttack = newNotes.filter((n) => !this.currentChordNotes.includes(n))
+    notesToAttack.forEach((freq) => {
+      this.chordPad?.triggerAttack(freq, undefined, 0.15)
+    })
+
+    this.currentChordNotes = newNotes
+  }
+
+  /**
+   * Play a texture burst (stellar wind effect)
+   */
+  private playTextureBurst(): void {
+    if (!this.textureNoise || !this.textureGain || !this.textureFilter) return
+
+    // Random filter frequency variation
+    const baseFreq = this.textureFilter.frequency.value as number
+    const variation = baseFreq * (0.8 + Math.random() * 0.4)
+    this.textureFilter.frequency.rampTo(variation, 0.2)
+
+    // Quick burst: fade in, hold briefly, fade out
+    this.textureGain.gain.rampTo(0.12, 0.3) // Fade in
+    setTimeout(() => {
+      this.textureGain?.gain.rampTo(0, 1.5) // Fade out
+      // Reset filter
+      setTimeout(() => {
+        this.textureFilter?.frequency.rampTo(baseFreq, 0.5)
+      }, 1500)
+    }, 500 + Math.random() * 1000)
+  }
+
+  /**
+   * Start system ambient - all three layers
+   *
+   * Phase 4 "Music of the Spheres" ambient system:
+   * - Layer 1: Sub-bass rumble (30-60Hz) with slow volume undulation
+   * - Layer 2: Generative chord pad from planet frequencies
+   * - Layer 3: Texture bursts (stellar wind)
    */
   startSystemAmbient(system: SimulatedSystem): void {
-    if (!this.initialized || !this.starDrone || !this.starDroneGain || !this.starFilter) return
+    if (!this.initialized) return
 
     this.completedOrbits.clear()
+    this.currentSystem = system
 
-    const frequency = this.getStarDroneFrequency(system.starTemperature)
-    const filterFreq = this.getStarFilterFrequency(system.starTemperature)
+    // ===== LAYER 1: Sub-bass rumble =====
+    if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
+      const bassFreq = this.getBassRumbleFrequency(system.starTemperature)
+      this.bassRumble.triggerAttack(bassFreq)
+      this.bassRumbleLfo.start()
+      // LFO controls the gain, so we just let it run
+    }
 
-    // Set filter based on temperature
-    this.starFilter.frequency.rampTo(filterFreq, 0.5)
+    // ===== LAYER 2: Harmonic chord pad =====
+    this.currentChordNotes = this.extractChordFromPlanets(system.planets)
+    this.startChordPad()
 
-    // Start the drone
-    this.starDrone.triggerAttack(frequency)
-    this.starDroneGain.gain.rampTo(0.25, 2) // Fade in over 2s
+    // Schedule slow chord evolution (every 15-25 seconds)
+    this.chordEvolutionInterval = setInterval(() => {
+      if (Math.random() > 0.4) { // 60% chance to evolve
+        this.evolveChordPad()
+      }
+    }, 15000 + Math.random() * 10000)
+
+    // ===== LAYER 3: Texture bursts =====
+    if (this.textureNoise && this.textureFilter) {
+      const textureFreq = this.getTextureFilterFrequency(system.starTemperature)
+      this.textureFilter.frequency.value = textureFreq
+      this.textureNoise.start()
+
+      // Schedule random texture bursts (every 5-15 seconds)
+      this.textureBurstInterval = setInterval(() => {
+        if (Math.random() > 0.3) { // 70% chance for burst
+          this.playTextureBurst()
+        }
+      }, 5000 + Math.random() * 10000)
+
+      // Initial burst after short delay
+      setTimeout(() => this.playTextureBurst(), 2000 + Math.random() * 3000)
+    }
+
+    // ===== Legacy star drone (reduced role) =====
+    if (this.starDrone && this.starDroneGain && this.starFilter) {
+      const droneFreq = starTemperatureToNote(system.starTemperature)
+      this.starFilter.frequency.rampTo(300, 0.5) // Lower filter for subtlety
+      this.starDrone.triggerAttack(droneFreq)
+      this.starDroneGain.gain.rampTo(0.1, 2) // Quieter than before
+    }
   }
 
   /**
-   * Stop system ambient
+   * Stop system ambient - all layers
    */
   stopSystemAmbient(): void {
-    if (!this.starDrone || !this.starDroneGain) return
+    // ===== LAYER 1: Sub-bass rumble =====
+    if (this.bassRumble && this.bassRumbleGain && this.bassRumbleLfo) {
+      this.bassRumbleLfo.stop()
+      this.bassRumbleGain.gain.rampTo(0, 1)
+      setTimeout(() => {
+        this.bassRumble?.triggerRelease()
+      }, 1000)
+    }
 
-    this.starDroneGain.gain.rampTo(0, 1)
-    setTimeout(() => {
-      this.starDrone?.triggerRelease()
-    }, 1000)
+    // ===== LAYER 2: Chord pad =====
+    if (this.chordEvolutionInterval) {
+      clearInterval(this.chordEvolutionInterval)
+      this.chordEvolutionInterval = null
+    }
+    if (this.chordPad && this.chordPadGain) {
+      this.chordPadGain.gain.rampTo(0, 2)
+      setTimeout(() => {
+        this.currentChordNotes.forEach((freq) => {
+          this.chordPad?.triggerRelease(freq)
+        })
+        this.currentChordNotes = []
+      }, 2000)
+    }
 
+    // ===== LAYER 3: Texture =====
+    if (this.textureBurstInterval) {
+      clearInterval(this.textureBurstInterval)
+      this.textureBurstInterval = null
+    }
+    if (this.textureNoise && this.textureGain) {
+      this.textureGain.gain.rampTo(0, 0.5)
+      setTimeout(() => {
+        this.textureNoise?.stop()
+      }, 500)
+    }
+
+    // ===== Legacy star drone =====
+    if (this.starDrone && this.starDroneGain) {
+      this.starDroneGain.gain.rampTo(0, 1)
+      setTimeout(() => {
+        this.starDrone?.triggerRelease()
+      }, 1000)
+    }
+
+    this.currentSystem = null
     this.completedOrbits.clear()
   }
 
@@ -437,6 +692,23 @@ export class SimulationAudio {
     this.stopSystemAmbient()
     this.stopPlanetVoice()
 
+    // Ambient Layer 1: Sub-bass rumble
+    this.bassRumble?.dispose()
+    this.bassRumbleGain?.dispose()
+    this.bassRumbleLfo?.dispose()
+
+    // Ambient Layer 2: Chord pad
+    this.chordPad?.dispose()
+    this.chordPadGain?.dispose()
+    this.chordPadReverb?.dispose()
+    this.chordPadFilter?.dispose()
+
+    // Ambient Layer 3: Texture
+    this.textureNoise?.dispose()
+    this.textureFilter?.dispose()
+    this.textureGain?.dispose()
+
+    // Legacy star drone
     this.starDrone?.dispose()
     this.starDroneGain?.dispose()
     this.starLfo?.dispose()

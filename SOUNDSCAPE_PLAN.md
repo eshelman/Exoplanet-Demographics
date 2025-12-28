@@ -226,10 +226,10 @@ When multiple sounds play simultaneously:
 - [x] Trigger chime on orbit completion (crossing reference point)
 - [x] Periapsis passage sounds for eccentric orbits
 
-### Phase 4: Ambient Layer Rebuild
-- [ ] Create generative chord pad from visible planets
-- [ ] Add sub-bass rumble layer
-- [ ] Implement slow harmonic evolution
+### Phase 4: Ambient Layer Rebuild [DONE]
+- [x] Create generative chord pad from visible planets
+- [x] Add sub-bass rumble layer
+- [x] Implement slow harmonic evolution
 
 ### Phase 5: Mixing and Dynamics
 - [ ] Implement logarithmic volume curve

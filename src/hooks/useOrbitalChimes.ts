@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import type { SimulatedPlanet, OrbitalPosition } from '../types/simulation'
 
 /**
@@ -162,8 +162,7 @@ export function useOrbitalChimes(config: OrbitalChimeConfig) {
     planetStates.current.clear()
   }, [])
 
-  return {
-    update,
-    reset,
-  }
+  // Memoize the return object to prevent infinite render loops
+  // when used as a dependency in useEffect or useCallback
+  return useMemo(() => ({ update, reset }), [update, reset])
 }
