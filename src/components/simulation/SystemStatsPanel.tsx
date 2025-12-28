@@ -265,13 +265,21 @@ function PlanetEntry({
           </div>
         </div>
 
-        {/* Expand button */}
-        <button
+        {/* Expand toggle */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={(e) => {
             e.stopPropagation()
             onToggleExpand()
           }}
-          className="p-1 rounded hover:bg-white/10 transition-colors flex-shrink-0"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.stopPropagation()
+              onToggleExpand()
+            }
+          }}
+          className="p-1 rounded hover:bg-white/10 transition-colors flex-shrink-0 cursor-pointer"
           style={{ color: 'var(--color-text)' }}
         >
           <svg
@@ -288,7 +296,7 @@ function PlanetEntry({
           >
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </button>
+        </div>
       </button>
 
       {/* Expanded Details */}

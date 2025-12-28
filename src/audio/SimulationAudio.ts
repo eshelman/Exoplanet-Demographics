@@ -267,26 +267,38 @@ export class SimulationAudio {
 
   /**
    * Evolve the chord pad to new notes (smooth transition)
+   * Uses releaseAll to prevent polyphony overflow
    */
   private evolveChordPad(): void {
-    if (!this.chordPad || !this.currentSystem) return
+    if (!this.chordPad || !this.chordPadGain || !this.currentSystem) return
 
     // Calculate new chord from planets
     const newNotes = this.extractChordFromPlanets(this.currentSystem.planets)
 
-    // Release notes that are no longer in the chord
-    const notesToRelease = this.currentChordNotes.filter((n) => !newNotes.includes(n))
-    notesToRelease.forEach((freq) => {
-      this.chordPad?.triggerRelease(freq)
-    })
+    // Check if notes actually changed
+    const sortedCurrent = [...this.currentChordNotes].sort()
+    const sortedNew = [...newNotes].sort()
+    if (JSON.stringify(sortedCurrent) === JSON.stringify(sortedNew)) return
 
-    // Attack new notes
-    const notesToAttack = newNotes.filter((n) => !this.currentChordNotes.includes(n))
-    notesToAttack.forEach((freq) => {
-      this.chordPad?.triggerAttack(freq, undefined, 0.15)
-    })
+    // Fade out, release all, then fade in with new notes
+    // This prevents polyphony buildup from overlapping attack/release
+    this.chordPadGain.gain.rampTo(0, 1.5)
 
-    this.currentChordNotes = newNotes
+    setTimeout(() => {
+      // Release all current notes
+      this.chordPad?.releaseAll()
+      this.currentChordNotes = []
+
+      // Start new notes after brief pause
+      setTimeout(() => {
+        if (!this.chordPad || !this.chordPadGain || !this.currentSystem) return
+        newNotes.forEach((freq) => {
+          this.chordPad?.triggerAttack(freq, undefined, 0.15)
+        })
+        this.currentChordNotes = newNotes
+        this.chordPadGain.gain.rampTo(0.2, 2)
+      }, 200)
+    }, 1500)
   }
 
   /**

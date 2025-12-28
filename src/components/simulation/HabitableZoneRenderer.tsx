@@ -18,8 +18,13 @@ export const HabitableZoneRenderer = memo(function HabitableZoneRenderer({
 }: HabitableZoneRendererProps) {
   if (!visible) return null
 
-  const innerRadius = habitableZone.innerEdge * scale
-  const outerRadius = habitableZone.outerEdge * scale
+  // Guard against invalid values - radii must be positive
+  const innerRadius = Math.max(0, habitableZone.innerEdge * scale)
+  const outerRadius = Math.max(0.1, habitableZone.outerEdge * scale)
+
+  // Skip rendering if radii are invalid
+  if (outerRadius <= innerRadius || innerRadius < 0) return null
+
   const gradientId = 'habitable-zone-gradient'
 
   return (
