@@ -124,6 +124,14 @@ export function useSimulationAudio() {
   }, [])
 
   /**
+   * Play orbital chime when planet crosses reference point
+   * Creates rhythmic pulses synchronized to orbital motion
+   */
+  const orbitalChime = useCallback((planet: SimulatedPlanet) => {
+    try { if (planet) AudioManager.playOrbitalChime(planet) } catch {}
+  }, [])
+
+  /**
    * Play periapsis passage sound
    */
   const periapsisPass = useCallback((planet: SimulatedPlanet) => {
@@ -163,6 +171,7 @@ export function useSimulationAudio() {
     closeModal,
 
     // Special moments
+    orbitalChime,
     periapsisPass,
     orbitComplete,
     conjunction,

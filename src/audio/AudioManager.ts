@@ -712,6 +712,15 @@ class AudioManagerClass {
   }
 
   /**
+   * Play orbital chime when planet crosses reference point
+   * Creates rhythmic pulses synchronized to orbital motion
+   */
+  playOrbitalChime(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.settings.enabled || !this.settings.categories.sonification) return
+    this.simulationAudio?.playOrbitalChime(planet)
+  }
+
+  /**
    * Play periapsis passage sound
    */
   playPeriapsisPass(planet: SimulatedPlanet): void {

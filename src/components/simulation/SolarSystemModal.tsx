@@ -362,6 +362,8 @@ export function SolarSystemModal({
                   showHabitableZone={showHabitableZone}
                   onPlanetSelect={handlePlanetSelect}
                   onPositionsUpdate={handlePositionsUpdate}
+                  onOrbitalChime={audio.orbitalChime}
+                  onPeriapsisPass={audio.periapsisPass}
                 />
               </div>
 

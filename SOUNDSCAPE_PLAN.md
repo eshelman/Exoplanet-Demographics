@@ -221,10 +221,10 @@ When multiple sounds play simultaneously:
 - [x] Implement bell-like decay for planet chimes
 - [x] Add attack/release parameters to all sound sources
 
-### Phase 3: Simulation Rhythmic Chimes
-- [ ] Track orbital angle for each planet
-- [ ] Trigger chime on orbit completion (crossing reference point)
-- [ ] Remove continuous tone playback during simulation
+### Phase 3: Simulation Rhythmic Chimes [DONE]
+- [x] Track orbital angle for each planet
+- [x] Trigger chime on orbit completion (crossing reference point)
+- [x] Periapsis passage sounds for eccentric orbits
 
 ### Phase 4: Ambient Layer Rebuild
 - [ ] Create generative chord pad from visible planets

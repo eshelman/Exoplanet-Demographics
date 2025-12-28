@@ -8,6 +8,7 @@ import { OrbitPath } from './OrbitPath'
 import { HabitableZoneRenderer } from './HabitableZoneRenderer'
 import { SimulationTooltip } from './SimulationTooltip'
 import { useSimulationLoop } from '../../hooks/useSimulationLoop'
+import { useOrbitalChimes } from '../../hooks/useOrbitalChimes'
 
 // Thresholds for special handling
 const LONG_PERIOD_THRESHOLD = 1000 // days - planets with longer periods get progress indicators
@@ -27,6 +28,12 @@ interface OrbitalCanvasProps {
   showHabitableZone: boolean
   onPlanetSelect: (planet: SimulatedPlanet) => void
   onPositionsUpdate?: (positions: Map<string, OrbitalPosition>) => void
+  /** Callback when a planet crosses the orbital reference point (rhythmic chime) */
+  onOrbitalChime?: (planet: SimulatedPlanet) => void
+  /** Callback when a planet passes periapsis (closest approach to star) */
+  onPeriapsisPass?: (planet: SimulatedPlanet) => void
+  /** Whether orbital chimes are enabled */
+  orbitalChimesEnabled?: boolean
 }
 
 export function OrbitalCanvas({
@@ -39,6 +46,9 @@ export function OrbitalCanvas({
   showHabitableZone,
   onPlanetSelect,
   onPositionsUpdate,
+  onOrbitalChime,
+  onPeriapsisPass,
+  orbitalChimesEnabled = true,
 }: OrbitalCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
@@ -48,6 +58,32 @@ export function OrbitalCanvas({
   const [binaryAngle, setBinaryAngle] = useState(0)
   const [zoomLevel, setZoomLevel] = useState(1)
   const [simulationTime, setSimulationTime] = useState(0)
+
+  // Orbital chimes - rhythmic pulses synchronized to orbital motion
+  const handleOrbitalChime = useCallback(
+    (planet: SimulatedPlanet) => {
+      onOrbitalChime?.(planet)
+    },
+    [onOrbitalChime]
+  )
+
+  const handlePeriapsisPass = useCallback(
+    (planet: SimulatedPlanet) => {
+      onPeriapsisPass?.(planet)
+    },
+    [onPeriapsisPass]
+  )
+
+  const orbitalChimes = useOrbitalChimes({
+    onChime: handleOrbitalChime,
+    onPeriapsis: handlePeriapsisPass,
+    enabled: orbitalChimesEnabled && !isPaused,
+  })
+
+  // Reset chime tracking when system changes
+  useEffect(() => {
+    orbitalChimes.reset()
+  }, [system, orbitalChimes])
 
   // Measure container dimensions
   useEffect(() => {
@@ -138,6 +174,9 @@ export function OrbitalCanvas({
       const newPositions = computeSystemPositions(system.planets, time, system.starMass)
       setPositions(newPositions)
 
+      // Update orbital chimes - triggers rhythmic pulses when planets cross reference point
+      orbitalChimes.update(system.planets, newPositions)
+
       // Notify parent of position updates (throttled by animation frame)
       onPositionsUpdate?.(newPositions)
 
@@ -148,7 +187,7 @@ export function OrbitalCanvas({
         setBinaryAngle(angle)
       }
     },
-    [system, onPositionsUpdate]
+    [system, onPositionsUpdate, orbitalChimes]
   )
 
   // Start the simulation loop

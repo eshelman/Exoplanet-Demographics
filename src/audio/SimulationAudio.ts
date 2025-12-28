@@ -338,6 +338,26 @@ export class SimulationAudio {
     this.momentSynth.triggerAttackRelease('C4', '8n', now + 0.16, 0.15)
   }
 
+  // ============ Orbital Rhythmic Chimes ============
+
+  /**
+   * Play orbital chime when planet crosses reference point
+   *
+   * This creates the "rhythmic pulse" soundscape from the Music of the Spheres design:
+   * - Faster orbits = more frequent chimes (rhythm, not pitch)
+   * - Each planet has a unique pitch from the pentatonic scale
+   * - Short, bell-like decay prevents sustained high-frequency exposure
+   */
+  playOrbitalChime(planet: SimulatedPlanet): void {
+    if (!this.initialized || !this.momentSynth) return
+
+    const frequency = this.planetToFrequency(planet)
+    const volume = this.planetToVolume(planet) * 0.7 // Slightly quieter for rhythm
+
+    // Short, pleasant chime with natural decay
+    this.momentSynth.triggerAttackRelease(frequency, '16n', undefined, volume)
+  }
+
   // ============ Special Moment Sounds ============
 
   /**
