@@ -105,7 +105,7 @@ export const PLANET_TOUR_CONTENT: PlanetTourStepContent[] = [
     systemConfig: {
       hostStar: 'HD 80606',
       highlightPlanet: 'b',
-      initialSpeed: 10,
+      initialSpeed: 2,
     },
   },
   {
