@@ -1,4 +1,4 @@
-import { useState, memo, useCallback } from 'react'
+import { useState, useEffect, memo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { SimulatedSystem, SimulatedPlanet, OrbitalPosition } from '../../types/simulation'
 import { PLANET_TYPE_COLORS } from '../../utils/scales'
@@ -19,6 +19,11 @@ export const SystemStatsPanel = memo(function SystemStatsPanel({
   onPlanetSelect,
 }: SystemStatsPanelProps) {
   const [expandedPlanetId, setExpandedPlanetId] = useState<string | null>(selectedPlanetId)
+
+  // Sync expanded state with selected planet
+  useEffect(() => {
+    setExpandedPlanetId(selectedPlanetId)
+  }, [selectedPlanetId])
 
   const toggleExpanded = useCallback((planetId: string) => {
     setExpandedPlanetId((current) => (current === planetId ? null : planetId))
