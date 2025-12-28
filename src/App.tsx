@@ -5,6 +5,7 @@ import { NarrativeOverlay, PlanetTourOverlay } from './components/narrative'
 import { SolarSystemModal } from './components/simulation'
 import { Header, Footer } from './components/layout'
 import { SectionErrorBoundary } from './components/ErrorBoundary'
+import { WelcomeModal } from './components/WelcomeModal'
 import { loadSolarSystem, loadExoplanets } from './utils'
 import { useVizStore, selectVisiblePlanets } from './store'
 import { useDeepLink } from './hooks'
@@ -223,6 +224,9 @@ function App() {
           </button>
         </div>
       )}
+
+      {/* Welcome Modal for first-time visitors */}
+      <WelcomeModal />
     </div>
   )
 }
