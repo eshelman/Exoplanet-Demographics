@@ -233,8 +233,8 @@ export function PlanetTourOverlay() {
                 {/* Subtitle */}
                 {currentContent.subtitle && (
                   <p
-                    className="text-sm mb-4 opacity-70"
-                    style={{ color: 'var(--color-text)' }}
+                    className="text-sm mb-4"
+                    style={{ color: 'var(--color-accent)' }}
                   >
                     {currentContent.subtitle}
                   </p>

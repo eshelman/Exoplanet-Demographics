@@ -19,8 +19,8 @@ export function StoryStep({ step, stepNumber, totalSteps }: StoryStepProps) {
     >
       {/* Step indicator */}
       <div
-        className="text-xs font-medium uppercase tracking-wider mb-2"
-        style={{ color: 'var(--color-accent)', opacity: 0.8 }}
+        className="text-xs mb-2 opacity-50"
+        style={{ color: 'var(--color-text)' }}
       >
         Step {stepNumber} of {totalSteps}
       </div>
