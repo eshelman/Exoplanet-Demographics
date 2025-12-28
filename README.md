@@ -9,6 +9,11 @@ big they are, and how quickly (or slowly) they orbit their star. It also shows
 you simulations of what those solar systems look like. There is also a tour taking
 you throught some of the most interesting ones we've found so far!
 
+## Screenshots
+
+![Exoplanet Demographics home page](screenshots/ExoplanetDemographics-home-page.png)
+
+![Solar system simulation showing TRAPPIST-1](screenshots/ExoplanetDemographics-solar-system-TRAPPIST.png)
 
 ## Data sources
 
